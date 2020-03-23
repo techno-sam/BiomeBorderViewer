@@ -57,9 +57,8 @@ public class VisualizeBorders {
 	@SubscribeEvent
 	public static void renderEvent(RenderWorldLastEvent event) {
 		if (showingBorders) {
-			Minecraft m = Minecraft.getInstance();
-			PlayerEntity player = m.player;
-			m.close();
+			@SuppressWarnings("resource")
+			PlayerEntity player = Minecraft.getInstance().player;
 			// calculate lines and corners
 			Vector3Float playerNetPos = new Vector3Float();
 			Vec3d tempPlayerPos = player.getPositionVec();

@@ -19,7 +19,8 @@ public class ConfigOptions {
 		FOLLOW_PLAYER_HEIGHT,
 		MATCH_TERRAIN,
 		FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN,
-		FIXED_HEIGHT
+		FIXED_HEIGHT,
+		WALL
 	}
 
 	public static EnumValue<RenderModes> baseLineHeight;
@@ -47,9 +48,14 @@ public class ConfigOptions {
 		Client(ForgeConfigSpec.Builder builder) {
 			builder.comment("biome border viewer client settings").push("client");
 
-			baseLineHeight = builder.comment("What the reference point for the border-line height is.")
-					.translation(translationKey + "baseLineHeight")
-					.defineEnum("baseLineHeight", RenderModes.MATCH_TERRAIN);
+			baseLineHeight = builder.comment("What the reference point for the border-line height is."
+					+ "\n FOLLOW_PLAYER_HEIGHT - The line follows the height of the player + playerHeightOffset"
+					+ "\n MATCH_TERRAIN - The line follows the height of the highest block + terrainHeightOffset"
+					+ "\n FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN - The line follows the player height, unless the terrain height is higher."
+					+ "\n FIXED_HEIGHT - The height of the line is fixed at fixedHeight"
+					+ "\n WALL - Makes a wall going from y 0-255. It is recomened to make the line more transparent (lower alpha value) in this scenario.")
+					.translation(translationKey + "renderMode")
+					.defineEnum("renderMode", RenderModes.MATCH_TERRAIN);
 
 			lineAR = builder.comment("The red value of the line's color when the 2 biomes have the same temperature.")
 					.translation(translationKey + "lineAR").defineInRange("lineAR", 0, 0, 255);
