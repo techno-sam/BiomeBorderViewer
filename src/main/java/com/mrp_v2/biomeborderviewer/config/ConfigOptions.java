@@ -24,10 +24,12 @@ public class ConfigOptions {
 	public static IntValue lineAR;
 	public static IntValue lineAG;
 	public static IntValue lineAB;
+	public static IntValue lineAA;
 
 	public static IntValue lineBR;
 	public static IntValue lineBG;
 	public static IntValue lineBB;
+	public static IntValue lineBA;
 
 	public static DoubleValue playerHeightOffset;
 	public static DoubleValue terrainHeightOffset;
@@ -54,6 +56,9 @@ public class ConfigOptions {
 
 			lineAB = builder.comment("The blue value of the line's color when the 2 biomes have the same temperature.")
 					.translation(translationKey + "lineAB").defineInRange("lineAB", 0, 0, 255);
+			
+			lineAA = builder.comment("The alpha (transparency) value of the line's color when the 2 biomes have the same temperature.")
+					.translation(translationKey + "lineAA").defineInRange("lineAA", 255, 0, 255);
 
 			lineBR = builder.comment("The red value of the line's color when the 2 biomes have different temperatures.")
 					.translation(translationKey + "lineBR").defineInRange("lineBR", 0, 0, 255);
@@ -65,6 +70,9 @@ public class ConfigOptions {
 			lineBB = builder
 					.comment("The blue value of the line's color when the 2 biomes have different temperatures.")
 					.translation(translationKey + "lineBB").defineInRange("lineBB", 0, 0, 255);
+			
+			lineBA = builder.comment("The alpha (transparency) value of the line's color when the 2 biomes have the same temperature.")
+					.translation(translationKey + "lineBA").defineInRange("lineBA", 255, 0, 255);
 
 			playerHeightOffset = builder
 					.comment("The height offset from the player's feet that the lines are drawn at.")

@@ -6,7 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.lwjgl.opengl.GL11;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.mrp_v2.biomeborderviewer.BiomeBorderViewer;
 import com.mrp_v2.biomeborderviewer.config.ConfigOptions;
@@ -18,6 +18,8 @@ import com.mrp_v2.biomeborderviewer.util.Vector3Float;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.Matrix4f;
+import net.minecraft.client.renderer.RenderState;
+import net.minecraft.client.renderer.RenderState.AlphaState;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.player.PlayerEntity;
@@ -77,11 +79,11 @@ public class VisualizeBorders {
 						z++;
 					}
 					BlockPos mainPos = new BlockPos(x, 10, z);				
-					Biome mainBiome = world.func_226691_t_(mainPos);
+					Biome mainBiome = world.getBiome(mainPos);
 					BlockPos[] neighbors = new BlockPos[] { new BlockPos(x + 1, 10, z), new BlockPos(x - 1, 10, z),
 							new BlockPos(x, 10, z + 1), new BlockPos(x, 10, z - 1) };
 					for (BlockPos neighborPos : neighbors) {
-						Biome neighborBiome = world.func_226691_t_(neighborPos);
+						Biome neighborBiome = world.getBiome(neighborPos);
 						if (!neighborBiome.equals(mainBiome)) {
 							LineData lineData = new LineData(Vector3Float.fromBlockPos(mainPos),
 									Vector3Float.fromBlockPos(neighborPos));
@@ -132,135 +134,119 @@ public class VisualizeBorders {
 				}
 			}
 			// draw lines and corners
-			//draw(playerNetPos, lines, corners, ms);
-			//IRenderTypeBuffer.Impl buffer = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource();
-			IRenderTypeBuffer.Impl buffer = Minecraft.getInstance().func_228019_au_().func_228487_b_();
-			// !! or !!
-			//IRenderTypeBuffer.Impl buffer = Minecraft.getInstance().func_228019_au_().func_228487_c_();
-			//IVertexBuilder builder = buffer.getBuffer(RenderType.QUADS);
-			IVertexBuilder builder = buffer.getBuffer(RenderType.func_228633_a_("quad", DefaultVertexFormats.POSITION_COLOR, 1, 256, showingBorders, showingBorders, null));
-			MatrixStack ms = event.getMatrixStack();
-			//ms.push();
-			ms.func_227860_a_();
-			//ms.translate(-playerNetPos.x, -playerNetPos.y, -playerNetPos.z);
-			ms.func_227862_a_(-playerNetPos.x, -playerNetPos.y, -playerNetPos.z);
-			//ms.getLast().getMatrix();
-			Matrix4f matrix = ms.func_227866_c_().func_227870_a_();
-			
+			draw(playerNetPos, lines, corners, event.getMatrixStack());
 		}
 	}
 
-	private static void draw(Vector3Float playerPos, ArrayList<LineData> lines, ArrayList<CornerData> corners, MatrixStack ms) {
-		GlStateManager.pushMatrix();
-		GlStateManager.disableBlend();
-		GlStateManager.disableTexture();
-		GlStateManager.translatef(-playerPos.x, -playerPos.y, -playerPos.z);
-		drawLines(lines);
-		drawCorners(corners);
-		GlStateManager.enableBlend();
-		GlStateManager.enableTexture();
-		GlStateManager.popMatrix();
+	private static void draw(Vector3Float playerPos, ArrayList<LineData> lines, ArrayList<CornerData> corners, MatrixStack matrixStack) {
+		IRenderTypeBuffer.Impl buffer = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource();
+		RenderType myRenderType = RenderType.getLightning();
+		IVertexBuilder builder = buffer.getBuffer(myRenderType);
+		
+		matrixStack.push();
+		matrixStack.translate(-playerPos.x, -playerPos.y, -playerPos.z);
+		Matrix4f matrix = matrixStack.getLast().getMatrix();
+		
+		drawLines(lines, matrix, builder);
+		drawCorners(corners, matrix, builder);
+
+		matrixStack.pop();
+		buffer.finish(myRenderType);
 	}
 
-	private static void drawLines(ArrayList<LineData> lines) {
+	private static void drawLines(ArrayList<LineData> lines, Matrix4f matrix, IVertexBuilder builder) {
 		for (LineData lineData : lines) {
-			drawLine(lineData);
+			drawLine(lineData, matrix, builder);
 		}
 	}
-
-	private static void drawLine(LineData lineData) {
-		GlStateManager.color3f(lineData.color.r / 255f, lineData.color.g / 255f, lineData.color.b / 255f);
-		GlStateManager.begin(GL11.GL_QUADS);
+	
+	private static void drawLine(LineData lineData, Matrix4f matrix, IVertexBuilder builder) {
 		if (lineData.a.x == lineData.b.x) {
 			// top
-			GlStateManager.vertex3f(lineData.a.x + radius, lineData.a.y + radius, lineData.a.z);
-			GlStateManager.vertex3f(lineData.b.x + radius, lineData.b.y + radius, lineData.b.z);
-			GlStateManager.vertex3f(lineData.b.x - radius, lineData.b.y + radius, lineData.b.z);
-			GlStateManager.vertex3f(lineData.a.x - radius, lineData.a.y + radius, lineData.a.z);
+			builder.pos(matrix, lineData.a.x + radius, lineData.a.y + radius, lineData.a.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x + radius, lineData.b.y + radius, lineData.b.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x - radius, lineData.b.y + radius, lineData.b.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.a.x - radius, lineData.a.y + radius, lineData.a.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
 			// bottom
-			GlStateManager.vertex3f(lineData.a.x - radius, lineData.a.y - radius, lineData.a.z);
-			GlStateManager.vertex3f(lineData.b.x - radius, lineData.b.y - radius, lineData.b.z);
-			GlStateManager.vertex3f(lineData.b.x + radius, lineData.b.y - radius, lineData.b.z);
-			GlStateManager.vertex3f(lineData.a.x + radius, lineData.a.y - radius, lineData.a.z);
+			builder.pos(matrix, lineData.a.x - radius, lineData.a.y - radius, lineData.a.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x - radius, lineData.b.y - radius, lineData.b.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x + radius, lineData.b.y - radius, lineData.b.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.a.x + radius, lineData.a.y - radius, lineData.a.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
 			// -x side
-			GlStateManager.vertex3f(lineData.a.x - radius, lineData.a.y + radius, lineData.a.z);
-			GlStateManager.vertex3f(lineData.b.x - radius, lineData.b.y + radius, lineData.b.z);
-			GlStateManager.vertex3f(lineData.b.x - radius, lineData.b.y - radius, lineData.b.z);
-			GlStateManager.vertex3f(lineData.a.x - radius, lineData.a.y - radius, lineData.a.z);
+			builder.pos(matrix, lineData.a.x - radius, lineData.a.y + radius, lineData.a.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x - radius, lineData.b.y + radius, lineData.b.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x - radius, lineData.b.y - radius, lineData.b.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.a.x - radius, lineData.a.y - radius, lineData.a.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
 			// +x side
-			GlStateManager.vertex3f(lineData.a.x + radius, lineData.a.y - radius, lineData.a.z);
-			GlStateManager.vertex3f(lineData.b.x + radius, lineData.b.y - radius, lineData.b.z);
-			GlStateManager.vertex3f(lineData.b.x + radius, lineData.b.y + radius, lineData.b.z);
-			GlStateManager.vertex3f(lineData.a.x + radius, lineData.a.y + radius, lineData.a.z);
+			builder.pos(matrix, lineData.a.x + radius, lineData.a.y - radius, lineData.a.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x + radius, lineData.b.y - radius, lineData.b.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x + radius, lineData.b.y + radius, lineData.b.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.a.x + radius, lineData.a.y + radius, lineData.a.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
 		} else {
 			// top
-			GlStateManager.vertex3f(lineData.a.x, lineData.a.y + radius, lineData.a.z - radius);
-			GlStateManager.vertex3f(lineData.b.x, lineData.b.y + radius, lineData.b.z - radius);
-			GlStateManager.vertex3f(lineData.b.x, lineData.b.y + radius, lineData.b.z + radius);
-			GlStateManager.vertex3f(lineData.a.x, lineData.a.y + radius, lineData.a.z + radius);
+			builder.pos(matrix, lineData.a.x, lineData.a.y + radius, lineData.a.z - radius).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x, lineData.b.y + radius, lineData.b.z - radius).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x, lineData.b.y + radius, lineData.b.z + radius).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.a.x, lineData.a.y + radius, lineData.a.z + radius).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
 			// bottom
-			GlStateManager.vertex3f(lineData.a.x, lineData.a.y - radius, lineData.a.z + radius);
-			GlStateManager.vertex3f(lineData.b.x, lineData.b.y - radius, lineData.b.z + radius);
-			GlStateManager.vertex3f(lineData.b.x, lineData.b.y - radius, lineData.b.z - radius);
-			GlStateManager.vertex3f(lineData.a.x, lineData.a.y - radius, lineData.a.z - radius);
+			builder.pos(matrix, lineData.a.x, lineData.a.y - radius, lineData.a.z + radius).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x, lineData.b.y - radius, lineData.b.z + radius).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x, lineData.b.y - radius, lineData.b.z - radius).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.a.x, lineData.a.y - radius, lineData.a.z - radius).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
 			// -z side
-			GlStateManager.vertex3f(lineData.a.x, lineData.a.y - radius, lineData.a.z - radius);
-			GlStateManager.vertex3f(lineData.b.x, lineData.b.y - radius, lineData.b.z - radius);
-			GlStateManager.vertex3f(lineData.b.x, lineData.b.y + radius, lineData.b.z - radius);
-			GlStateManager.vertex3f(lineData.a.x, lineData.a.y + radius, lineData.a.z - radius);
+			builder.pos(matrix, lineData.a.x, lineData.a.y - radius, lineData.a.z - radius).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x, lineData.b.y - radius, lineData.b.z - radius).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x, lineData.b.y + radius, lineData.b.z - radius).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.a.x, lineData.a.y + radius, lineData.a.z - radius).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
 			// +z side
-			GlStateManager.vertex3f(lineData.a.x, lineData.a.y + radius, lineData.a.z + radius);
-			GlStateManager.vertex3f(lineData.b.x, lineData.b.y + radius, lineData.b.z + radius);
-			GlStateManager.vertex3f(lineData.b.x, lineData.b.y - radius, lineData.b.z + radius);
-			GlStateManager.vertex3f(lineData.a.x, lineData.a.y - radius, lineData.a.z + radius);
+			builder.pos(matrix, lineData.a.x, lineData.a.y + radius, lineData.a.z + radius).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x, lineData.b.y + radius, lineData.b.z + radius).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x, lineData.b.y - radius, lineData.b.z + radius).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.a.x, lineData.a.y - radius, lineData.a.z + radius).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
 		}
-		GlStateManager.end();
 	}
 
-	private static void drawCorners(ArrayList<CornerData> corners) {
+	private static void drawCorners(ArrayList<CornerData> corners, Matrix4f matrix, IVertexBuilder builder) {
 		for (CornerData cornerData : corners) {
-			drawCorner(cornerData);
+			drawCorner(cornerData, matrix, builder);
 		}
 	}
 
-	private static void drawCorner(CornerData cornerData) {//x's on wrong sides
-		GlStateManager.color3f(cornerData.color.r / 255f, cornerData.color.g / 255f, cornerData.color.b / 255f);
-		GlStateManager.begin(GL11.GL_QUADS);
+	private static void drawCorner(CornerData cornerData, Matrix4f matrix, IVertexBuilder builder) {
 		if (cornerData.showPlusX) {// +x side
-			GlStateManager.vertex3f(cornerData.pos.x + radius, cornerData.pos.y - radius, cornerData.pos.z - radius);
-			GlStateManager.vertex3f(cornerData.pos.x + radius, cornerData.pos.y + radius, cornerData.pos.z - radius);
-			GlStateManager.vertex3f(cornerData.pos.x + radius, cornerData.pos.y + radius, cornerData.pos.z + radius);
-			GlStateManager.vertex3f(cornerData.pos.x + radius, cornerData.pos.y - radius, cornerData.pos.z + radius);
+			builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y - radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+			builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y + radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+			builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y + radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+			builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y - radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 		}
 		if (cornerData.showMinusX) {// -x side
-			GlStateManager.vertex3f(cornerData.pos.x - radius, cornerData.pos.y - radius, cornerData.pos.z + radius);
-			GlStateManager.vertex3f(cornerData.pos.x - radius, cornerData.pos.y + radius, cornerData.pos.z + radius);
-			GlStateManager.vertex3f(cornerData.pos.x - radius, cornerData.pos.y + radius, cornerData.pos.z - radius);
-			GlStateManager.vertex3f(cornerData.pos.x - radius, cornerData.pos.y - radius, cornerData.pos.z - radius);
+			builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y - radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+			builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y + radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+			builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y + radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+			builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y - radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 		}
 		if (cornerData.showPlusZ) {// +z side
-			GlStateManager.vertex3f(cornerData.pos.x + radius, cornerData.pos.y - radius, cornerData.pos.z + radius);
-			GlStateManager.vertex3f(cornerData.pos.x + radius, cornerData.pos.y + radius, cornerData.pos.z + radius);
-			GlStateManager.vertex3f(cornerData.pos.x - radius, cornerData.pos.y + radius, cornerData.pos.z + radius);
-			GlStateManager.vertex3f(cornerData.pos.x - radius, cornerData.pos.y - radius, cornerData.pos.z + radius);
+			builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y - radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+			builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y + radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+			builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y + radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+			builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y - radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 		}
 		if (cornerData.showMinusZ) {// -z side
-			GlStateManager.vertex3f(cornerData.pos.x - radius, cornerData.pos.y - radius, cornerData.pos.z - radius);
-			GlStateManager.vertex3f(cornerData.pos.x - radius, cornerData.pos.y + radius, cornerData.pos.z - radius);
-			GlStateManager.vertex3f(cornerData.pos.x + radius, cornerData.pos.y + radius, cornerData.pos.z - radius);
-			GlStateManager.vertex3f(cornerData.pos.x + radius, cornerData.pos.y - radius, cornerData.pos.z - radius);
+			builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y - radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+			builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y + radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+			builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y + radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+			builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y - radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 		}
 		//top
-		GlStateManager.vertex3f(cornerData.pos.x + radius, cornerData.pos.y + radius, cornerData.pos.z + radius);
-		GlStateManager.vertex3f(cornerData.pos.x + radius, cornerData.pos.y + radius, cornerData.pos.z - radius);
-		GlStateManager.vertex3f(cornerData.pos.x - radius, cornerData.pos.y + radius, cornerData.pos.z - radius);
-		GlStateManager.vertex3f(cornerData.pos.x - radius, cornerData.pos.y + radius, cornerData.pos.z + radius);
+		builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y + radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+		builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y + radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+		builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y + radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+		builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y + radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 		//bottom
-		GlStateManager.vertex3f(cornerData.pos.x - radius, cornerData.pos.y - radius, cornerData.pos.z + radius);
-		GlStateManager.vertex3f(cornerData.pos.x - radius, cornerData.pos.y - radius, cornerData.pos.z - radius);
-		GlStateManager.vertex3f(cornerData.pos.x + radius, cornerData.pos.y - radius, cornerData.pos.z - radius);
-		GlStateManager.vertex3f(cornerData.pos.x + radius, cornerData.pos.y - radius, cornerData.pos.z + radius);
-		GlStateManager.end();
+		builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y - radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+		builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y - radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+		builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y - radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
+		builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y - radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 	}
 
 	private static Color borderColor(Biome a, Biome b) {
@@ -334,8 +320,8 @@ public class VisualizeBorders {
 		terrainHeightOffset = ConfigOptions.terrainHeightOffset.get();
 		fixedHeight = ConfigOptions.fixedHeight.get();
 		baseLineHeight = ConfigOptions.baseLineHeight.get();
-		colorA = new Color(ConfigOptions.lineAR.get(), ConfigOptions.lineAG.get(), ConfigOptions.lineAB.get());
-		colorB = new Color(ConfigOptions.lineBR.get(), ConfigOptions.lineBG.get(), ConfigOptions.lineBB.get());
+		colorA = new Color(ConfigOptions.lineAR.get(), ConfigOptions.lineAG.get(), ConfigOptions.lineAB.get(), ConfigOptions.lineAA.get());
+		colorB = new Color(ConfigOptions.lineBR.get(), ConfigOptions.lineBG.get(), ConfigOptions.lineBB.get(), ConfigOptions.lineBA.get());
 		radius = ConfigOptions.lineWidth.get().floatValue() / 2;
 	}
 }

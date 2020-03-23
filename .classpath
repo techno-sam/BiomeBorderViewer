@@ -28,6 +28,6 @@
 			<attribute name="gradle_used_by_scope" value="test"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/forge-1.15.2-31.1.0-mdk"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/forge-1.15.2-31.1.27-mdk"/>
 	<classpathentry kind="output" path="bin/default"/>
 </classpath>
