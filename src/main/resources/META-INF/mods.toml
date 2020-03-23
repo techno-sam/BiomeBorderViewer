@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="[31,)"
+issueTrackerURL="https://www.curseforge.com/minecraft/mc-mods/biome-border-viewer/issues"
+logoFile="BiomeBorderViewerLogo.png"
+[[mods]]
+modId="biomeborderviewer"
+version="3.0.0.0"
+displayName="Biome Border Viewer"
+updateJSONURL="https://raw.githubusercontent.com/mrp-v2/ModUpdateFiles/master/BiomeBorderViewer.json"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/biome-border-viewer"
+
+authors="mrp_v2"
+description='''
+Visualizes the borders of biomes.
+'''
+[[dependencies.biomeborderviewer]]
+    modId="forge"
+    mandatory=true
+    versionRange="[31,)"
+    ordering="NONE"
+    side="CLIENT"
+[[dependencies.biomeborderviewer]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.15.2]"
+    ordering="NONE"
+    side="CLIENT"

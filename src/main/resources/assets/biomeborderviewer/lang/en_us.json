@@ -1,0 +1,16 @@
+{
+	"mrp_v2.biomeborderviewer.configgui.baseLineHeight": "Base Line Height",
+	"mrp_v2.biomeborderviewer.configgui.lineAR": "Line A Red",
+	"mrp_v2.biomeborderviewer.configgui.lineAG": "Line A Green",
+	"mrp_v2.biomeborderviewer.configgui.lineAB": "Line A Blue",
+	"mrp_v2.biomeborderviewer.configgui.lineBR": "Line B Red",
+	"mrp_v2.biomeborderviewer.configgui.lineBG": "Line B Green",
+	"mrp_v2.biomeborderviewer.configgui.lineBB": "Line B Blue",
+	"mrp_v2.biomeborderviewer.configgui.playerHeightOffset": "Player Height Offset",
+	"mrp_v2.biomeborderviewer.configgui.terrainHeightOffset": "Terrain Height Offset",
+	"mrp_v2.biomeborderviewer.configgui.fixedHeight": "Fixed Height",
+	"mrp_v2.biomeborderviewer.configgui.lineWidth": "Line Width",
+	"mrp_v2.biomeborderviewer.configgui.viewRange": "View Range",
+	"biomeborderviewer.key.showBorders": "Toggle Border",
+	"biomeborderviewer.key.categories": "Biome Border Viewer"
+}
