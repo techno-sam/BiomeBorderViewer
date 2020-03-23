@@ -49,7 +49,7 @@ public class VisualizeBorders {
 	private static Color colorA;
 	private static Color colorB;
 
-	private static ConfigOptions.baseLineHeightTypes baseLineHeight;
+	private static ConfigOptions.RenderModes renderMode;
 
 	@SubscribeEvent
 	public static void keyPressed(KeyInputEvent event) {
@@ -62,7 +62,9 @@ public class VisualizeBorders {
 	@SubscribeEvent
 	public static void renderEvent(RenderWorldLastEvent event) {
 		if (showingBorders) {
-			PlayerEntity player = Minecraft.getInstance().player;
+			Minecraft m = Minecraft.getInstance();
+			PlayerEntity player = m.player;
+			m.close();
 			// calculate lines and corners
 			Vector3Float playerNetPos = new Vector3Float();
 			Vec3d tempPlayerPos = player.getPositionVec();
@@ -259,14 +261,14 @@ public class VisualizeBorders {
 
 	private static float heightForPos(float x, float z, World world, Vector3Float playerPos) {
 		double height = 0;
-		switch (baseLineHeight) {
-		case fixed:
+		switch (renderMode) {
+		case FIXED_HEIGHT:
 			height = fixedHeight;
 			break;
-		case player:
+		case FOLLOW_PLAYER_HEIGHT:
 			height = playerBasedHeight(playerPos);
 			break;
-		case playerThenTerrain:
+		case FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN:
 			double playerBasedHeight = playerBasedHeight(playerPos);
 			double terrainBasedHeight = terrainBasedHeight(x, z, world);
 			if (playerBasedHeight >= terrainBasedHeight) {
@@ -275,7 +277,7 @@ public class VisualizeBorders {
 				height = terrainBasedHeight;
 			}
 			break;
-		case terrain:
+		case MATCH_TERRAIN:
 			height = terrainBasedHeight(x, z, world);
 			break;
 		default:
@@ -319,7 +321,7 @@ public class VisualizeBorders {
 		playerHeightOffset = ConfigOptions.playerHeightOffset.get();
 		terrainHeightOffset = ConfigOptions.terrainHeightOffset.get();
 		fixedHeight = ConfigOptions.fixedHeight.get();
-		baseLineHeight = ConfigOptions.baseLineHeight.get();
+		renderMode = ConfigOptions.baseLineHeight.get();
 		colorA = new Color(ConfigOptions.lineAR.get(), ConfigOptions.lineAG.get(), ConfigOptions.lineAB.get(), ConfigOptions.lineAA.get());
 		colorB = new Color(ConfigOptions.lineBR.get(), ConfigOptions.lineBG.get(), ConfigOptions.lineBB.get(), ConfigOptions.lineBA.get());
 		radius = ConfigOptions.lineWidth.get().floatValue() / 2;

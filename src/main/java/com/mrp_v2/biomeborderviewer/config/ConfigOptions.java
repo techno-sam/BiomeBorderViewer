@@ -15,11 +15,14 @@ public class ConfigOptions {
 
 	private static final String translationKey = "mrp_v2.biomeborderviewer.configgui.";
 
-	public enum baseLineHeightTypes {
-		player, terrain, playerThenTerrain, fixed
+	public enum RenderModes {
+		FOLLOW_PLAYER_HEIGHT,
+		MATCH_TERRAIN,
+		FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN,
+		FIXED_HEIGHT
 	}
 
-	public static EnumValue<baseLineHeightTypes> baseLineHeight;
+	public static EnumValue<RenderModes> baseLineHeight;
 
 	public static IntValue lineAR;
 	public static IntValue lineAG;
@@ -46,7 +49,7 @@ public class ConfigOptions {
 
 			baseLineHeight = builder.comment("What the reference point for the border-line height is.")
 					.translation(translationKey + "baseLineHeight")
-					.defineEnum("baseLineHeight", baseLineHeightTypes.terrain);
+					.defineEnum("baseLineHeight", RenderModes.MATCH_TERRAIN);
 
 			lineAR = builder.comment("The red value of the line's color when the 2 biomes have the same temperature.")
 					.translation(translationKey + "lineAR").defineInRange("lineAR", 0, 0, 255);
