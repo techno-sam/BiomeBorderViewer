@@ -67,19 +67,19 @@ public class VisualizeBorders {
 					(float) (player.prevPosY + (tempPlayerPos.y - player.prevPosY) * event.getPartialTicks() + player.getEyeHeight(player.getPose())),
 					(float) (player.prevPosZ + (tempPlayerPos.z - player.prevPosZ) * event.getPartialTicks())
 					);
-			World world = player.getEntityWorld();
 			ArrayList<LineData> lines = new ArrayList<LineData>();
 			ArrayList<CornerData> corners = new ArrayList<CornerData>();
 			for (int x = (int) (playerNetPos.x - viewRange); x <= (int) (playerNetPos.x + viewRange); x++) {
-				for (int z = (int) (playerNetPos.z - viewRange); z <= (int) (playerNetPos.z + viewRange); z++) {
+				
+				for (int z = (int) (playerNetPos.z - viewRange); z <= (int) (playerNetPos.z + viewRange); z+= 2) {
 					if (x % 2 == 0 && z == (int) (playerNetPos.z - viewRange)) {
 						z++;
 					}
 					BlockPos mainPos = new BlockPos(x, 10, z);				
-					Biome mainBiome = world.getBiome(mainPos);
+					Biome mainBiome = player.getEntityWorld().getBiome(mainPos);
 					BlockPos[] neighbors = new BlockPos[] { new BlockPos(x + 1, 10, z), new BlockPos(x - 1, 10, z), new BlockPos(x, 10, z + 1), new BlockPos(x, 10, z - 1) };
 					for (BlockPos neighborPos : neighbors) {
-						Biome neighborBiome = world.getBiome(neighborPos);
+						Biome neighborBiome = player.getEntityWorld().getBiome(neighborPos);
 						if (!neighborBiome.equals(mainBiome)) {
 							CornerData cornerDataA = new CornerData(), cornerDataB = new CornerData();
 							Vector3Float a = Vector3Float.fromBlockPos(mainPos);
@@ -97,8 +97,8 @@ public class VisualizeBorders {
 								cornerDataA.showMinusX = false;
 								cornerDataB.showPlusX = false;
 							}
-							a.y = heightForPos(a.x, a.z, world, playerNetPos);
-							b.y = heightForPos(b.x, b.z, world, playerNetPos);
+							a.y = heightForPos(a.x, a.z, player.getEntityWorld(), playerNetPos);
+							b.y = heightForPos(b.x, b.z, player.getEntityWorld(), playerNetPos);
 							cornerDataA.pos = a.roundedXAndZ();
 							cornerDataB.pos = b.roundedXAndZ();
 							LineData lineData = new LineData(a, b);
@@ -106,6 +106,7 @@ public class VisualizeBorders {
 							cornerDataA.color = lineData.color;
 							cornerDataB.color = lineData.color;
 							if (!lines.contains(lineData)) lines.add(lineData);
+							else LogManager.getLogger().debug("line data was a duplicate");
 							if (!corners.contains(cornerDataA)) corners.add(cornerDataA);
 							else corners.get(corners.indexOf(cornerDataA)).ignoreSides(cornerDataA);
 							if (!corners.contains(cornerDataB)) corners.add(cornerDataB);
