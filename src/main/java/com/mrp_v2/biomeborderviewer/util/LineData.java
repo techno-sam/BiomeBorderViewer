@@ -1,15 +1,15 @@
 package com.mrp_v2.biomeborderviewer.util;
 
 public class LineData {
-	public Vector3Float a, b;
+	public Int2Float1Combo a, b;
 	public Color color;
 
-	public LineData(Vector3Float a, Vector3Float b) {
+	public LineData(Int2Float1Combo a, Int2Float1Combo b) {
 		this.a = a;
 		this.b = b;
 	}
 
-	public LineData(Vector3Float a, Vector3Float b, Color color) {
+	public LineData(Int2Float1Combo a, Int2Float1Combo b, Color color) {
 		this(a, b);
 		this.color = color;
 	}

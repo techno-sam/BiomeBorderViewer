@@ -1,7 +1,7 @@
 package com.mrp_v2.biomeborderviewer.util;
 
 public class CornerData {
-	public Vector3Float pos;
+	public Int2Float1Combo pos;
 	public Color color;
 	
 	public boolean showPlusX = true, showMinusX = true, showPlusZ = true, showMinusZ = true;
@@ -10,7 +10,7 @@ public class CornerData {
 		this(null, null);
 	}
 
-	public CornerData(Vector3Float position, Color color) {
+	public CornerData(Int2Float1Combo position, Color color) {
 		this.pos = position;
 		this.color = color;
 	}

@@ -10,8 +10,9 @@ import com.mrp_v2.biomeborderviewer.config.ConfigOptions;
 import com.mrp_v2.biomeborderviewer.config.ConfigOptions.RenderModes;
 import com.mrp_v2.biomeborderviewer.util.Color;
 import com.mrp_v2.biomeborderviewer.util.CornerData;
+import com.mrp_v2.biomeborderviewer.util.Float3;
+import com.mrp_v2.biomeborderviewer.util.Int2Float1Combo;
 import com.mrp_v2.biomeborderviewer.util.LineData;
-import com.mrp_v2.biomeborderviewer.util.Vector3Float;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Matrix4f;
@@ -59,9 +60,8 @@ public class VisualizeBorders {
 			@SuppressWarnings("resource")
 			PlayerEntity player = Minecraft.getInstance().player;
 			//prepare calculations
-			Vector3Float playerNetPos = new Vector3Float();
 			Vec3d tempPlayerPos = player.getPositionVec();
-			playerNetPos = new Vector3Float(
+			Float3 playerNetPos = new Float3(
 					(float) (player.prevPosX + (tempPlayerPos.x - player.prevPosX) * event.getPartialTicks()),
 					(float) (player.prevPosY + (tempPlayerPos.y - player.prevPosY) * event.getPartialTicks() + player.getEyeHeight(player.getPose())),
 					(float) (player.prevPosZ + (tempPlayerPos.z - player.prevPosZ) * event.getPartialTicks())
@@ -83,8 +83,8 @@ public class VisualizeBorders {
 					for (BlockPos neighborPos : neighbors) {
 						Biome neighborBiome = player.getEntityWorld().getBiome(neighborPos);
 						if (!neighborBiome.equals(mainBiome)) {
-							Vector3Float a = Vector3Float.fromBlockPos(mainPos);
-							Vector3Float b = Vector3Float.fromBlockPos(neighborPos);
+							Int2Float1Combo a = new Int2Float1Combo(mainPos);
+							Int2Float1Combo b = new Int2Float1Combo(neighborPos);
 							if (a.x != b.x) {// if they have the same z and different x
 								a.z += 1;
 								if (a.x > b.x) b.x += 1;
@@ -109,8 +109,8 @@ public class VisualizeBorders {
 									cornerDataA.showMinusX = false;
 									cornerDataB.showPlusX = false;
 								}
-								cornerDataA.pos = a.roundedXAndZ();
-								cornerDataB.pos = b.roundedXAndZ();
+								cornerDataA.pos = a;
+								cornerDataB.pos = b;
 								cornerDataA.color = lineData.color;
 								cornerDataB.color = lineData.color;
 								drawLine(lineData, matrix, builder);
@@ -265,7 +265,7 @@ public class VisualizeBorders {
 		}
 	}
 
-	private static float heightForPos(float x, float z, World world, Vector3Float playerPos) {
+	private static float heightForPos(float x, float z, World world, Float3 playerPos) {
 		switch (renderMode) {
 		case FIXED_HEIGHT:
 			return (float) fixedHeight;
@@ -283,7 +283,7 @@ public class VisualizeBorders {
 		}
 	}
 
-	private static float playerBasedHeight(Vector3Float playerPos) {
+	private static float playerBasedHeight(Float3 playerPos) {
 		float height = (float) (playerPos.y + playerHeightOffset);
 		if (height < 0) return 0;
 		if (height > 256) return 256;
