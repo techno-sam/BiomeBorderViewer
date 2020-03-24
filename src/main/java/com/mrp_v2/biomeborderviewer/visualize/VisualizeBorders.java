@@ -74,7 +74,6 @@ public class VisualizeBorders {
 			Matrix4f matrix = event.getMatrixStack().getLast().getMatrix();
 			//draw
 			for (int x = (int) (playerNetPos.x - viewRange); x <= (int) (playerNetPos.x + viewRange); x++) {
-				
 				for (int z = (int) (playerNetPos.z - viewRange); z <= (int) (playerNetPos.z + viewRange); z+= 2) {
 					if (x % 2 == 0 && z == (int) (playerNetPos.z - viewRange)) z++;
 					BlockPos mainPos = new BlockPos(x, 10, z);				
