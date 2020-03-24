@@ -4,7 +4,7 @@ issueTrackerURL="https://www.curseforge.com/minecraft/mc-mods/biome-border-viewe
 logoFile="BiomeBorderViewerLogo.png"
 [[mods]]
 modId="biomeborderviewer"
-version="1.15.2-3.0.0.0"
+version="1.15.2-3.0.1.0"
 displayName="Biome Border Viewer"
 updateJSONURL="https://raw.githubusercontent.com/mrp-v2/ModUpdateFiles/master/BiomeBorderViewer.json"
 displayURL="https://www.curseforge.com/minecraft/mc-mods/biome-border-viewer"
