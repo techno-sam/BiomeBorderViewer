@@ -84,7 +84,7 @@ public class ConfigOptions {
 					.translation(translationKey + "lineBA").defineInRange("lineBA", 255, 0, 255);
 
 			playerHeightOffset = builder
-					.comment("The height offset from the player's feet that the lines are drawn at.")
+					.comment("The height offset from the player's eyes that the lines are drawn at.")
 					.translation(translationKey + "playerHeightOffset")
 					.defineInRange("playerHeightOffset", 1.0, -256.0, 256.0);
 
