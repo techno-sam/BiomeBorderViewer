@@ -70,11 +70,11 @@ public class ConfigOptions {
 					.translation(translationKey + "lineAA").defineInRange("lineAA", 255, 0, 255);
 
 			lineBR = builder.comment("The red value of the line's color when the 2 biomes have different temperatures.")
-					.translation(translationKey + "lineBR").defineInRange("lineBR", 0, 0, 255);
+					.translation(translationKey + "lineBR").defineInRange("lineBR", 255, 0, 255);
 
 			lineBG = builder
 					.comment("The green value of the line's color when the 2 biomes have different temperatures.")
-					.translation(translationKey + "lineBG").defineInRange("lineBG", 255, 0, 255);
+					.translation(translationKey + "lineBG").defineInRange("lineBG", 0, 0, 255);
 
 			lineBB = builder
 					.comment("The blue value of the line's color when the 2 biomes have different temperatures.")

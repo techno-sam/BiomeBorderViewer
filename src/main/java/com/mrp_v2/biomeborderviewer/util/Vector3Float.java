@@ -12,12 +12,6 @@ public class Vector3Float {
 	}
 
 	public Vector3Float() {
-		this(0, 0, 0);
-	}
-	
-	public void roundXAndZ() {
-		x = Math.round(x);
-		z = Math.round(z);
 	}
 	
 	public Vector3Float roundedXAndZ() {
@@ -37,9 +31,6 @@ public class Vector3Float {
 
 	/**
 	 * Ignores the y value
-	 * 
-	 * @param vector
-	 * @return
 	 */
 	public boolean equals(Vector3Float vector) {
 		return x == vector.x && z == vector.z;

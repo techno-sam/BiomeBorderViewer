@@ -50,7 +50,7 @@ public class VisualizeBorders {
 	public static void keyPressed(KeyInputEvent event) {
 		if (BiomeBorderViewer.showBorders.isPressed()) {
 			showingBorders = !showingBorders;
-			LogManager.getLogger().debug("Show Borders hotkey pressed. showingBorders is now " + showingBorders);
+			LogManager.getLogger().debug("Show Borders hotkey pressed. showingBorders is now " + showingBorders + ", render mode = " + renderMode.toString());
 		}
 	}
 
@@ -62,10 +62,11 @@ public class VisualizeBorders {
 			// calculate lines and corners
 			Vector3Float playerNetPos = new Vector3Float();
 			Vec3d tempPlayerPos = player.getPositionVec();
-			playerNetPos.x = (float) (player.prevPosX + (tempPlayerPos.x - player.prevPosX) * event.getPartialTicks());
-			playerNetPos.y = (float) (player.prevPosY + (tempPlayerPos.y - player.prevPosY) * event.getPartialTicks());
-			playerNetPos.z = (float) (player.prevPosZ + (tempPlayerPos.z - player.prevPosZ) * event.getPartialTicks());
-			playerNetPos.y += player.getEyeHeight(player.getPose());
+			playerNetPos = new Vector3Float(
+					(float) (player.prevPosX + (tempPlayerPos.x - player.prevPosX) * event.getPartialTicks()),
+					(float) (player.prevPosY + (tempPlayerPos.y - player.prevPosY) * event.getPartialTicks() + player.getEyeHeight(player.getPose())),
+					(float) (player.prevPosZ + (tempPlayerPos.z - player.prevPosZ) * event.getPartialTicks())
+					);
 			World world = player.getEntityWorld();
 			ArrayList<LineData> lines = new ArrayList<LineData>();
 			ArrayList<CornerData> corners = new ArrayList<CornerData>();
@@ -76,61 +77,105 @@ public class VisualizeBorders {
 					}
 					BlockPos mainPos = new BlockPos(x, 10, z);				
 					Biome mainBiome = world.getBiome(mainPos);
-					BlockPos[] neighbors = new BlockPos[] { new BlockPos(x + 1, 10, z), new BlockPos(x - 1, 10, z),
-							new BlockPos(x, 10, z + 1), new BlockPos(x, 10, z - 1) };
+					BlockPos[] neighbors = new BlockPos[] { new BlockPos(x + 1, 10, z), new BlockPos(x - 1, 10, z), new BlockPos(x, 10, z + 1), new BlockPos(x, 10, z - 1) };
 					for (BlockPos neighborPos : neighbors) {
 						Biome neighborBiome = world.getBiome(neighborPos);
 						if (!neighborBiome.equals(mainBiome)) {
-							LineData lineData = new LineData(Vector3Float.fromBlockPos(mainPos),
-									Vector3Float.fromBlockPos(neighborPos));
 							CornerData cornerDataA = new CornerData(), cornerDataB = new CornerData();
-							if (lineData.a.x != lineData.b.x) {// if they have the same z and different x
-								lineData.a.z += 1 - radius;
-								lineData.b.z += radius;
-								if (lineData.a.x > lineData.b.x) {
-									lineData.b.x += 1;
-								} else {
-									lineData.a.x += 1;
-								}
+							Vector3Float a = Vector3Float.fromBlockPos(mainPos);
+							Vector3Float b = Vector3Float.fromBlockPos(neighborPos);
+							if (a.x != b.x) {// if they have the same z and different x
+								a.z += 1 - radius;
+								b.z += radius;
+								if (a.x > b.x) b.x += 1;
+								else a.x += 1;
 								cornerDataA.showMinusZ = false;
 								cornerDataB.showPlusZ = false;
 							} else {// if they have the same x and different z
-								lineData.a.x += 1 - radius;
-								lineData.b.x += radius;
-								if (lineData.a.z > lineData.b.z) {
-									lineData.b.z += 1;
-								} else {
-									lineData.a.z += 1;
-								}
+								a.x += 1 - radius;
+								b.x += radius;
+								if (a.z > b.z) b.z += 1;
+								else a.z += 1;
 								cornerDataA.showMinusX = false;
 								cornerDataB.showPlusX = false;
 							}
-							lineData.a.y = heightForPos(lineData.a.x, lineData.a.z, world, playerNetPos);
-							lineData.b.y = heightForPos(lineData.b.x, lineData.b.z, world, playerNetPos);
-							cornerDataA.pos = lineData.a.roundedXAndZ();
-							cornerDataB.pos = lineData.b.roundedXAndZ();
+							a.y = heightForPos(a.x, a.z, world, playerNetPos);
+							b.y = heightForPos(b.x, b.z, world, playerNetPos);
+							cornerDataA.pos = a.roundedXAndZ();
+							cornerDataB.pos = b.roundedXAndZ();
+							LineData lineData = new LineData(a, b);
 							lineData.color = borderColor(mainBiome, neighborBiome);
 							cornerDataA.color = lineData.color;
 							cornerDataB.color = lineData.color;
-							if (!lines.contains(lineData)) {
-								lines.add(lineData);
-							}
-							if (!corners.contains(cornerDataA)) {
-								corners.add(cornerDataA);
-							} else {
-								corners.get(corners.indexOf(cornerDataA)).ignoreSides(cornerDataA);
-							}
-							if (!corners.contains(cornerDataB)) {
-								corners.add(cornerDataB);
-							} else {
-								corners.get(corners.indexOf(cornerDataB)).ignoreSides(cornerDataB);
-							}
+							if (!lines.contains(lineData)) lines.add(lineData);
+							if (!corners.contains(cornerDataA)) corners.add(cornerDataA);
+							else corners.get(corners.indexOf(cornerDataA)).ignoreSides(cornerDataA);
+							if (!corners.contains(cornerDataB)) corners.add(cornerDataB);
+							else corners.get(corners.indexOf(cornerDataB)).ignoreSides(cornerDataB);
 						}
 					}
 				}
 			}
 			// draw lines and corners
-			draw(playerNetPos, lines, corners, event.getMatrixStack());
+			switch (renderMode) {
+			case WALL:
+				draw(playerNetPos, lines, event.getMatrixStack());
+				break;
+			default:
+				draw(playerNetPos, lines, corners, event.getMatrixStack());
+				break;
+			}
+		}
+	}
+	
+	private static void draw(Vector3Float playerPos, ArrayList<LineData> lines, MatrixStack matrixStack) {
+		IRenderTypeBuffer.Impl buffer = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource();
+		RenderType myRenderType = RenderType.getLightning();
+		IVertexBuilder builder = buffer.getBuffer(myRenderType);
+		
+		matrixStack.push();
+		matrixStack.translate(-playerPos.x, -playerPos.y, -playerPos.z);
+		Matrix4f matrix = matrixStack.getLast().getMatrix();
+		
+		drawWalls(lines, matrix, builder);
+
+		matrixStack.pop();
+		buffer.finish(myRenderType);
+	}
+	
+	private static void drawWalls(ArrayList<LineData> walls, Matrix4f matrix, IVertexBuilder builder) {
+		for (LineData ld : walls) {
+			drawWall(ld, matrix, builder);
+		}
+	}
+	
+	private static final int minWallHeight = 0;
+	private static final int maxWallHeight = 255;
+	private static final float wallOffsetDivisor = 0xFFF; 
+	
+	private static void drawWall(LineData lineData, Matrix4f matrix, IVertexBuilder builder) {
+		if (lineData.a.x == lineData.b.x) {
+			// -x side
+			builder.pos(matrix, lineData.a.x - (1 / wallOffsetDivisor) + 1, minWallHeight, lineData.a.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x - (1 / wallOffsetDivisor), minWallHeight, lineData.b.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x - (1 / wallOffsetDivisor), maxWallHeight, lineData.b.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.a.x - (1 / wallOffsetDivisor) + 1, maxWallHeight, lineData.a.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			// +x side
+			builder.pos(matrix, lineData.a.x + (1 / wallOffsetDivisor) + 1, maxWallHeight, lineData.a.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x + (1 / wallOffsetDivisor), maxWallHeight, lineData.b.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x + (1 / wallOffsetDivisor), minWallHeight, lineData.b.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.a.x + (1 / wallOffsetDivisor) + 1, minWallHeight, lineData.a.z).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();			
+		} else {
+			// -z side
+			builder.pos(matrix, lineData.a.x, minWallHeight, lineData.a.z - (1 / wallOffsetDivisor) + 1).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x, minWallHeight, lineData.b.z - (1 / wallOffsetDivisor)).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x, maxWallHeight, lineData.b.z - (1 / wallOffsetDivisor)).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.a.x, maxWallHeight, lineData.a.z - (1 / wallOffsetDivisor) + 1).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			// +z side
+			builder.pos(matrix, lineData.a.x, maxWallHeight, lineData.a.z + (1 / wallOffsetDivisor) + 1).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x, maxWallHeight, lineData.b.z + (1 / wallOffsetDivisor)).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.b.x, minWallHeight, lineData.b.z + (1 / wallOffsetDivisor)).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
+			builder.pos(matrix, lineData.a.x, minWallHeight, lineData.a.z + (1 / wallOffsetDivisor) + 1).color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();			
 		}
 	}
 
@@ -149,7 +194,7 @@ public class VisualizeBorders {
 		matrixStack.pop();
 		buffer.finish(myRenderType);
 	}
-
+	
 	private static void drawLines(ArrayList<LineData> lines, Matrix4f matrix, IVertexBuilder builder) {
 		for (LineData lineData : lines) {
 			drawLine(lineData, matrix, builder);
@@ -209,25 +254,29 @@ public class VisualizeBorders {
 	}
 
 	private static void drawCorner(CornerData cornerData, Matrix4f matrix, IVertexBuilder builder) {
-		if (cornerData.showPlusX) {// +x side
+		if (cornerData.showPlusX) {
+			// +x side
 			builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y - radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 			builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y + radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 			builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y + radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 			builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y - radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 		}
-		if (cornerData.showMinusX) {// -x side
+		if (cornerData.showMinusX) {
+			// -x side
 			builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y - radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 			builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y + radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 			builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y + radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 			builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y - radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 		}
-		if (cornerData.showPlusZ) {// +z side
+		if (cornerData.showPlusZ) {
+			// +z side
 			builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y - radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 			builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y + radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 			builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y + radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 			builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y - radius, cornerData.pos.z + radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 		}
-		if (cornerData.showMinusZ) {// -z side
+		if (cornerData.showMinusZ) {
+			// -z side
 			builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y - radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 			builder.pos(matrix, cornerData.pos.x - radius, cornerData.pos.y + radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 			builder.pos(matrix, cornerData.pos.x + radius, cornerData.pos.y + radius, cornerData.pos.z - radius).color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
@@ -246,7 +295,7 @@ public class VisualizeBorders {
 	}
 
 	private static Color borderColor(Biome a, Biome b) {
-		if (Similar(a, b)) {
+		if (similarTemperature(a, b)) {
 			return colorA;
 		} else {
 			return colorB;
@@ -254,40 +303,28 @@ public class VisualizeBorders {
 	}
 
 	private static float heightForPos(float x, float z, World world, Vector3Float playerPos) {
-		double height = 0;
 		switch (renderMode) {
 		case FIXED_HEIGHT:
-			height = fixedHeight;
-			break;
+			return (float) fixedHeight;
 		case FOLLOW_PLAYER_HEIGHT:
-			height = playerBasedHeight(playerPos);
-			break;
+			return playerBasedHeight(playerPos);
 		case FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN:
-			double playerBasedHeight = playerBasedHeight(playerPos);
-			double terrainBasedHeight = terrainBasedHeight(x, z, world);
-			if (playerBasedHeight >= terrainBasedHeight) {
-				height = playerBasedHeight;
-			} else {
-				height = terrainBasedHeight;
-			}
-			break;
+			float playerBasedHeight = playerBasedHeight(playerPos);
+			float terrainBasedHeight = terrainBasedHeight(x, z, world);
+			if (playerBasedHeight >= terrainBasedHeight) return playerBasedHeight;
+			else return terrainBasedHeight;
 		case MATCH_TERRAIN:
-			height = terrainBasedHeight(x, z, world);
-			break;
+			return terrainBasedHeight(x, z, world);
 		default:
-			height = 64.0;
-			break;
+			return 64;
 		}
-		if (height < 0) {
-			height = 0;
-		} else if (height > 256) {
-			height = 256;
-		}
-		return (float) height;
 	}
 
 	private static float playerBasedHeight(Vector3Float playerPos) {
-		return (float) (playerPos.y + playerHeightOffset);
+		float height = (float) (playerPos.y + playerHeightOffset);
+		if (height < 0) return 0;
+		if (height > 256) return 256;
+		return height;
 	}
 
 	private static float terrainBasedHeight(float xf, float zf, World world) {
@@ -305,7 +342,7 @@ public class VisualizeBorders {
 		return (float) (height + terrainHeightOffset);
 	}
 
-	private static boolean Similar(Biome a, Biome b) {
+	private static boolean similarTemperature(Biome a, Biome b) {
 		return a.getTempCategory() == b.getTempCategory();
 	}
 

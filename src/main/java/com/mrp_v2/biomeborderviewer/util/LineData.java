@@ -5,12 +5,12 @@ public class LineData {
 	public Color color;
 
 	public LineData(Vector3Float a, Vector3Float b) {
-		this(a, b, null);
+		this.a = a;
+		this.b = b;
 	}
 
 	public LineData(Vector3Float a, Vector3Float b, Color color) {
-		this.a = a;
-		this.b = b;
+		this(a, b);
 		this.color = color;
 	}
 
