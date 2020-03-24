@@ -22,7 +22,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.Heightmap.Type;
+import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.client.event.InputEvent.KeyInputEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -64,8 +64,7 @@ public class VisualizeBorders {
 			Float3 playerNetPos = new Float3(
 					(float) (player.prevPosX + (tempPlayerPos.x - player.prevPosX) * event.getPartialTicks()),
 					(float) (player.prevPosY + (tempPlayerPos.y - player.prevPosY) * event.getPartialTicks() + player.getEyeHeight(player.getPose())),
-					(float) (player.prevPosZ + (tempPlayerPos.z - player.prevPosZ) * event.getPartialTicks())
-					);
+					(float) (player.prevPosZ + (tempPlayerPos.z - player.prevPosZ) * event.getPartialTicks()));
 			ArrayList<CornerData> corners = new ArrayList<CornerData>();
 			//prepare to draw
 			IVertexBuilder builder = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource().getBuffer(RenderType.getLightning());
@@ -135,7 +134,7 @@ public class VisualizeBorders {
 
 	private static final int minWallHeight = 0;
 	private static final int maxWallHeight = 255;
-	private static final float wallOffsetDivisor = 0b1111111111;
+	private static final float wallOffsetDivisor = 0b111111111;
 	
 	private static void drawWall(LineData lineData, Matrix4f matrix, IVertexBuilder builder) {
 		if (lineData.a.x == lineData.b.x) {
@@ -295,7 +294,7 @@ public class VisualizeBorders {
 		float height = 0;
 		for (int tempX = x - 1; tempX <= x; tempX++) {
 			for (int tempZ = z - 1; tempZ <= z; tempZ++) {
-				int y = world.getHeight(Type.WORLD_SURFACE, tempX, tempZ);
+				int y = world.getHeight(Heightmap.Type.MOTION_BLOCKING, tempX, tempZ);
 				if (y > height) {
 					height = y;
 				}
@@ -314,7 +313,7 @@ public class VisualizeBorders {
 		playerHeightOffset = ConfigOptions.playerHeightOffset.get();
 		terrainHeightOffset = ConfigOptions.terrainHeightOffset.get();
 		fixedHeight = ConfigOptions.fixedHeight.get();
-		renderMode = ConfigOptions.baseLineHeight.get();
+		renderMode = ConfigOptions.renderMode.get();
 		colorA = new Color(ConfigOptions.lineAR.get(), ConfigOptions.lineAG.get(), ConfigOptions.lineAB.get(), ConfigOptions.lineAA.get());
 		colorB = new Color(ConfigOptions.lineBR.get(), ConfigOptions.lineBG.get(), ConfigOptions.lineBB.get(), ConfigOptions.lineBA.get());
 		radius = ConfigOptions.lineWidth.get().floatValue() / 2;
