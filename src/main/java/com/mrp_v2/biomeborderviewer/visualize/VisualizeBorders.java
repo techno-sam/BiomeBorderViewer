@@ -14,7 +14,6 @@ import com.mrp_v2.biomeborderviewer.util.LineData;
 import com.mrp_v2.biomeborderviewer.util.Vector3Float;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.entity.player.PlayerEntity;
