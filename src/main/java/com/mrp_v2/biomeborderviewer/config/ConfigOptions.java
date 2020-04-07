@@ -54,7 +54,7 @@ public class ConfigOptions {
 							+ "\n MATCH_TERRAIN - The line follows the height of the highest block + terrainHeightOffset"
 							+ "\n FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN - The line follows the player height, unless the terrain height is higher."
 							+ "\n FIXED_HEIGHT - The height of the line is fixed at fixedHeight"
-							+ "\n WALL - Makes a wall going from y 0-255. It is recommened to make the line more transparent (lower alpha value) in this scenario.")
+							+ "\n WALL - Makes a wall going from y 0-255. It is recommened to make the line more transparent (decrease the alpha value) in this scenario.")
 					.translation(translationKey + "renderMode")
 					.defineEnum("renderMode", RenderModes.MATCH_TERRAIN);
 
@@ -72,7 +72,7 @@ public class ConfigOptions {
 			
 			lineAA = builder
 					.comment("The alpha (transparency) value of the line's color when the 2 biomes have the same temperature.")
-					.translation(translationKey + "lineAA").defineInRange("lineAA", 255, 0, 255);
+					.translation(translationKey + "lineAA").defineInRange("lineAA", 128, 0, 255);
 
 			lineBR = builder
 					.comment("The red value of the line's color when the 2 biomes have different temperatures.")
@@ -88,7 +88,7 @@ public class ConfigOptions {
 			
 			lineBA = builder
 					.comment("The alpha (transparency) value of the line's color when the 2 biomes have the same temperature.")
-					.translation(translationKey + "lineBA").defineInRange("lineBA", 255, 0, 255);
+					.translation(translationKey + "lineBA").defineInRange("lineBA", 128, 0, 255);
 
 			playerHeightOffset = builder
 					.comment("The height offset from the player's eyes that the lines are drawn at.")
@@ -111,7 +111,7 @@ public class ConfigOptions {
 			viewRange = builder
 					.comment("How far from the player in all directions to show the border.\n"
 							+ "Makes a square around the player.\n" + "!High values increase lag alot!")
-					.translation(translationKey + "viewRange").defineInRange("viewRange", 16, 2, 128);
+					.translation(translationKey + "viewRange").defineInRange("viewRange", 16, 2, 64);
 		}
 	}
 
