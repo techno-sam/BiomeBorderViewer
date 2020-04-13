@@ -1,7 +1,9 @@
 package com.mrp_v2.biomeborderviewer.util;
 
+import net.minecraft.util.math.Vec3d;
+
 public class CornerData {
-	public Int2Float1Combo pos;
+	public Vec3d pos;
 	public Color color;
 	
 	public boolean showPlusX = true, showMinusX = true, showPlusZ = true, showMinusZ = true;
@@ -10,7 +12,7 @@ public class CornerData {
 		this(null, null);
 	}
 
-	public CornerData(Int2Float1Combo position, Color color) {
+	public CornerData(Vec3d position, Color color) {
 		this.pos = position;
 		this.color = color;
 	}
@@ -36,7 +38,7 @@ public class CornerData {
 		return false;
 	}
 	
-	public void ignoreSides(CornerData other) {
+	public void combine(CornerData other) {
 		if (other.showMinusX == false) {
 			showMinusX = false;
 		}
