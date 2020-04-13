@@ -34,7 +34,7 @@ public class ConfigOptions {
 	public static IntValue lineBG;
 	public static IntValue lineBB;
 	public static IntValue lineBA;
-
+	
 	public static DoubleValue playerHeightOffset;
 	public static DoubleValue terrainHeightOffset;
 	public static DoubleValue fixedHeight;
