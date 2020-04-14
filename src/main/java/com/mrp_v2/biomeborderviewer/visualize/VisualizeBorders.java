@@ -59,6 +59,16 @@ public class VisualizeBorders {
 	public static void chunkUnload(ChunkEvent.Unload event) {
 		
 	}
+	
+	private static void removeChunkDatas(ChunkPos pos) {
+		if (calculatedLineDatas.containsKey(pos)) calculatedLineDatas.remove(pos);
+		if (calculatedCornerDatas.containsKey(pos)) calculatedCornerDatas.remove(pos);
+	}
+	
+	private static void addChunkDatas(ChunkPos pos, ArrayList<LineData> lines, ArrayList<CornerData> corners) {
+		calculatedLineDatas.put(pos, lines);
+		calculatedCornerDatas.put(pos, corners);
+	}
 
 	@SubscribeEvent
 	public static void keyPressed(KeyInputEvent event) {
