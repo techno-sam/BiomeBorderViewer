@@ -16,7 +16,7 @@ public class ConfigOptions {
 	private static final String translationKey = "mrp_v2.biomeborderviewer.configgui.";
 
 	public enum RenderModes {
-		FOLLOW_PLAYER_HEIGHT, MATCH_TERRAIN, FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN, FIXED_HEIGHT, WALL
+		LINE_FOLLOW_PLAYER_HEIGHT, LINE_MATCH_TERRAIN, LINE_FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN, LINE_FIXED_HEIGHT, WALL
 	}
 
 	public static EnumValue<RenderModes> renderMode;
@@ -45,12 +45,12 @@ public class ConfigOptions {
 			builder.comment("biome border viewer client settings").push("client");
 
 			renderMode = builder.comment("What the reference point for the border-line height is."
-					+ "\n FOLLOW_PLAYER_HEIGHT - The line follows the height of the player + playerHeightOffset"
-					+ "\n MATCH_TERRAIN - The line follows the height of the highest block + terrainHeightOffset"
-					+ "\n FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN - The line follows the player height, unless the terrain height is higher."
-					+ "\n FIXED_HEIGHT - The height of the line is fixed at fixedHeight"
+					+ "\n LINE_FOLLOW_PLAYER_HEIGHT - The line follows the height of the player + playerHeightOffset"
+					+ "\n LINE_MATCH_TERRAIN - The line follows the height of the highest block + terrainHeightOffset"
+					+ "\n LINE_FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN - The line follows the player height, unless the terrain height is higher."
+					+ "\n LINE_FIXED_HEIGHT - The height of the line is fixed at fixedHeight"
 					+ "\n WALL - Makes a wall going from y 0-255. It is recommened to make the line more transparent (decrease the alpha value) in this scenario.")
-					.translation(translationKey + "renderMode").defineEnum("renderMode", RenderModes.MATCH_TERRAIN);
+					.translation(translationKey + "renderMode").defineEnum("renderMode", RenderModes.WALL);
 
 			lineAR = builder.comment("The red value of the line's color when the 2 biomes have the same temperature.")
 					.translation(translationKey + "lineAR").defineInRange("lineAR", 0, 0, 255);

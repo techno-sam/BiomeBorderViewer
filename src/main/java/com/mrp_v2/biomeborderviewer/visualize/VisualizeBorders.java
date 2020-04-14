@@ -415,18 +415,18 @@ public class VisualizeBorders {
 
 	private static float heightForPos(double x, double z, IWorld world, Vec3d playerPos) {
 		switch (renderMode) {
-		case FIXED_HEIGHT:
+		case LINE_FIXED_HEIGHT:
 			return (float) fixedHeight;
-		case FOLLOW_PLAYER_HEIGHT:
+		case LINE_FOLLOW_PLAYER_HEIGHT:
 			return playerBasedHeight(playerPos);
-		case FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN:
+		case LINE_FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN:
 			float playerBasedHeight = playerBasedHeight(playerPos);
 			float terrainBasedHeight = terrainBasedHeight(x, z, world);
 			if (playerBasedHeight >= terrainBasedHeight)
 				return playerBasedHeight;
 			else
 				return terrainBasedHeight;
-		case MATCH_TERRAIN:
+		case LINE_MATCH_TERRAIN:
 			return terrainBasedHeight(x, z, world);
 		default:
 			return 64;
