@@ -1,6 +1,7 @@
 package com.mrp_v2.biomeborderviewer.visualize;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.apache.logging.log4j.LogManager;
 
@@ -17,6 +18,7 @@ import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -43,6 +45,9 @@ public class VisualizeBorders {
 	private static Color colorB;
 
 	private static ConfigOptions.RenderModes renderMode;
+	
+	private static HashMap<ChunkPos, ArrayList<LineData>> calculatedLineDatas = new HashMap<ChunkPos, ArrayList<LineData>>();
+	private static HashMap<ChunkPos, ArrayList<CornerData>> calculatedCornerDatas = new HashMap<ChunkPos, ArrayList<CornerData>>();
 
 	@SubscribeEvent
 	public static void keyPressed(KeyInputEvent event) {
