@@ -13,6 +13,7 @@ import com.mrp_v2.biomeborderviewer.util.ChunkBiomeBorderData;
 import com.mrp_v2.biomeborderviewer.util.Color;
 import com.mrp_v2.biomeborderviewer.util.CornerData;
 import com.mrp_v2.biomeborderviewer.util.LineData;
+import com.mrp_v2.biomeborderviewer.util.QueuedChunkData;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Matrix4f;
@@ -22,7 +23,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.Heightmap;
@@ -37,7 +37,7 @@ public class VisualizeBorders {
 
 	private static boolean showingBorders;
 
-	private static int viewRange;
+	//private static int viewRange;
 
 	private static double playerHeightOffset;
 	private static double terrainHeightOffset;
@@ -52,16 +52,22 @@ public class VisualizeBorders {
 
 	private static HashMap<ChunkPos, ChunkBiomeBorderData> calculatedChunks = new HashMap<ChunkPos, ChunkBiomeBorderData>();
 
+	private static HashMap<ChunkPos, QueuedChunkData> queuedChunks = new HashMap<ChunkPos, QueuedChunkData>();
+
 	@SubscribeEvent
 	public static void chunkLoad(ChunkEvent.Load event) {
-		if (event.getWorld().isAreaLoaded(event.getChunk().getPos().asBlockPos().add(7, 0, 7), 10)) {
-			calculatedChunks.put(event.getChunk().getPos(), calculateDataForChunk(event.getChunk(), event.getWorld()));
+		queuedChunks.put(event.getChunk().getPos(), new QueuedChunkData(event.getChunk(), event.getWorld()));
+		for (QueuedChunkData data : queuedChunks.values()) {
+			if (data.getWorld().isAreaLoaded(data.getChunk().getPos().asBlockPos().add(7, 0, 7), 10)) {
+				calculatedChunks.put(data.getChunk().getPos(), calculateDataForChunk(data.getChunk(), data.getWorld()));
+			}
 		}
 	}
 
 	@SubscribeEvent
 	public static void chunkUnload(ChunkEvent.Unload event) {
 		calculatedChunks.remove(event.getChunk().getPos());
+		queuedChunks.remove(event.getChunk().getPos());
 	}
 
 	@SubscribeEvent
@@ -87,19 +93,20 @@ public class VisualizeBorders {
 			event.getMatrixStack().translate(-playerEyePos.x, -playerEyePos.y, -playerEyePos.z);
 			Matrix4f matrix = event.getMatrixStack().getLast().getMatrix();
 			// draw
-			for (ChunkPos pos : calculatedChunks.keySet()){
+			for (ChunkPos pos : calculatedChunks.keySet()) {
 				for (LineData lineData : calculatedChunks.get(pos).getLines()) {
 					switch (renderMode) {
 					case WALL:
 						drawWall(lineData, matrix, builder);
 						break;
 					default:
-						drawLine(lineData, matrix, builder);
+						drawLine(lineData, matrix, builder, player.getEntityWorld(), playerEyePos);
 						break;
 					}
 				}
 				if (renderMode != RenderModes.WALL) {
-					drawCorners(calculatedChunks.get(pos).getCorners(), matrix, builder);
+					drawCorners(calculatedChunks.get(pos).getCorners(), matrix, builder, player.getEntityWorld(),
+							playerEyePos);
 				}
 			}
 			// end drawing
@@ -155,8 +162,8 @@ public class VisualizeBorders {
 						lineData = new LineData(a, b);
 						lineData.color = borderColor(mainBiome, neighborBiome);
 						lines.add(lineData.clone());
-						cornerDataA = new CornerData();
-						cornerDataB = new CornerData();
+						cornerDataA = new CornerData(a);
+						cornerDataB = new CornerData(b);
 						if (a.x == b.x) {
 							cornerDataA.showMinusZ = false;
 							cornerDataB.showPlusZ = false;
@@ -164,8 +171,6 @@ public class VisualizeBorders {
 							cornerDataA.showMinusX = false;
 							cornerDataB.showPlusX = false;
 						}
-						cornerDataA.pos = a;
-						cornerDataB.pos = b;
 						cornerDataA.color = lineData.color;
 						cornerDataB.color = lineData.color;
 						if (!corners.contains(cornerDataA)) {
@@ -231,208 +236,158 @@ public class VisualizeBorders {
 		}
 	}
 
-	private static void drawLine(LineData lineData, Matrix4f matrix, IVertexBuilder builder) {
+	private static void drawLine(LineData lineData, Matrix4f matrix, IVertexBuilder builder, IWorld world,
+			Vec3d playerPos) {
+		float ay = heightForPos(lineData.a.x, lineData.a.z, world, playerPos);
+		float by = heightForPos(lineData.b.x, lineData.b.z, world, playerPos);
 		if (lineData.a.x == lineData.b.x) {
 			// top
-			builder.pos(matrix, (float) lineData.a.x + radius, (float) lineData.a.y + radius,
-					(float) lineData.a.z - radius)
+			builder.pos(matrix, (float) lineData.a.x + radius, ay + radius, (float) lineData.a.z - radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.b.x + radius, (float) lineData.b.y + radius,
-					(float) lineData.b.z + radius)
+			builder.pos(matrix, (float) lineData.b.x + radius, by + radius, (float) lineData.b.z + radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.b.x - radius, (float) lineData.b.y + radius,
-					(float) lineData.b.z + radius)
+			builder.pos(matrix, (float) lineData.b.x - radius, by + radius, (float) lineData.b.z + radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.a.x - radius, (float) lineData.a.y + radius,
-					(float) lineData.a.z - radius)
+			builder.pos(matrix, (float) lineData.a.x - radius, ay + radius, (float) lineData.a.z - radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
 			// bottom
-			builder.pos(matrix, (float) lineData.a.x - radius, (float) lineData.a.y - radius,
-					(float) lineData.a.z - radius)
+			builder.pos(matrix, (float) lineData.a.x - radius, ay - radius, (float) lineData.a.z - radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.b.x - radius, (float) lineData.b.y - radius,
-					(float) lineData.b.z + radius)
+			builder.pos(matrix, (float) lineData.b.x - radius, by - radius, (float) lineData.b.z + radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.b.x + radius, (float) lineData.b.y - radius,
-					(float) lineData.b.z + radius)
+			builder.pos(matrix, (float) lineData.b.x + radius, by - radius, (float) lineData.b.z + radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.a.x + radius, (float) lineData.a.y - radius,
-					(float) lineData.a.z - radius)
+			builder.pos(matrix, (float) lineData.a.x + radius, ay - radius, (float) lineData.a.z - radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
 			// -x side
-			builder.pos(matrix, (float) lineData.a.x - radius, (float) lineData.a.y + radius,
-					(float) lineData.a.z - radius)
+			builder.pos(matrix, (float) lineData.a.x - radius, ay + radius, (float) lineData.a.z - radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.b.x - radius, (float) lineData.b.y + radius,
-					(float) lineData.b.z + radius)
+			builder.pos(matrix, (float) lineData.b.x - radius, by + radius, (float) lineData.b.z + radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.b.x - radius, (float) lineData.b.y - radius,
-					(float) lineData.b.z + radius)
+			builder.pos(matrix, (float) lineData.b.x - radius, by - radius, (float) lineData.b.z + radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.a.x - radius, (float) lineData.a.y - radius,
-					(float) lineData.a.z - radius)
+			builder.pos(matrix, (float) lineData.a.x - radius, ay - radius, (float) lineData.a.z - radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
 			// +x side
-			builder.pos(matrix, (float) lineData.a.x + radius, (float) lineData.a.y - radius,
-					(float) lineData.a.z - radius)
+			builder.pos(matrix, (float) lineData.a.x + radius, ay - radius, (float) lineData.a.z - radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.b.x + radius, (float) lineData.b.y - radius,
-					(float) lineData.b.z + radius)
+			builder.pos(matrix, (float) lineData.b.x + radius, by - radius, (float) lineData.b.z + radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.b.x + radius, (float) lineData.b.y + radius,
-					(float) lineData.b.z + radius)
+			builder.pos(matrix, (float) lineData.b.x + radius, by + radius, (float) lineData.b.z + radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.a.x + radius, (float) lineData.a.y + radius,
-					(float) lineData.a.z - radius)
+			builder.pos(matrix, (float) lineData.a.x + radius, ay + radius, (float) lineData.a.z - radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
 		} else {
 			// top
-			builder.pos(matrix, (float) lineData.a.x - radius, (float) lineData.a.y + radius,
-					(float) lineData.a.z - radius)
+			builder.pos(matrix, (float) lineData.a.x - radius, ay + radius, (float) lineData.a.z - radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.b.x + radius, (float) lineData.b.y + radius,
-					(float) lineData.b.z - radius)
+			builder.pos(matrix, (float) lineData.b.x + radius, by + radius, (float) lineData.b.z - radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.b.x + radius, (float) lineData.b.y + radius,
-					(float) lineData.b.z + radius)
+			builder.pos(matrix, (float) lineData.b.x + radius, by + radius, (float) lineData.b.z + radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.a.x - radius, (float) lineData.a.y + radius,
-					(float) lineData.a.z + radius)
+			builder.pos(matrix, (float) lineData.a.x - radius, ay + radius, (float) lineData.a.z + radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
 			// bottom
-			builder.pos(matrix, (float) lineData.a.x - radius, (float) lineData.a.y - radius,
-					(float) lineData.a.z + radius)
+			builder.pos(matrix, (float) lineData.a.x - radius, ay - radius, (float) lineData.a.z + radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.b.x + radius, (float) lineData.b.y - radius,
-					(float) lineData.b.z + radius)
+			builder.pos(matrix, (float) lineData.b.x + radius, by - radius, (float) lineData.b.z + radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.b.x + radius, (float) lineData.b.y - radius,
-					(float) lineData.b.z - radius)
+			builder.pos(matrix, (float) lineData.b.x + radius, by - radius, (float) lineData.b.z - radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.a.x - radius, (float) lineData.a.y - radius,
-					(float) lineData.a.z - radius)
+			builder.pos(matrix, (float) lineData.a.x - radius, ay - radius, (float) lineData.a.z - radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
 			// -z side
-			builder.pos(matrix, (float) lineData.a.x - radius, (float) lineData.a.y - radius,
-					(float) lineData.a.z - radius)
+			builder.pos(matrix, (float) lineData.a.x - radius, ay - radius, (float) lineData.a.z - radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.b.x + radius, (float) lineData.b.y - radius,
-					(float) lineData.b.z - radius)
+			builder.pos(matrix, (float) lineData.b.x + radius, by - radius, (float) lineData.b.z - radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.b.x + radius, (float) lineData.b.y + radius,
-					(float) lineData.b.z - radius)
+			builder.pos(matrix, (float) lineData.b.x + radius, by + radius, (float) lineData.b.z - radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.a.x - radius, (float) lineData.a.y + radius,
-					(float) lineData.a.z - radius)
+			builder.pos(matrix, (float) lineData.a.x - radius, ay + radius, (float) lineData.a.z - radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
 			// +z side
-			builder.pos(matrix, (float) lineData.a.x - radius, (float) lineData.a.y + radius,
-					(float) lineData.a.z + radius)
+			builder.pos(matrix, (float) lineData.a.x - radius, ay + radius, (float) lineData.a.z + radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.b.x + radius, (float) lineData.b.y + radius,
-					(float) lineData.b.z + radius)
+			builder.pos(matrix, (float) lineData.b.x + radius, by + radius, (float) lineData.b.z + radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.b.x + radius, (float) lineData.b.y - radius,
-					(float) lineData.b.z + radius)
+			builder.pos(matrix, (float) lineData.b.x + radius, by - radius, (float) lineData.b.z + radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
-			builder.pos(matrix, (float) lineData.a.x - radius, (float) lineData.a.y - radius,
-					(float) lineData.a.z + radius)
+			builder.pos(matrix, (float) lineData.a.x - radius, ay - radius, (float) lineData.a.z + radius)
 					.color(lineData.color.r, lineData.color.g, lineData.color.b, lineData.color.a).endVertex();
 		}
 	}
 
-	private static void drawCorners(ArrayList<CornerData> corners, Matrix4f matrix, IVertexBuilder builder) {
+	private static void drawCorners(ArrayList<CornerData> corners, Matrix4f matrix, IVertexBuilder builder,
+			IWorld world, Vec3d playerPos) {
 		for (CornerData cornerData : corners) {
-			drawCorner(cornerData, matrix, builder);
+			drawCorner(cornerData, matrix, builder, world, playerPos);
 		}
 	}
 
-	private static void drawCorner(CornerData cornerData, Matrix4f matrix, IVertexBuilder builder) {
+	private static void drawCorner(CornerData cornerData, Matrix4f matrix, IVertexBuilder builder, IWorld world,
+			Vec3d playerPos) {
+		float y = heightForPos(cornerData.x, cornerData.z, world, playerPos);
 		if (cornerData.showPlusX) {
 			// +x side
-			builder.pos(matrix, (float) cornerData.pos.x + radius, (float) cornerData.pos.y - radius,
-					(float) cornerData.pos.z - radius)
+			builder.pos(matrix, (float) cornerData.x + radius, y - radius, (float) cornerData.z - radius)
 					.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-			builder.pos(matrix, (float) cornerData.pos.x + radius, (float) cornerData.pos.y + radius,
-					(float) cornerData.pos.z - radius)
+			builder.pos(matrix, (float) cornerData.x + radius, y + radius, (float) cornerData.z - radius)
 					.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-			builder.pos(matrix, (float) cornerData.pos.x + radius, (float) cornerData.pos.y + radius,
-					(float) cornerData.pos.z + radius)
+			builder.pos(matrix, (float) cornerData.x + radius, y + radius, (float) cornerData.z + radius)
 					.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-			builder.pos(matrix, (float) cornerData.pos.x + radius, (float) cornerData.pos.y - radius,
-					(float) cornerData.pos.z + radius)
+			builder.pos(matrix, (float) cornerData.x + radius, y - radius, (float) cornerData.z + radius)
 					.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 		}
 		if (cornerData.showMinusX) {
 			// -x side
-			builder.pos(matrix, (float) cornerData.pos.x - radius, (float) cornerData.pos.y - radius,
-					(float) cornerData.pos.z + radius)
+			builder.pos(matrix, (float) cornerData.x - radius, y - radius, (float) cornerData.z + radius)
 					.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-			builder.pos(matrix, (float) cornerData.pos.x - radius, (float) cornerData.pos.y + radius,
-					(float) cornerData.pos.z + radius)
+			builder.pos(matrix, (float) cornerData.x - radius, y + radius, (float) cornerData.z + radius)
 					.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-			builder.pos(matrix, (float) cornerData.pos.x - radius, (float) cornerData.pos.y + radius,
-					(float) cornerData.pos.z - radius)
+			builder.pos(matrix, (float) cornerData.x - radius, y + radius, (float) cornerData.z - radius)
 					.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-			builder.pos(matrix, (float) cornerData.pos.x - radius, (float) cornerData.pos.y - radius,
-					(float) cornerData.pos.z - radius)
+			builder.pos(matrix, (float) cornerData.x - radius, y - radius, (float) cornerData.z - radius)
 					.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 		}
 		if (cornerData.showPlusZ) {
 			// +z side
-			builder.pos(matrix, (float) cornerData.pos.x + radius, (float) cornerData.pos.y - radius,
-					(float) cornerData.pos.z + radius)
+			builder.pos(matrix, (float) cornerData.x + radius, y - radius, (float) cornerData.z + radius)
 					.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-			builder.pos(matrix, (float) cornerData.pos.x + radius, (float) cornerData.pos.y + radius,
-					(float) cornerData.pos.z + radius)
+			builder.pos(matrix, (float) cornerData.x + radius, y + radius, (float) cornerData.z + radius)
 					.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-			builder.pos(matrix, (float) cornerData.pos.x - radius, (float) cornerData.pos.y + radius,
-					(float) cornerData.pos.z + radius)
+			builder.pos(matrix, (float) cornerData.x - radius, y + radius, (float) cornerData.z + radius)
 					.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-			builder.pos(matrix, (float) cornerData.pos.x - radius, (float) cornerData.pos.y - radius,
-					(float) cornerData.pos.z + radius)
+			builder.pos(matrix, (float) cornerData.x - radius, y - radius, (float) cornerData.z + radius)
 					.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 		}
 		if (cornerData.showMinusZ) {
 			// -z side
-			builder.pos(matrix, (float) cornerData.pos.x - radius, (float) cornerData.pos.y - radius,
-					(float) cornerData.pos.z - radius)
+			builder.pos(matrix, (float) cornerData.x - radius, y - radius, (float) cornerData.z - radius)
 					.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-			builder.pos(matrix, (float) cornerData.pos.x - radius, (float) cornerData.pos.y + radius,
-					(float) cornerData.pos.z - radius)
+			builder.pos(matrix, (float) cornerData.x - radius, y + radius, (float) cornerData.z - radius)
 					.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-			builder.pos(matrix, (float) cornerData.pos.x + radius, (float) cornerData.pos.y + radius,
-					(float) cornerData.pos.z - radius)
+			builder.pos(matrix, (float) cornerData.x + radius, y + radius, (float) cornerData.z - radius)
 					.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-			builder.pos(matrix, (float) cornerData.pos.x + radius, (float) cornerData.pos.y - radius,
-					(float) cornerData.pos.z - radius)
+			builder.pos(matrix, (float) cornerData.x + radius, y - radius, (float) cornerData.z - radius)
 					.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 		}
 		// top
-		builder.pos(matrix, (float) cornerData.pos.x + radius, (float) cornerData.pos.y + radius,
-				(float) cornerData.pos.z + radius)
+		builder.pos(matrix, (float) cornerData.x + radius, y + radius, (float) cornerData.z + radius)
 				.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-		builder.pos(matrix, (float) cornerData.pos.x + radius, (float) cornerData.pos.y + radius,
-				(float) cornerData.pos.z - radius)
+		builder.pos(matrix, (float) cornerData.x + radius, y + radius, (float) cornerData.z - radius)
 				.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-		builder.pos(matrix, (float) cornerData.pos.x - radius, (float) cornerData.pos.y + radius,
-				(float) cornerData.pos.z - radius)
+		builder.pos(matrix, (float) cornerData.x - radius, y + radius, (float) cornerData.z - radius)
 				.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-		builder.pos(matrix, (float) cornerData.pos.x - radius, (float) cornerData.pos.y + radius,
-				(float) cornerData.pos.z + radius)
+		builder.pos(matrix, (float) cornerData.x - radius, y + radius, (float) cornerData.z + radius)
 				.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 		// bottom
-		builder.pos(matrix, (float) cornerData.pos.x - radius, (float) cornerData.pos.y - radius,
-				(float) cornerData.pos.z + radius)
+		builder.pos(matrix, (float) cornerData.x - radius, y - radius, (float) cornerData.z + radius)
 				.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-		builder.pos(matrix, (float) cornerData.pos.x - radius, (float) cornerData.pos.y - radius,
-				(float) cornerData.pos.z - radius)
+		builder.pos(matrix, (float) cornerData.x - radius, y - radius, (float) cornerData.z - radius)
 				.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-		builder.pos(matrix, (float) cornerData.pos.x + radius, (float) cornerData.pos.y - radius,
-				(float) cornerData.pos.z - radius)
+		builder.pos(matrix, (float) cornerData.x + radius, y - radius, (float) cornerData.z - radius)
 				.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
-		builder.pos(matrix, (float) cornerData.pos.x + radius, (float) cornerData.pos.y - radius,
-				(float) cornerData.pos.z + radius)
+		builder.pos(matrix, (float) cornerData.x + radius, y - radius, (float) cornerData.z + radius)
 				.color(cornerData.color.r, cornerData.color.g, cornerData.color.b, cornerData.color.a).endVertex();
 	}
 
@@ -444,7 +399,7 @@ public class VisualizeBorders {
 		}
 	}
 
-	private static float heightForPos(double x, double z, World world, Vec3d playerPos) {
+	private static float heightForPos(double x, double z, IWorld world, Vec3d playerPos) {
 		switch (renderMode) {
 		case FIXED_HEIGHT:
 			return (float) fixedHeight;
@@ -469,7 +424,7 @@ public class VisualizeBorders {
 		return height;
 	}
 
-	private static float terrainBasedHeight(double xf, double zf, World world) {
+	private static float terrainBasedHeight(double xf, double zf, IWorld world) {
 		int x = (int) Math.round(xf);
 		int z = (int) Math.round(zf);
 		float height = 0;
