@@ -445,7 +445,7 @@ public class VisualizeBorders {
 
 	public static void loadConfigSettings() {
 		LogManager.getLogger().debug("Loading config settings for border lines.");
-		viewRange = ConfigOptions.viewRange.get();
+		//viewRange = ConfigOptions.viewRange.get();
 		playerHeightOffset = ConfigOptions.playerHeightOffset.get();
 		terrainHeightOffset = ConfigOptions.terrainHeightOffset.get();
 		fixedHeight = ConfigOptions.fixedHeight.get();
