@@ -9,6 +9,7 @@ import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.mrp_v2.biomeborderviewer.BiomeBorderViewer;
 import com.mrp_v2.biomeborderviewer.config.ConfigOptions;
 import com.mrp_v2.biomeborderviewer.config.ConfigOptions.RenderModes;
+import com.mrp_v2.biomeborderviewer.util.ChunkBiomeBorderData;
 import com.mrp_v2.biomeborderviewer.util.Color;
 import com.mrp_v2.biomeborderviewer.util.CornerData;
 import com.mrp_v2.biomeborderviewer.util.LineData;
@@ -47,8 +48,7 @@ public class VisualizeBorders {
 
 	private static ConfigOptions.RenderModes renderMode;
 	
-	private static HashMap<ChunkPos, ArrayList<LineData>> calculatedLineDatas = new HashMap<ChunkPos, ArrayList<LineData>>();
-	private static HashMap<ChunkPos, ArrayList<CornerData>> calculatedCornerDatas = new HashMap<ChunkPos, ArrayList<CornerData>>();
+	private static HashMap<ChunkPos, ChunkBiomeBorderData> calculatedChunks = new HashMap<ChunkPos, ChunkBiomeBorderData>();
 	
 	@SubscribeEvent
 	public static void chunkLoad(ChunkEvent.Load event) {
@@ -60,16 +60,6 @@ public class VisualizeBorders {
 		
 	}
 	
-	private static void removeChunkDatas(ChunkPos pos) {
-		if (calculatedLineDatas.containsKey(pos)) calculatedLineDatas.remove(pos);
-		if (calculatedCornerDatas.containsKey(pos)) calculatedCornerDatas.remove(pos);
-	}
-	
-	private static void addChunkDatas(ChunkPos pos, ArrayList<LineData> lines, ArrayList<CornerData> corners) {
-		calculatedLineDatas.put(pos, lines);
-		calculatedCornerDatas.put(pos, corners);
-	}
-
 	@SubscribeEvent
 	public static void keyPressed(KeyInputEvent event) {
 		if (BiomeBorderViewer.showBorders.isPressed()) {
