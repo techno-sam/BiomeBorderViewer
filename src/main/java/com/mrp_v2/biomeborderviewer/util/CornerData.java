@@ -17,10 +17,10 @@ public class CornerData extends Vec3d {
 	}
 
 	public boolean equals(Object obj) {
-		if (obj instanceof CornerData) {
-			return equals((CornerData) obj);
+		if (!(obj instanceof CornerData)) {
+			return false;
 		}
-		return false;
+		return super.equals(obj);
 	}
 
 	public void combine(CornerData other) {
