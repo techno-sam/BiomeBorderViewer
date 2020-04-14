@@ -23,6 +23,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.client.event.InputEvent.KeyInputEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -148,6 +149,15 @@ public class VisualizeBorders {
 			event.getMatrixStack().pop();
 			Minecraft.getInstance().getRenderTypeBuffers().getBufferSource().finish(RenderType.getLightning());
 		}
+	}
+	
+	/*
+	 * Assumes neighboring chunks are loaded
+	 */
+	private ChunkBiomeBorderData calculateDataForChunk(IChunk chunk) {
+		ArrayList<LineData> lines = new ArrayList<LineData>();
+		ArrayList<CornerData> corners = new ArrayList<CornerData>();
+		return new ChunkBiomeBorderData(lines, corners);
 	}
 
 	private static final float minWallHeight = 0;
