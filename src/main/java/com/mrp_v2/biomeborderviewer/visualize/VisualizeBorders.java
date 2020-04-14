@@ -66,7 +66,7 @@ public class VisualizeBorders {
 		queuedChunks.put(event.getChunk().getPos(), new QueuedChunkData(event.getChunk(), event.getWorld()));
 		ArrayList<ChunkPos> removes = new ArrayList<ChunkPos>();
 		for (QueuedChunkData data : queuedChunks.values()) {
-			if (neighborChunksExist(event.getChunk(), event.getWorld())) {
+			if (neighborChunksExist(data.getChunk(), data.getWorld())) {
 				calculatedChunks.put(data.getChunk().getPos(), calculateDataForChunk(data.getChunk(), data.getWorld()));
 				removes.add(data.getChunk().getPos());
 			}
