@@ -170,8 +170,8 @@ public class VisualizeBorders {
 				z = zOrigin + subZ;
 				mainPos = new BlockPos(x, fixedHeight, z);
 				mainBiome = world.getBiome(mainPos);
-				neighbors = new BlockPos[] { new BlockPos(x + 1, fixedHeight, z), new BlockPos(x - 1, fixedHeight, z),
-						new BlockPos(x, fixedHeight, z + 1), new BlockPos(x, fixedHeight, z - 1) };
+				neighbors = new BlockPos[] { mainPos.add(1, 0, 0), mainPos.add(-1, 0, 0), mainPos.add(0, 0, 1),
+						mainPos.add(0, 0, -1) };
 				for (BlockPos neighborPos : neighbors) {
 					neighborBiome = world.getBiome(neighborPos);
 					if (!neighborBiome.equals(mainBiome)) {
