@@ -32,6 +32,6 @@ public class LineData {
 	}
 
 	public LineData clone() {
-		return new LineData(UtilityMethods.clone(a), UtilityMethods.clone(b), color.clone());
+		return new LineData(UtilityMethods.clone(a), UtilityMethods.clone(b), color);
 	}
 }

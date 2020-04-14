@@ -39,6 +39,6 @@ public class CornerData extends Vec3d {
 	}
 
 	public CornerData clone() {
-		return new CornerData(UtilityMethods.clone(this), color.clone());
+		return new CornerData(UtilityMethods.clone(this), color);
 	}
 }

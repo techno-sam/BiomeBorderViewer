@@ -16,7 +16,8 @@ public class ConfigOptions {
 	private static final String translationKey = "mrp_v2.biomeborderviewer.configgui.";
 
 	public enum RenderModes {
-		LINE_FOLLOW_PLAYER_HEIGHT, LINE_MATCH_TERRAIN, LINE_FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN, LINE_FIXED_HEIGHT, WALL
+		LINE_FOLLOW_PLAYER_HEIGHT, LINE_MATCH_TERRAIN, LINE_FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN, LINE_FIXED_HEIGHT,
+		WALL
 	}
 
 	public static EnumValue<RenderModes> renderMode;
@@ -97,10 +98,8 @@ public class ConfigOptions {
 			lineWidth = builder.comment("The width of the line").translation(translationKey + "lineWidth")
 					.defineInRange("lineWidth", .0625, 0.01, 0.4);
 
-			viewRange = builder
-					.comment("The radius of the square of chunks around the player to show the border.\n"
-							+ "Similar to render distance, but for the biome border.\n"
-							+ "High values may impact performance.")
+			viewRange = builder.comment("The radius of the square of chunks around the player to show the border.\n"
+					+ "Similar to render distance, but for the biome border.\n" + "High values may impact performance.")
 					.translation(translationKey + "viewRange").defineInRange("viewRange", 4, 1, 32);
 		}
 	}
