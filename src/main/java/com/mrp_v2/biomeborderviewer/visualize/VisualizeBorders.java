@@ -1,7 +1,7 @@
 package com.mrp_v2.biomeborderviewer.visualize;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
 
@@ -18,10 +18,12 @@ import com.mrp_v2.biomeborderviewer.util.QueuedChunkData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.IChunk;
@@ -37,7 +39,7 @@ public class VisualizeBorders {
 
 	private static boolean showingBorders;
 
-	//private static int viewRange;
+	// private static int viewRange;
 
 	private static double playerHeightOffset;
 	private static double terrainHeightOffset;
@@ -50,17 +52,30 @@ public class VisualizeBorders {
 
 	private static ConfigOptions.RenderModes renderMode;
 
-	private static HashMap<ChunkPos, ChunkBiomeBorderData> calculatedChunks = new HashMap<ChunkPos, ChunkBiomeBorderData>();
+	private static ConcurrentHashMap<ChunkPos, ChunkBiomeBorderData> calculatedChunks = new ConcurrentHashMap<ChunkPos, ChunkBiomeBorderData>(
+			128);
 
-	private static HashMap<ChunkPos, QueuedChunkData> queuedChunks = new HashMap<ChunkPos, QueuedChunkData>();
+	private static ConcurrentHashMap<ChunkPos, QueuedChunkData> queuedChunks = new ConcurrentHashMap<ChunkPos, QueuedChunkData>(
+			32);
 
 	@SubscribeEvent
 	public static void chunkLoad(ChunkEvent.Load event) {
+		if (event.getWorld() == null) {
+			return;
+		}
+		if (!(event.getWorld() instanceof ClientWorld)) {
+			return;
+		}
 		queuedChunks.put(event.getChunk().getPos(), new QueuedChunkData(event.getChunk(), event.getWorld()));
+		ArrayList<ChunkPos> removes = new ArrayList<ChunkPos>();
 		for (QueuedChunkData data : queuedChunks.values()) {
 			if (data.getWorld().isAreaLoaded(data.getChunk().getPos().asBlockPos().add(7, 0, 7), 10)) {
 				calculatedChunks.put(data.getChunk().getPos(), calculateDataForChunk(data.getChunk(), data.getWorld()));
+				removes.add(data.getChunk().getPos());
 			}
+		}
+		for (ChunkPos pos : removes) {
+			queuedChunks.remove(pos);
 		}
 	}
 
@@ -70,12 +85,15 @@ public class VisualizeBorders {
 		queuedChunks.remove(event.getChunk().getPos());
 	}
 
+	@SuppressWarnings("resource")
 	@SubscribeEvent
 	public static void keyPressed(KeyInputEvent event) {
 		if (BiomeBorderViewer.showBorders.isPressed()) {
 			showingBorders = !showingBorders;
 			LogManager.getLogger().debug("Show Borders hotkey pressed. showingBorders is now " + showingBorders
 					+ ", render mode = " + renderMode.toString());
+			Minecraft.getInstance().player
+					.sendMessage(new StringTextComponent("Showing borders is now " + showingBorders));
 		}
 	}
 
@@ -84,15 +102,12 @@ public class VisualizeBorders {
 		if (showingBorders) {
 			@SuppressWarnings("resource")
 			PlayerEntity player = Minecraft.getInstance().player;
-			// prepare calculations
 			Vec3d playerEyePos = player.getEyePosition(event.getPartialTicks());
-			// prepare to draw
 			IVertexBuilder builder = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource()
 					.getBuffer(RenderType.getLightning());
 			event.getMatrixStack().push();
 			event.getMatrixStack().translate(-playerEyePos.x, -playerEyePos.y, -playerEyePos.z);
 			Matrix4f matrix = event.getMatrixStack().getLast().getMatrix();
-			// draw
 			for (ChunkPos pos : calculatedChunks.keySet()) {
 				for (LineData lineData : calculatedChunks.get(pos).getLines()) {
 					switch (renderMode) {
@@ -105,11 +120,11 @@ public class VisualizeBorders {
 					}
 				}
 				if (renderMode != RenderModes.WALL) {
-					drawCorners(calculatedChunks.get(pos).getCorners(), matrix, builder, player.getEntityWorld(),
-							playerEyePos);
+					for (CornerData cornerData : calculatedChunks.get(pos).getCorners()) {
+						drawCorner(cornerData, matrix, builder, player.getEntityWorld(), playerEyePos);
+					}
 				}
 			}
-			// end drawing
 			event.getMatrixStack().pop();
 			Minecraft.getInstance().getRenderTypeBuffers().getBufferSource().finish(RenderType.getLightning());
 		}
@@ -128,15 +143,20 @@ public class VisualizeBorders {
 		Vec3d a, b;
 		LineData lineData;
 		CornerData cornerDataA, cornerDataB;
-		for (int x = 0; x < 15; x++) {
-			for (int z = 0; z < 15; z += 2) {
-				if (x % 2 == 1 && z == 0) {
-					z++;
+		int xOrigin = chunk.getPos().getXStart(), zOrigin = chunk.getPos().getZStart();
+		int x, z;
+		int subX, subZ;
+		for (subX = 0; subX < 16; subX++) {
+			for (subZ = 0; subZ < 16; subZ += 2) {
+				if (subZ == 0 && (xOrigin + subX) % 2 == 1) {
+					subZ++;
 				}
+				x = xOrigin + subX;
+				z = zOrigin + subZ;
 				mainPos = new BlockPos(x, 10, z);
 				mainBiome = world.getBiome(mainPos);
-				neighbors = new BlockPos[] { new BlockPos(x + 1, 10, z), new BlockPos(x - 1, 10, z),
-						new BlockPos(x, 10, z + 1), new BlockPos(x, 10, z - 1) };
+				neighbors = new BlockPos[] { new BlockPos(x + 1, fixedHeight, z), new BlockPos(x - 1, fixedHeight, z),
+						new BlockPos(x, fixedHeight, z + 1), new BlockPos(x, fixedHeight, z - 1) };
 				for (BlockPos neighborPos : neighbors) {
 					neighborBiome = world.getBiome(neighborPos);
 					if (!neighborBiome.equals(mainBiome)) {
@@ -317,13 +337,6 @@ public class VisualizeBorders {
 		}
 	}
 
-	private static void drawCorners(ArrayList<CornerData> corners, Matrix4f matrix, IVertexBuilder builder,
-			IWorld world, Vec3d playerPos) {
-		for (CornerData cornerData : corners) {
-			drawCorner(cornerData, matrix, builder, world, playerPos);
-		}
-	}
-
 	private static void drawCorner(CornerData cornerData, Matrix4f matrix, IVertexBuilder builder, IWorld world,
 			Vec3d playerPos) {
 		float y = heightForPos(cornerData.x, cornerData.z, world, playerPos);
@@ -445,7 +458,7 @@ public class VisualizeBorders {
 
 	public static void loadConfigSettings() {
 		LogManager.getLogger().debug("Loading config settings for border lines.");
-		//viewRange = ConfigOptions.viewRange.get();
+		// viewRange = ConfigOptions.viewRange.get();
 		playerHeightOffset = ConfigOptions.playerHeightOffset.get();
 		terrainHeightOffset = ConfigOptions.terrainHeightOffset.get();
 		fixedHeight = ConfigOptions.fixedHeight.get();
