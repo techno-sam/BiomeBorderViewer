@@ -7,8 +7,8 @@ public class CornerData extends Vec3d {
 
 	public boolean showPlusX = true, showMinusX = true, showPlusZ = true, showMinusZ = true;
 
-	public CornerData() {
-		this(null, null);
+	public CornerData(Vec3d position) {
+		this(position, null);
 	}
 
 	public CornerData(Vec3d position, Color color) {
