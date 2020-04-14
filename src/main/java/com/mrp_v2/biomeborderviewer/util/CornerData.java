@@ -5,7 +5,7 @@ import net.minecraft.util.math.Vec3d;
 public class CornerData {
 	public Vec3d pos;
 	public Color color;
-	
+
 	public boolean showPlusX = true, showMinusX = true, showPlusZ = true, showMinusZ = true;
 
 	public CornerData() {
@@ -37,7 +37,7 @@ public class CornerData {
 		}
 		return false;
 	}
-	
+
 	public void combine(CornerData other) {
 		if (other.showMinusX == false) {
 			showMinusX = false;
@@ -51,5 +51,9 @@ public class CornerData {
 		if (other.showMinusZ == false) {
 			showMinusZ = false;
 		}
+	}
+
+	public CornerData clone() {
+		return new CornerData(UtilityMethods.clone(pos), color.clone());
 	}
 }

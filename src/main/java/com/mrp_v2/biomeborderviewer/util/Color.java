@@ -28,4 +28,8 @@ public class Color {
 		}
 		return false;
 	}
+	
+	public Color clone() {
+		return new Color(r, g, b, a);
+	}
 }

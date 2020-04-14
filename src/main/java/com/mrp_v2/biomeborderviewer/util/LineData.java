@@ -30,4 +30,8 @@ public class LineData {
 		}
 		return false;
 	}
+
+	public LineData clone() {
+		return new LineData(UtilityMethods.clone(a), UtilityMethods.clone(b), color.clone());
+	}
 }
