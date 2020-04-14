@@ -39,7 +39,7 @@ public class VisualizeBorders {
 
 	private static boolean showingBorders;
 
-	// private static int viewRange;
+	private static int viewRange;
 
 	private static double playerHeightOffset;
 	private static double terrainHeightOffset;
@@ -102,6 +102,7 @@ public class VisualizeBorders {
 		if (showingBorders) {
 			@SuppressWarnings("resource")
 			PlayerEntity player = Minecraft.getInstance().player;
+			ChunkPos playerChunk = new ChunkPos(player.getPosition());
 			Vec3d playerEyePos = player.getEyePosition(event.getPartialTicks());
 			IVertexBuilder builder = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource()
 					.getBuffer(RenderType.getLightning());
@@ -109,19 +110,21 @@ public class VisualizeBorders {
 			event.getMatrixStack().translate(-playerEyePos.x, -playerEyePos.y, -playerEyePos.z);
 			Matrix4f matrix = event.getMatrixStack().getLast().getMatrix();
 			for (ChunkPos pos : calculatedChunks.keySet()) {
-				for (LineData lineData : calculatedChunks.get(pos).getLines()) {
-					switch (renderMode) {
-					case WALL:
-						drawWall(lineData, matrix, builder);
-						break;
-					default:
-						drawLine(lineData, matrix, builder, player.getEntityWorld(), playerEyePos);
-						break;
+				if (pos.getChessboardDistance(playerChunk) <= viewRange) {
+					for (LineData lineData : calculatedChunks.get(pos).getLines()) {
+						switch (renderMode) {
+						case WALL:
+							drawWall(lineData, matrix, builder);
+							break;
+						default:
+							drawLine(lineData, matrix, builder, player.getEntityWorld(), playerEyePos);
+							break;
+						}
 					}
-				}
-				if (renderMode != RenderModes.WALL) {
-					for (CornerData cornerData : calculatedChunks.get(pos).getCorners()) {
-						drawCorner(cornerData, matrix, builder, player.getEntityWorld(), playerEyePos);
+					if (renderMode != RenderModes.WALL) {
+						for (CornerData cornerData : calculatedChunks.get(pos).getCorners()) {
+							drawCorner(cornerData, matrix, builder, player.getEntityWorld(), playerEyePos);
+						}
 					}
 				}
 			}
@@ -153,7 +156,7 @@ public class VisualizeBorders {
 				}
 				x = xOrigin + subX;
 				z = zOrigin + subZ;
-				mainPos = new BlockPos(x, 10, z);
+				mainPos = new BlockPos(x, fixedHeight, z);
 				mainBiome = world.getBiome(mainPos);
 				neighbors = new BlockPos[] { new BlockPos(x + 1, fixedHeight, z), new BlockPos(x - 1, fixedHeight, z),
 						new BlockPos(x, fixedHeight, z + 1), new BlockPos(x, fixedHeight, z - 1) };
@@ -177,8 +180,6 @@ public class VisualizeBorders {
 								a = a.add(0, 0, 1);
 							}
 						}
-						a = new Vec3d(a.x, fixedHeight, a.z);
-						b = new Vec3d(b.x, fixedHeight, b.z);
 						lineData = new LineData(a, b);
 						lineData.color = borderColor(mainBiome, neighborBiome);
 						lines.add(lineData.clone());
@@ -458,7 +459,7 @@ public class VisualizeBorders {
 
 	public static void loadConfigSettings() {
 		LogManager.getLogger().debug("Loading config settings for border lines.");
-		// viewRange = ConfigOptions.viewRange.get();
+		viewRange = ConfigOptions.viewRange.get();
 		playerHeightOffset = ConfigOptions.playerHeightOffset.get();
 		terrainHeightOffset = ConfigOptions.terrainHeightOffset.get();
 		fixedHeight = ConfigOptions.fixedHeight.get();
