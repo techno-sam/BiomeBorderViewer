@@ -53,12 +53,14 @@ public class VisualizeBorders {
 	
 	@SubscribeEvent
 	public static void chunkLoad(ChunkEvent.Load event) {
-		
+		if (event.getWorld().isAreaLoaded(event.getChunk().getPos().asBlockPos().add(7, 0, 7), 9)) {
+			calculatedChunks.put(event.getChunk().getPos(), calculateDataForChunk(event.getChunk()));
+		}
 	}
 	
 	@SubscribeEvent
 	public static void chunkUnload(ChunkEvent.Unload event) {
-		
+		calculatedChunks.remove(event.getChunk().getPos());
 	}
 	
 	@SubscribeEvent
@@ -154,7 +156,7 @@ public class VisualizeBorders {
 	/*
 	 * Assumes neighboring chunks are loaded
 	 */
-	private ChunkBiomeBorderData calculateDataForChunk(IChunk chunk) {
+	private static ChunkBiomeBorderData calculateDataForChunk(IChunk chunk) {
 		ArrayList<LineData> lines = new ArrayList<LineData>();
 		ArrayList<CornerData> corners = new ArrayList<CornerData>();
 		return new ChunkBiomeBorderData(lines, corners);
