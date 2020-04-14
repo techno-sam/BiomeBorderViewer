@@ -2,8 +2,7 @@ package com.mrp_v2.biomeborderviewer.util;
 
 import net.minecraft.util.math.Vec3d;
 
-public class CornerData {
-	public Vec3d pos;
+public class CornerData extends Vec3d {
 	public Color color;
 
 	public boolean showPlusX = true, showMinusX = true, showPlusZ = true, showMinusZ = true;
@@ -13,22 +12,8 @@ public class CornerData {
 	}
 
 	public CornerData(Vec3d position, Color color) {
-		this.pos = position;
+		super(position.x, position.y, position.z);
 		this.color = color;
-	}
-
-	/*
-	 * only factors position
-	 */
-	public int hashCode() {
-		return pos.hashCode();
-	}
-
-	/*
-	 * Only factors position
-	 */
-	public boolean equals(CornerData cornerData) {
-		return pos.equals(cornerData.pos);
 	}
 
 	public boolean equals(Object obj) {
@@ -54,6 +39,6 @@ public class CornerData {
 	}
 
 	public CornerData clone() {
-		return new CornerData(UtilityMethods.clone(pos), color.clone());
+		return new CornerData(UtilityMethods.clone(this), color.clone());
 	}
 }
