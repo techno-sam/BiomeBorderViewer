@@ -60,16 +60,13 @@ public class VisualizeBorders {
 
 	@SubscribeEvent
 	public static void chunkLoad(ChunkEvent.Load event) {
-		if (event.getWorld() == null) {
-			return;
-		}
-		if (!(event.getWorld() instanceof ClientWorld)) {
+		if (event.getWorld() == null || !(event.getWorld() instanceof ClientWorld)) {
 			return;
 		}
 		queuedChunks.put(event.getChunk().getPos(), new QueuedChunkData(event.getChunk(), event.getWorld()));
 		ArrayList<ChunkPos> removes = new ArrayList<ChunkPos>();
 		for (QueuedChunkData data : queuedChunks.values()) {
-			if (data.getWorld().isAreaLoaded(data.getChunk().getPos().asBlockPos().add(7, 0, 7), 10)) {
+			if (neighborChunksExist(event.getChunk(), event.getWorld())) {
 				calculatedChunks.put(data.getChunk().getPos(), calculateDataForChunk(data.getChunk(), data.getWorld()));
 				removes.add(data.getChunk().getPos());
 			}
@@ -77,6 +74,22 @@ public class VisualizeBorders {
 		for (ChunkPos pos : removes) {
 			queuedChunks.remove(pos);
 		}
+	}
+
+	private static boolean neighborChunksExist(IChunk chunk, IWorld world) {
+		if (!world.chunkExists(chunk.getPos().x + 1, chunk.getPos().z)) {
+			return false;
+		}
+		if (!world.chunkExists(chunk.getPos().x - 1, chunk.getPos().z)) {
+			return false;
+		}
+		if (!world.chunkExists(chunk.getPos().x, chunk.getPos().z + 1)) {
+			return false;
+		}
+		if (!world.chunkExists(chunk.getPos().x, chunk.getPos().z - 1)) {
+			return false;
+		}
+		return true;
 	}
 
 	@SubscribeEvent
@@ -150,7 +163,7 @@ public class VisualizeBorders {
 		int subX, subZ;
 		for (subX = 0; subX < 16; subX++) {
 			for (subZ = 0; subZ < 16; subZ += 2) {
-				if (subZ == 0 && (xOrigin + subX) % 2 == 1) {
+				if (subZ == 0 && Math.abs((xOrigin + subX) % 2) == 1) {
 					subZ++;
 				}
 				x = xOrigin + subX;
