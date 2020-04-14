@@ -45,6 +45,8 @@ public class ConfigOptions {
 			builder.comment("biome border viewer client settings").push("client");
 
 			renderMode = builder.comment("What the reference point for the border-line height is."
+					+ "\nWall is the preferred option, as all others will likely be removed in 1.16"
+					+ "\nWall is also the most performance friendly."
 					+ "\n LINE_FOLLOW_PLAYER_HEIGHT - The line follows the height of the player + playerHeightOffset"
 					+ "\n LINE_MATCH_TERRAIN - The line follows the height of the highest block + terrainHeightOffset"
 					+ "\n LINE_FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN - The line follows the player height, unless the terrain height is higher."
