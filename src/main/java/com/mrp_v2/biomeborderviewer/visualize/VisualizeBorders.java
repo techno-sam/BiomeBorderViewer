@@ -99,7 +99,7 @@ public class VisualizeBorders {
 					}
 				}
 				if (renderMode != RenderModes.WALL) {
-					drawCorners(calculatedChunks.get(pos).getCorners()), matrix, builder);
+					drawCorners(calculatedChunks.get(pos).getCorners(), matrix, builder);
 				}
 			}
 			// end drawing
