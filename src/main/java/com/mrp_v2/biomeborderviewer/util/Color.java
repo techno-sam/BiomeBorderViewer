@@ -29,10 +29,6 @@ public class Color {
 		return false;
 	}
 
-	public Color clone() {
-		return new Color(r, g, b, a);
-	}
-
 	public void set(int r, int g, int b, int a) {
 		this.r = r;
 		this.g = g;

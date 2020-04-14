@@ -47,8 +47,8 @@ public class VisualizeBorders {
 
 	private static float radius;
 
-	private static Color colorA;
-	private static Color colorB;
+	private static Color colorA = new Color();
+	private static Color colorB = new Color();
 
 	private static ConfigOptions.RenderModes renderMode;
 
@@ -139,7 +139,6 @@ public class VisualizeBorders {
 	private static ChunkBiomeBorderData calculateDataForChunk(IChunk chunk, IWorld world) {
 		ArrayList<LineData> lines = new ArrayList<LineData>();
 		ArrayList<CornerData> corners = new ArrayList<CornerData>();
-		//
 		BlockPos mainPos;
 		Biome mainBiome, neighborBiome;
 		BlockPos[] neighbors;
@@ -182,7 +181,7 @@ public class VisualizeBorders {
 						}
 						lineData = new LineData(a, b);
 						lineData.color = borderColor(mainBiome, neighborBiome);
-						lines.add(lineData.clone());
+						lines.add(lineData);
 						cornerDataA = new CornerData(a);
 						cornerDataB = new CornerData(b);
 						if (a.x == b.x) {

@@ -3,7 +3,7 @@ package com.mrp_v2.biomeborderviewer.util;
 import net.minecraft.util.math.Vec3d;
 
 public class LineData {
-	public Vec3d a, b;
+	public final Vec3d a, b;
 	public Color color;
 
 	public LineData(Vec3d a, Vec3d b) {
@@ -29,9 +29,5 @@ public class LineData {
 			return equals((LineData) obj);
 		}
 		return false;
-	}
-
-	public LineData clone() {
-		return new LineData(UtilityMethods.clone(a), UtilityMethods.clone(b), color);
 	}
 }

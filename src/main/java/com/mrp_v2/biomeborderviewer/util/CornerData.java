@@ -37,8 +37,4 @@ public class CornerData extends Vec3d {
 			showMinusZ = false;
 		}
 	}
-
-	public CornerData clone() {
-		return new CornerData(UtilityMethods.clone(this), color);
-	}
 }
