@@ -25,6 +25,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.client.event.InputEvent.KeyInputEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -48,6 +49,16 @@ public class VisualizeBorders {
 	
 	private static HashMap<ChunkPos, ArrayList<LineData>> calculatedLineDatas = new HashMap<ChunkPos, ArrayList<LineData>>();
 	private static HashMap<ChunkPos, ArrayList<CornerData>> calculatedCornerDatas = new HashMap<ChunkPos, ArrayList<CornerData>>();
+	
+	@SubscribeEvent
+	public static void chunkLoad(ChunkEvent.Load event) {
+		
+	}
+	
+	@SubscribeEvent
+	public static void chunkUnload(ChunkEvent.Unload event) {
+		
+	}
 
 	@SubscribeEvent
 	public static void keyPressed(KeyInputEvent event) {
