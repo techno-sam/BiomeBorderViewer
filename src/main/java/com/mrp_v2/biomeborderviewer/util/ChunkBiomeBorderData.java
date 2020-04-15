@@ -2,6 +2,10 @@ package com.mrp_v2.biomeborderviewer.util;
 
 import java.util.ArrayList;
 
+import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders;
+
+import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IWorld;
@@ -17,13 +21,13 @@ public class ChunkBiomeBorderData {
 		this.corners = corners;
 		this.world = world;
 	}
-	
+
 	public ChunkBiomeBorderData(QueuedChunkData data) {
 		world = data.getWorld();
 		lines = new ArrayList<LineData>();
 		corners = new ArrayList<CornerData>();
 		int xOrigin = data.getChunk().getPos().getXStart(), zOrigin = data.getChunk().getPos().getZStart();
-		//declaratioons to avoid reallocation
+		// declaratioons to avoid reallocation
 		int x, z;
 		BlockPos mainPos;
 		Biome mainBiome, neighborBiome;
@@ -100,8 +104,26 @@ public class ChunkBiomeBorderData {
 	public ArrayList<CornerData> getCorners() {
 		return corners;
 	}
-	
+
 	public IWorld getWorld() {
 		return world;
+	}
+
+	public void draw(Matrix4f matrix, IVertexBuilder builder, Vec3d playerPos) {
+		switch (VisualizeBorders.renderMode) {
+		case WALL:
+			for (LineData lineData : lines) {
+				lineData.drawWall(matrix, builder);
+			}
+			break;
+		default:
+			for (LineData lineData : lines) {
+				lineData.drawLine(matrix, builder, world, playerPos);
+			}
+			for (CornerData cornerData : corners) {
+				cornerData.drawCorner(matrix, builder, world, playerPos);
+			}
+			break;
+		}
 	}
 }
