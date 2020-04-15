@@ -419,10 +419,8 @@ public class VisualizeBorders {
 		terrainHeightOffset = ConfigOptions.terrainHeightOffset.get();
 		fixedHeight = ConfigOptions.fixedHeight.get();
 		renderMode = ConfigOptions.renderMode.get();
-		colorA.set(ConfigOptions.lineAR.get(), ConfigOptions.lineAG.get(), ConfigOptions.lineAB.get(),
-				ConfigOptions.lineAA.get());
-		colorB.set(ConfigOptions.lineBR.get(), ConfigOptions.lineBG.get(), ConfigOptions.lineBB.get(),
-				ConfigOptions.lineBA.get());
+		colorA.set(ConfigOptions.getColorA());
+		colorB.set(ConfigOptions.getColorB());
 		radius = ConfigOptions.lineWidth.get().floatValue() / 2;
 	}
 }
