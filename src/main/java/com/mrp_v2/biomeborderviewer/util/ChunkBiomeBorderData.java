@@ -28,7 +28,7 @@ public class ChunkBiomeBorderData {
 		int xOrigin = data.getChunk().getPos().getXStart(), zOrigin = data.getChunk().getPos().getZStart();
 		// Declarations to avoid reallocation
 		int x, z;
-		Int3 mainPos;
+		Int3 mainPos, mainPosCopy;
 		Biome mainBiome, neighborBiome;
 		Int3[] neighbors = new Int3[4];
 		LineData lineData;
@@ -48,27 +48,28 @@ public class ChunkBiomeBorderData {
 				for (Int3 neighborPos : neighbors) {
 					neighborBiome = data.getWorld().getBiome(neighborPos.toBlockPos());
 					if (!neighborBiome.equals(mainBiome)) {
-						if (mainPos.getX() != neighborPos.getX()) {// if they have the same z and different x
-							mainPos = mainPos.add(0, 0, 1);
-							if (mainPos.getX() > neighborPos.getX()) {
+						mainPosCopy = new Int3(mainPos);
+						if (mainPosCopy.getZ() == neighborPos.getZ()) {// if they have the same z and different x
+							mainPosCopy = mainPosCopy.add(0, 0, 1);
+							if (mainPosCopy.getX() > neighborPos.getX()) {
 								neighborPos = neighborPos.add(1, 0, 0);
 							} else {
-								mainPos = mainPos.add(1, 0, 0);
+								mainPosCopy = mainPosCopy.add(1, 0, 0);
 							}
 						} else {// if they have the same x and different z
-							mainPos = mainPos.add(1, 0, 0);
-							if (mainPos.getZ() > neighborPos.getZ()) {
+							mainPosCopy = mainPosCopy.add(1, 0, 0);
+							if (mainPosCopy.getZ() > neighborPos.getZ()) {
 								neighborPos = neighborPos.add(0, 0, 1);
 							} else {
-								mainPos = mainPos.add(0, 0, 1);
+								mainPosCopy = mainPosCopy.add(0, 0, 1);
 							}
 						}
-						lineData = new LineData(mainPos, neighborPos);
+						lineData = new LineData(mainPosCopy, neighborPos);
 						lineData.similarTemperature = mainBiome.getTempCategory() == neighborBiome.getTempCategory();
 						lines.add(lineData);
-						cornerDataA = new CornerData(mainPos);
+						cornerDataA = new CornerData(mainPosCopy);
 						cornerDataB = new CornerData(neighborPos);
-						if (mainPos.getX() == neighborPos.getX()) {
+						if (mainPosCopy.getX() == neighborPos.getX()) {
 							cornerDataA.showMinusZ = false;
 							cornerDataB.showPlusZ = false;
 						} else {
