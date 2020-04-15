@@ -24,7 +24,6 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.IWorld;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.client.event.InputEvent.KeyInputEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
