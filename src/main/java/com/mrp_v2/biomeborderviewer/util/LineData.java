@@ -4,24 +4,24 @@ import net.minecraft.util.math.Vec3d;
 
 public class LineData {
 	public final Vec3d a, b;
-	public Color color;
+	public boolean similarTemperature;
 
 	public LineData(Vec3d a, Vec3d b) {
 		this.a = a;
 		this.b = b;
 	}
 
-	public LineData(Vec3d a, Vec3d b, Color color) {
+	public LineData(Vec3d a, Vec3d b, boolean similarTemperature) {
 		this(a, b);
-		this.color = color;
+		this.similarTemperature = similarTemperature;
 	}
 
 	public int hashCode() {
-		return a.hashCode() * b.hashCode() - color.hashCode();
+		return a.hashCode() * b.hashCode();
 	}
 
 	public boolean equals(LineData lineData) {
-		return a.equals(lineData.a) && b.equals(lineData.b) && color.equals(lineData.color);
+		return a.equals(lineData.a) && b.equals(lineData.b) && similarTemperature == lineData.similarTemperature;
 	}
 
 	public boolean equals(Object obj) {

@@ -55,32 +55,32 @@ public class ConfigOptions {
 					+ "\n WALL - Makes a wall going from y 0-255. It is recommened to make the line more transparent (decrease the alpha value) in this scenario.")
 					.translation(translationKey + "renderMode").defineEnum("renderMode", RenderModes.WALL);
 
-			lineAR = builder.comment("The red value of the line's color when the 2 biomes have the same temperature.")
+			lineAR = builder.comment("The red value of the line's color when the 2 biomes have a similar temperature.")
 					.translation(translationKey + "lineAR").defineInRange("lineAR", 0, 0, 255);
 
-			lineAG = builder.comment("The green value of the line's color when the 2 biomes have the same temperature.")
+			lineAG = builder.comment("The green value of the line's color when the 2 biomes have a similar temperature.")
 					.translation(translationKey + "lineAG").defineInRange("lineAG", 255, 0, 255);
 
-			lineAB = builder.comment("The blue value of the line's color when the 2 biomes have the same temperature.")
+			lineAB = builder.comment("The blue value of the line's color when the 2 biomes have a similar temperature.")
 					.translation(translationKey + "lineAB").defineInRange("lineAB", 0, 0, 255);
 
 			lineAA = builder.comment(
-					"The alpha (transparency) value of the line's color when the 2 biomes have the same temperature.")
+					"The alpha (transparency) value of the line's color when the 2 biomes have a similar temperature.")
 					.translation(translationKey + "lineAA").defineInRange("lineAA", 128, 0, 255);
 
-			lineBR = builder.comment("The red value of the line's color when the 2 biomes have different temperatures.")
+			lineBR = builder.comment("The red value of the line's color when the 2 biomes have unsimilar temperatures.")
 					.translation(translationKey + "lineBR").defineInRange("lineBR", 255, 0, 255);
 
 			lineBG = builder
-					.comment("The green value of the line's color when the 2 biomes have different temperatures.")
+					.comment("The green value of the line's color when the 2 biomes have unsimilar temperatures.")
 					.translation(translationKey + "lineBG").defineInRange("lineBG", 0, 0, 255);
 
 			lineBB = builder
-					.comment("The blue value of the line's color when the 2 biomes have different temperatures.")
+					.comment("The blue value of the line's color when the 2 biomes have unsimilar temperatures.")
 					.translation(translationKey + "lineBB").defineInRange("lineBB", 0, 0, 255);
 
 			lineBA = builder.comment(
-					"The alpha (transparency) value of the line's color when the 2 biomes have the same temperature.")
+					"The alpha (transparency) value of the line's color when the 2 biomes have unsimilar temperatures.")
 					.translation(translationKey + "lineBA").defineInRange("lineBA", 128, 0, 255);
 
 			playerHeightOffset = builder

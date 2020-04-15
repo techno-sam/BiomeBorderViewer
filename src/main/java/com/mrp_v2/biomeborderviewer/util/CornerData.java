@@ -3,17 +3,16 @@ package com.mrp_v2.biomeborderviewer.util;
 import net.minecraft.util.math.Vec3d;
 
 public class CornerData extends Vec3d {
-	public Color color;
-
 	public boolean showPlusX = true, showMinusX = true, showPlusZ = true, showMinusZ = true;
+	public boolean similarTemperature;
 
 	public CornerData(Vec3d position) {
-		this(position, null);
+		this(position, true);
 	}
 
-	public CornerData(Vec3d position, Color color) {
+	public CornerData(Vec3d position, boolean similarTemperature) {
 		super(position.x, position.y, position.z);
-		this.color = color;
+		this.similarTemperature = similarTemperature;
 	}
 
 	public boolean equals(Object obj) {
