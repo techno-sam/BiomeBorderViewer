@@ -1,18 +1,18 @@
 package com.mrp_v2.biomeborderviewer.util;
 
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.IWorld;
-import net.minecraft.world.chunk.IChunk;
 
 public class QueuedChunkData {
-	private final IChunk chunk;
+	private final ChunkPos chunk;
 	private final IWorld world;
 
-	public QueuedChunkData(IChunk chunk, IWorld world) {
+	public QueuedChunkData(ChunkPos chunk, IWorld world) {
 		this.chunk = chunk;
 		this.world = world;
 	}
 
-	public IChunk getChunk() {
+	public ChunkPos getChunkPos() {
 		return chunk;
 	}
 

@@ -25,7 +25,7 @@ public class ChunkBiomeBorderData {
 		world = data.getWorld();
 		lines = new ArrayList<LineData>();
 		corners = new ArrayList<CornerData>();
-		int xOrigin = data.getChunk().getPos().getXStart(), zOrigin = data.getChunk().getPos().getZStart();
+		int xOrigin = data.getChunkPos().getXStart(), zOrigin = data.getChunkPos().getZStart();
 		// Declarations to avoid reallocation
 		int x, z;
 		Int3 mainPos, mainPosCopy;
@@ -40,13 +40,13 @@ public class ChunkBiomeBorderData {
 					z++;
 				}
 				mainPos = new Int3(x, 64, z);
-				mainBiome = data.getWorld().getBiome(mainPos.toBlockPos());
+				mainBiome = world.getBiome(mainPos.toBlockPos());
 				neighbors[0] = mainPos.add(1, 0, 0);
 				neighbors[1] = mainPos.add(-1, 0, 0);
 				neighbors[2] = mainPos.add(0, 0, 1);
 				neighbors[3] = mainPos.add(0, 0, -1);
 				for (Int3 neighborPos : neighbors) {
-					neighborBiome = data.getWorld().getBiome(neighborPos.toBlockPos());
+					neighborBiome = world.getBiome(neighborPos.toBlockPos());
 					if (!neighborBiome.equals(mainBiome)) {
 						mainPosCopy = new Int3(mainPos);
 						if (mainPosCopy.getZ() == neighborPos.getZ()) {// if they have the same z and different x

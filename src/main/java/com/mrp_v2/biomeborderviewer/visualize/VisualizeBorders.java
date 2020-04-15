@@ -63,10 +63,10 @@ public class VisualizeBorders {
 		loadedChunks.add(event.getChunk().getPos());
 		if (chunkReadyForCalculations(event.getChunk().getPos())) {
 			calculatedChunks.put(event.getChunk().getPos(),
-					new ChunkBiomeBorderData(new QueuedChunkData(event.getChunk(), event.getWorld())));
+					new ChunkBiomeBorderData(new QueuedChunkData(event.getChunk().getPos(), event.getWorld())));
 		} else {
 			queuedChunks.put(event.getChunk().getPos(),
-					new QueuedChunkData(event.getChunk(), event.getWorld().getWorld()));
+					new QueuedChunkData(event.getChunk().getPos(), event.getWorld().getWorld()));
 		}
 		for (ChunkPos pos : getNeighborChunks(event.getChunk().getPos())) {
 			if (queuedChunks.containsKey(pos)) {
