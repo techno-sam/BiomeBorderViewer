@@ -6,7 +6,6 @@ import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders;
 
 import net.minecraft.client.renderer.Matrix4f;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
@@ -27,12 +26,11 @@ public class ChunkBiomeBorderData {
 		lines = new ArrayList<LineData>();
 		corners = new ArrayList<CornerData>();
 		int xOrigin = data.getChunk().getPos().getXStart(), zOrigin = data.getChunk().getPos().getZStart();
-		// declaratioons to avoid reallocation
+		// Declarations to avoid reallocation
 		int x, z;
-		BlockPos mainPos;
+		Int3 mainPos;
 		Biome mainBiome, neighborBiome;
-		BlockPos[] neighbors = new BlockPos[4];
-		Vec3d a, b;
+		Int3[] neighbors = new Int3[4];
 		LineData lineData;
 		CornerData cornerDataA, cornerDataB;
 		//
@@ -41,38 +39,36 @@ public class ChunkBiomeBorderData {
 				if (z == zOrigin && Math.abs((xOrigin + x) % 2) == 1) {
 					z++;
 				}
-				mainPos = new BlockPos(x, 64, z);
-				mainBiome = data.getWorld().getBiome(mainPos);
+				mainPos = new Int3(x, 64, z);
+				mainBiome = data.getWorld().getBiome(mainPos.toBlockPos());
 				neighbors[0] = mainPos.add(1, 0, 0);
 				neighbors[1] = mainPos.add(-1, 0, 0);
 				neighbors[2] = mainPos.add(0, 0, 1);
 				neighbors[3] = mainPos.add(0, 0, -1);
-				for (BlockPos neighborPos : neighbors) {
-					neighborBiome = data.getWorld().getBiome(neighborPos);
+				for (Int3 neighborPos : neighbors) {
+					neighborBiome = data.getWorld().getBiome(neighborPos.toBlockPos());
 					if (!neighborBiome.equals(mainBiome)) {
-						a = new Vec3d(mainPos);
-						b = new Vec3d(neighborPos);
-						if (a.x != b.x) {// if they have the same z and different x
-							a = a.add(0, 0, 1);
-							if (a.x > b.x) {
-								b = b.add(1, 0, 0);
+						if (mainPos.getX() != neighborPos.getX()) {// if they have the same z and different x
+							mainPos = mainPos.add(0, 0, 1);
+							if (mainPos.getX() > neighborPos.getX()) {
+								neighborPos = neighborPos.add(1, 0, 0);
 							} else {
-								a = a.add(1, 0, 0);
+								mainPos = mainPos.add(1, 0, 0);
 							}
 						} else {// if they have the same x and different z
-							a = a.add(1, 0, 0);
-							if (a.z > b.z) {
-								b = b.add(0, 0, 1);
+							mainPos = mainPos.add(1, 0, 0);
+							if (mainPos.getZ() > neighborPos.getZ()) {
+								neighborPos = neighborPos.add(0, 0, 1);
 							} else {
-								a = a.add(0, 0, 1);
+								mainPos = mainPos.add(0, 0, 1);
 							}
 						}
-						lineData = new LineData(a, b);
+						lineData = new LineData(mainPos, neighborPos);
 						lineData.similarTemperature = mainBiome.getTempCategory() == neighborBiome.getTempCategory();
 						lines.add(lineData);
-						cornerDataA = new CornerData(a);
-						cornerDataB = new CornerData(b);
-						if (a.x == b.x) {
+						cornerDataA = new CornerData(mainPos);
+						cornerDataB = new CornerData(neighborPos);
+						if (mainPos.getX() == neighborPos.getX()) {
 							cornerDataA.showMinusZ = false;
 							cornerDataB.showPlusZ = false;
 						} else {

@@ -8,15 +8,15 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IWorld;
 
 public class LineData {
-	public final Vec3d a, b;
+	public final Int3 a, b;
 	public boolean similarTemperature;
 
-	public LineData(Vec3d a, Vec3d b) {
+	public LineData(Int3 a, Int3 b) {
 		this.a = a;
 		this.b = b;
 	}
 
-	public LineData(Vec3d a, Vec3d b, boolean similarTemperature) {
+	public LineData(Int3 a, Int3 b, boolean similarTemperature) {
 		this(a, b);
 		this.similarTemperature = similarTemperature;
 	}
@@ -35,131 +35,131 @@ public class LineData {
 		}
 		return false;
 	}
-	
+
 	public void drawLine(Matrix4f matrix, IVertexBuilder builder, IWorld world, Vec3d playerPos) {
-		float ay = VisualizeBorders.heightForPos(a.x, a.z, world, playerPos);
-		float by = VisualizeBorders.heightForPos(b.x, b.z, world, playerPos);
+		float ay = VisualizeBorders.heightForPos(a.getX(), a.getZ(), world, playerPos);
+		float by = VisualizeBorders.heightForPos(b.getX(), b.getZ(), world, playerPos);
 		Color color = VisualizeBorders.borderColor(similarTemperature);
-		if (a.x == b.x) {
+		if (a.getX() == b.getX()) {
 			// top
-			builder.pos(matrix, (float) a.x + VisualizeBorders.radius, ay + VisualizeBorders.radius, (float) a.z - VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x + VisualizeBorders.radius, by + VisualizeBorders.radius, (float) b.z + VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x - VisualizeBorders.radius, by + VisualizeBorders.radius, (float) b.z + VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) a.x - VisualizeBorders.radius, ay + VisualizeBorders.radius, (float) a.z - VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, a.getX() + VisualizeBorders.radius, ay + VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, b.getX() - VisualizeBorders.radius, by + VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
 			// bottom
-			builder.pos(matrix, (float) a.x - VisualizeBorders.radius, ay - VisualizeBorders.radius, (float) a.z - VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x - VisualizeBorders.radius, by - VisualizeBorders.radius, (float) b.z + VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x + VisualizeBorders.radius, by - VisualizeBorders.radius, (float) b.z + VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) a.x + VisualizeBorders.radius, ay - VisualizeBorders.radius, (float) a.z - VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, b.getX() - VisualizeBorders.radius, by - VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, a.getX() + VisualizeBorders.radius, ay - VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
 			// -x side
-			builder.pos(matrix, (float) a.x - VisualizeBorders.radius, ay + VisualizeBorders.radius, (float) a.z - VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x - VisualizeBorders.radius, by + VisualizeBorders.radius, (float) b.z + VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x - VisualizeBorders.radius, by - VisualizeBorders.radius, (float) b.z + VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) a.x - VisualizeBorders.radius, ay - VisualizeBorders.radius, (float) a.z - VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, b.getX() - VisualizeBorders.radius, by + VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, b.getX() - VisualizeBorders.radius, by - VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
 			// +x side
-			builder.pos(matrix, (float) a.x + VisualizeBorders.radius, ay - VisualizeBorders.radius, (float) a.z - VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x + VisualizeBorders.radius, by - VisualizeBorders.radius, (float) b.z + VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x + VisualizeBorders.radius, by + VisualizeBorders.radius, (float) b.z + VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) a.x + VisualizeBorders.radius, ay + VisualizeBorders.radius, (float) a.z - VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, a.getX() + VisualizeBorders.radius, ay - VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, a.getX() + VisualizeBorders.radius, ay + VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
 		} else {
 			// top
-			builder.pos(matrix, (float) a.x - VisualizeBorders.radius, ay + VisualizeBorders.radius, (float) a.z - VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x + VisualizeBorders.radius, by + VisualizeBorders.radius, (float) b.z - VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x + VisualizeBorders.radius, by + VisualizeBorders.radius, (float) b.z + VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) a.x - VisualizeBorders.radius, ay + VisualizeBorders.radius, (float) a.z + VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
+					b.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
+					a.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
 			// bottom
-			builder.pos(matrix, (float) a.x - VisualizeBorders.radius, ay - VisualizeBorders.radius, (float) a.z + VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x + VisualizeBorders.radius, by - VisualizeBorders.radius, (float) b.z + VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x + VisualizeBorders.radius, by - VisualizeBorders.radius, (float) b.z - VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) a.x - VisualizeBorders.radius, ay - VisualizeBorders.radius, (float) a.z - VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
+					a.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
+					b.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
 			// -z side
-			builder.pos(matrix, (float) a.x - VisualizeBorders.radius, ay - VisualizeBorders.radius, (float) a.z - VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x + VisualizeBorders.radius, by - VisualizeBorders.radius, (float) b.z - VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x + VisualizeBorders.radius, by + VisualizeBorders.radius, (float) b.z - VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) a.x - VisualizeBorders.radius, ay + VisualizeBorders.radius, (float) a.z - VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
+					b.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
+					b.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
 			// +z side
-			builder.pos(matrix, (float) a.x - VisualizeBorders.radius, ay + VisualizeBorders.radius, (float) a.z + VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x + VisualizeBorders.radius, by + VisualizeBorders.radius, (float) b.z + VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x + VisualizeBorders.radius, by - VisualizeBorders.radius, (float) b.z + VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) a.x - VisualizeBorders.radius, ay - VisualizeBorders.radius, (float) a.z + VisualizeBorders.radius)
-					.color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
+					a.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
+					a.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
 		}
 	}
-	
+
 	private static final float minWallHeight = 0;
 	private static final float maxWallHeight = 255;
 	private static final float wallOffsetDivisor = 1f / 0b11111111;
-	
+
 	public void drawWall(Matrix4f matrix, IVertexBuilder builder) {
 		Color color = VisualizeBorders.borderColor(similarTemperature);
-		if (a.x == b.x) {
+		if (a.getX() == b.getX()) {
 			// -x side
-			builder.pos(matrix, (float) a.x + wallOffsetDivisor, minWallHeight, (float) a.z)
+			builder.pos(matrix, a.getX() + wallOffsetDivisor, minWallHeight, a.getZ())
 					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x + wallOffsetDivisor, minWallHeight, (float) b.z)
+			builder.pos(matrix, b.getX() + wallOffsetDivisor, minWallHeight, b.getZ())
 					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x + wallOffsetDivisor, maxWallHeight, (float) b.z)
+			builder.pos(matrix, b.getX() + wallOffsetDivisor, maxWallHeight, b.getZ())
 					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) a.x + wallOffsetDivisor, maxWallHeight, (float) a.z)
+			builder.pos(matrix, a.getX() + wallOffsetDivisor, maxWallHeight, a.getZ())
 					.color(color.r, color.g, color.b, color.a).endVertex();
 			// +x side
-			builder.pos(matrix, (float) a.x - wallOffsetDivisor, maxWallHeight, (float) a.z)
+			builder.pos(matrix, a.getX() - wallOffsetDivisor, maxWallHeight, a.getZ())
 					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x - wallOffsetDivisor, maxWallHeight, (float) b.z)
+			builder.pos(matrix, b.getX() - wallOffsetDivisor, maxWallHeight, b.getZ())
 					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x - wallOffsetDivisor, minWallHeight, (float) b.z)
+			builder.pos(matrix, b.getX() - wallOffsetDivisor, minWallHeight, b.getZ())
 					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) a.x - wallOffsetDivisor, minWallHeight, (float) a.z)
+			builder.pos(matrix, a.getX() - wallOffsetDivisor, minWallHeight, a.getZ())
 					.color(color.r, color.g, color.b, color.a).endVertex();
 		} else {
 			// -z side
-			builder.pos(matrix, (float) a.x, minWallHeight, (float) a.z - wallOffsetDivisor)
+			builder.pos(matrix, a.getX(), minWallHeight, a.getZ() - wallOffsetDivisor)
 					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x, minWallHeight, (float) b.z - wallOffsetDivisor)
+			builder.pos(matrix, b.getX(), minWallHeight, b.getZ() - wallOffsetDivisor)
 					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x, maxWallHeight, (float) b.z - wallOffsetDivisor)
+			builder.pos(matrix, b.getX(), maxWallHeight, b.getZ() - wallOffsetDivisor)
 					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) a.x, maxWallHeight, (float) a.z - wallOffsetDivisor)
+			builder.pos(matrix, a.getX(), maxWallHeight, a.getZ() - wallOffsetDivisor)
 					.color(color.r, color.g, color.b, color.a).endVertex();
 			// +z side
-			builder.pos(matrix, (float) a.x, maxWallHeight, (float) a.z + wallOffsetDivisor)
+			builder.pos(matrix, a.getX(), maxWallHeight, a.getZ() + wallOffsetDivisor)
 					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x, maxWallHeight, (float) b.z + wallOffsetDivisor)
+			builder.pos(matrix, b.getX(), maxWallHeight, b.getZ() + wallOffsetDivisor)
 					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) b.x, minWallHeight, (float) b.z + wallOffsetDivisor)
+			builder.pos(matrix, b.getX(), minWallHeight, b.getZ() + wallOffsetDivisor)
 					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) a.x, minWallHeight, (float) a.z + wallOffsetDivisor)
+			builder.pos(matrix, a.getX(), minWallHeight, a.getZ() + wallOffsetDivisor)
 					.color(color.r, color.g, color.b, color.a).endVertex();
 		}
 	}
