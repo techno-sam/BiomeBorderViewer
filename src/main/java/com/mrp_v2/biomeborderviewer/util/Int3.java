@@ -22,16 +22,16 @@ public class Int3 {
 		this(pos.getX(), pos.getY(), pos.getZ());
 	}
 
-	public Int3 add(int x, int y, int z) {
-		if (x == 0 && y == 0 && z == 0) {
+	public Int3 add(int xIn, int yIn, int zIn) {
+		if (xIn == 0 && yIn == 0 && zIn == 0) {
 			return this;
 		} else {
-			return new Int3(this.getX() + x, this.getY() + y, this.getZ() + z);
+			return new Int3(x + xIn, y + yIn, z + zIn);
 		}
 	}
 
 	public BlockPos toBlockPos() {
-		return new BlockPos(getX(), getY(), getZ());
+		return new BlockPos(x, y, z);
 	}
 
 	public int getX() {
