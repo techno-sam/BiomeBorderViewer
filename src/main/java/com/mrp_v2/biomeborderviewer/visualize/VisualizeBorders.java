@@ -176,20 +176,30 @@ public class VisualizeBorders {
 		ArrayList<LineData> lines = new ArrayList<LineData>();
 		ArrayList<CornerData> corners = new ArrayList<CornerData>();
 		int xOrigin = data.getChunk().getPos().getXStart(), zOrigin = data.getChunk().getPos().getZStart();
-		for (int x = xOrigin; x < xOrigin + 16; x++) {
-			for (int z = zOrigin; z < zOrigin + 16; z += 2) {
+		//declaratioons to avoid reallocation
+		int x, z;
+		BlockPos mainPos;
+		Biome mainBiome, neighborBiome;
+		BlockPos[] neighbors = new BlockPos[4];
+		Vec3d a, b;
+		LineData lineData;
+		CornerData cornerDataA, cornerDataB;
+		for (x = xOrigin; x < xOrigin + 16; x++) {
+			for (z = zOrigin; z < zOrigin + 16; z += 2) {
 				if (z == zOrigin && Math.abs((xOrigin + x) % 2) == 1) {
 					z++;
 				}
-				BlockPos mainPos = new BlockPos(x, (int) fixedHeight, z);
-				Biome mainBiome = data.getWorld().getBiome(mainPos);
-				BlockPos[] neighbors = new BlockPos[] { mainPos.add(1, 0, 0), mainPos.add(-1, 0, 0),
-						mainPos.add(0, 0, 1), mainPos.add(0, 0, -1) };
+				mainPos = new BlockPos(x, (int) fixedHeight, z);
+				mainBiome = data.getWorld().getBiome(mainPos);
+				neighbors[0] = mainPos.add(1, 0, 0);
+				neighbors[1] = mainPos.add(-1, 0, 0);
+				neighbors[2] = mainPos.add(0, 0, 1);
+				neighbors[3] = mainPos.add(0, 0, -1);
 				for (BlockPos neighborPos : neighbors) {
-					Biome neighborBiome = data.getWorld().getBiome(neighborPos);
+					neighborBiome = data.getWorld().getBiome(neighborPos);
 					if (!neighborBiome.equals(mainBiome)) {
-						Vec3d a = new Vec3d(mainPos);
-						Vec3d b = new Vec3d(neighborPos);
+						a = new Vec3d(mainPos);
+						b = new Vec3d(neighborPos);
 						if (a.x != b.x) {// if they have the same z and different x
 							a = a.add(0, 0, 1);
 							if (a.x > b.x) {
@@ -205,11 +215,11 @@ public class VisualizeBorders {
 								a = a.add(0, 0, 1);
 							}
 						}
-						LineData lineData = new LineData(a, b);
+						lineData = new LineData(a, b);
 						lineData.color = borderColor(mainBiome, neighborBiome);
 						lines.add(lineData);
-						CornerData cornerDataA = new CornerData(a);
-						CornerData cornerDataB = new CornerData(b);
+						cornerDataA = new CornerData(a);
+						cornerDataB = new CornerData(b);
 						if (a.x == b.x) {
 							cornerDataA.showMinusZ = false;
 							cornerDataB.showPlusZ = false;
