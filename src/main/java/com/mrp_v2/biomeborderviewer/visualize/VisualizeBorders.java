@@ -26,12 +26,11 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.client.event.InputEvent.KeyInputEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.ChunkEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -59,48 +58,48 @@ public class VisualizeBorders {
 	private static ConcurrentHashMap<ChunkPos, QueuedChunkData> queuedChunks = new ConcurrentHashMap<ChunkPos, QueuedChunkData>(
 			32);
 
+	private static ArrayList<ChunkPos> loadedChunks = new ArrayList<ChunkPos>();
+
 	@SubscribeEvent
 	public static void chunkLoad(ChunkEvent.Load event) {
 		if (event.getWorld() == null || !(event.getWorld() instanceof ClientWorld)) {
 			return;
 		}
-		queuedChunks.put(event.getChunk().getPos(), new QueuedChunkData(event.getChunk(), event.getWorld()));
-	}
-
-	@SubscribeEvent
-	public static void tick(TickEvent.ClientTickEvent event) {
-		ArrayList<ChunkPos> removes = new ArrayList<ChunkPos>();
-		for (QueuedChunkData data : queuedChunks.values()) {
-			if (neighborChunksExist(data.getChunk(), data.getWorld())) {
-				calculatedChunks.put(data.getChunk().getPos(), calculateDataForChunk(data.getChunk(), data.getWorld()));
-				removes.add(data.getChunk().getPos());
+		loadedChunks.add(event.getChunk().getPos());
+		if (chunkReadyForCalculations(event.getChunk().getPos())) {
+			calculatedChunks.put(event.getChunk().getPos(),
+					calculateDataForChunk(new QueuedChunkData(event.getChunk(), event.getWorld())));
+		} else {
+			queuedChunks.put(event.getChunk().getPos(),
+					new QueuedChunkData(event.getChunk(), event.getWorld().getWorld()));
+		}
+		for (ChunkPos pos : getNeighborChunks(event.getChunk().getPos())) {
+			if (queuedChunks.containsKey(pos)) {
+				if (chunkReadyForCalculations(pos)) {
+					calculatedChunks.put(pos, calculateDataForChunk(queuedChunks.get(pos)));
+				}
 			}
 		}
-		for (ChunkPos pos : removes) {
-			queuedChunks.remove(pos);
-		}
-	}
-
-	private static boolean neighborChunksExist(IChunk chunk, IWorld world) {
-		if (!world.chunkExists(chunk.getPos().x + 1, chunk.getPos().z)) {
-			return false;
-		}
-		if (!world.chunkExists(chunk.getPos().x - 1, chunk.getPos().z)) {
-			return false;
-		}
-		if (!world.chunkExists(chunk.getPos().x, chunk.getPos().z + 1)) {
-			return false;
-		}
-		if (!world.chunkExists(chunk.getPos().x, chunk.getPos().z - 1)) {
-			return false;
-		}
-		return true;
 	}
 
 	@SubscribeEvent
 	public static void chunkUnload(ChunkEvent.Unload event) {
+		if (event.getWorld() == null || !(event.getWorld() instanceof ClientWorld)) {
+			return;
+		}
 		calculatedChunks.remove(event.getChunk().getPos());
 		queuedChunks.remove(event.getChunk().getPos());
+		loadedChunks.remove(event.getChunk().getPos());
+	}
+
+	@SubscribeEvent
+	public static void worldUnload(WorldEvent.Unload event) {
+		if (event.getWorld() == null || !(event.getWorld() instanceof ClientWorld)) {
+			return;
+		}
+		calculatedChunks.clear();
+		queuedChunks.clear();
+		loadedChunks.clear();
 	}
 
 	@SuppressWarnings("resource")
@@ -151,24 +150,43 @@ public class VisualizeBorders {
 		}
 	}
 
+	private static ChunkPos[] getNeighborChunks(ChunkPos chunk) {
+		return new ChunkPos[] { new ChunkPos(chunk.x + 1, chunk.z), new ChunkPos(chunk.x - 1, chunk.z),
+				new ChunkPos(chunk.x, chunk.z + 1), new ChunkPos(chunk.x, chunk.z - 1),
+				new ChunkPos(chunk.x + 1, chunk.z + 1), new ChunkPos(chunk.x - 1, chunk.z - 1),
+				new ChunkPos(chunk.x - 1, chunk.z + 1), new ChunkPos(chunk.x + 1, chunk.z - 1) };
+	}
+
+	private static boolean chunkReadyForCalculations(ChunkPos pos) {
+		if (!loadedChunks.contains(pos)) {
+			return false;
+		}
+		for (ChunkPos neighbor : getNeighborChunks(pos)) {
+			if (!loadedChunks.contains(neighbor)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	/**
 	 * Assumes neighboring chunks are loaded
 	 */
-	private static ChunkBiomeBorderData calculateDataForChunk(IChunk chunk, IWorld world) {
+	private static ChunkBiomeBorderData calculateDataForChunk(QueuedChunkData data) {
 		ArrayList<LineData> lines = new ArrayList<LineData>();
 		ArrayList<CornerData> corners = new ArrayList<CornerData>();
-		int xOrigin = chunk.getPos().getXStart(), zOrigin = chunk.getPos().getZStart();
+		int xOrigin = data.getChunk().getPos().getXStart(), zOrigin = data.getChunk().getPos().getZStart();
 		for (int x = xOrigin; x < xOrigin + 16; x++) {
 			for (int z = zOrigin; z < zOrigin + 16; z += 2) {
 				if (z == zOrigin && Math.abs((xOrigin + x) % 2) == 1) {
 					z++;
 				}
 				BlockPos mainPos = new BlockPos(x, (int) fixedHeight, z);
-				Biome mainBiome = world.getBiome(mainPos);
+				Biome mainBiome = data.getWorld().getBiome(mainPos);
 				BlockPos[] neighbors = new BlockPos[] { mainPos.add(1, 0, 0), mainPos.add(-1, 0, 0),
 						mainPos.add(0, 0, 1), mainPos.add(0, 0, -1) };
 				for (BlockPos neighborPos : neighbors) {
-					Biome neighborBiome = world.getBiome(neighborPos);
+					Biome neighborBiome = data.getWorld().getBiome(neighborPos);
 					if (!neighborBiome.equals(mainBiome)) {
 						Vec3d a = new Vec3d(mainPos);
 						Vec3d b = new Vec3d(neighborPos);
@@ -215,7 +233,7 @@ public class VisualizeBorders {
 				}
 			}
 		}
-		return new ChunkBiomeBorderData(lines, corners);
+		return new ChunkBiomeBorderData(lines, corners, data.getWorld());
 	}
 
 	private static final float minWallHeight = 0;
