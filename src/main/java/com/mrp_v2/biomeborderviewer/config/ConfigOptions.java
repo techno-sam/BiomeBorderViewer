@@ -2,6 +2,7 @@ package com.mrp_v2.biomeborderviewer.config;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.mrp_v2.biomeborderviewer.util.Color;
 import com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders;
 
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -120,5 +121,13 @@ public class ConfigOptions {
 	@SubscribeEvent
 	public static void onFileChange(final ModConfig.Reloading configEvent) {
 		VisualizeBorders.loadConfigSettings();
+	}
+	
+	public static Color getColorA() {
+		return new Color(lineAR.get(), lineAG.get(), lineAB.get(), lineAA.get());
+	}
+	
+	public static Color getColorB() {
+		return new Color(lineBR.get(), lineBG.get(), lineBB.get(), lineBA.get());
 	}
 }
