@@ -100,7 +100,7 @@ public class ConfigOptions {
 					.defineInRange("lineWidth", .0625, 0.01, 0.4);
 
 			viewRange = builder.comment("The radius of the square of chunks around the player to show the border.\n"
-					+ "Similar to render distance, but for the biome border.\n" + "High values may impact performance.")
+					+ "Similar to render distance, but for the biome border.\nHigh values may impact performance.")
 					.translation(translationKey + "viewRange").defineInRange("viewRange", 4, 1, 32);
 		}
 	}
