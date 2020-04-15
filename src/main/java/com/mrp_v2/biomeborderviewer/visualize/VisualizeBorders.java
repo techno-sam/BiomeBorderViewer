@@ -30,6 +30,7 @@ import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.client.event.InputEvent.KeyInputEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -64,6 +65,10 @@ public class VisualizeBorders {
 			return;
 		}
 		queuedChunks.put(event.getChunk().getPos(), new QueuedChunkData(event.getChunk(), event.getWorld()));
+	}
+
+	@SubscribeEvent
+	public static void tick(TickEvent.ClientTickEvent event) {
 		ArrayList<ChunkPos> removes = new ArrayList<ChunkPos>();
 		for (QueuedChunkData data : queuedChunks.values()) {
 			if (neighborChunksExist(data.getChunk(), data.getWorld())) {
@@ -152,31 +157,21 @@ public class VisualizeBorders {
 	private static ChunkBiomeBorderData calculateDataForChunk(IChunk chunk, IWorld world) {
 		ArrayList<LineData> lines = new ArrayList<LineData>();
 		ArrayList<CornerData> corners = new ArrayList<CornerData>();
-		BlockPos mainPos;
-		Biome mainBiome, neighborBiome;
-		BlockPos[] neighbors;
-		Vec3d a, b;
-		LineData lineData;
-		CornerData cornerDataA, cornerDataB;
 		int xOrigin = chunk.getPos().getXStart(), zOrigin = chunk.getPos().getZStart();
-		int x, z;
-		int subX, subZ;
-		for (subX = 0; subX < 16; subX++) {
-			for (subZ = 0; subZ < 16; subZ += 2) {
-				if (subZ == 0 && Math.abs((xOrigin + subX) % 2) == 1) {
-					subZ++;
+		for (int x = xOrigin; x < xOrigin + 16; x++) {
+			for (int z = zOrigin; z < zOrigin + 16; z += 2) {
+				if (z == zOrigin && Math.abs((xOrigin + x) % 2) == 1) {
+					z++;
 				}
-				x = xOrigin + subX;
-				z = zOrigin + subZ;
-				mainPos = new BlockPos(x, fixedHeight, z);
-				mainBiome = world.getBiome(mainPos);
-				neighbors = new BlockPos[] { mainPos.add(1, 0, 0), mainPos.add(-1, 0, 0), mainPos.add(0, 0, 1),
-						mainPos.add(0, 0, -1) };
+				BlockPos mainPos = new BlockPos(x, (int) fixedHeight, z);
+				Biome mainBiome = world.getBiome(mainPos);
+				BlockPos[] neighbors = new BlockPos[] { mainPos.add(1, 0, 0), mainPos.add(-1, 0, 0),
+						mainPos.add(0, 0, 1), mainPos.add(0, 0, -1) };
 				for (BlockPos neighborPos : neighbors) {
-					neighborBiome = world.getBiome(neighborPos);
+					Biome neighborBiome = world.getBiome(neighborPos);
 					if (!neighborBiome.equals(mainBiome)) {
-						a = new Vec3d(mainPos);
-						b = new Vec3d(neighborPos);
+						Vec3d a = new Vec3d(mainPos);
+						Vec3d b = new Vec3d(neighborPos);
 						if (a.x != b.x) {// if they have the same z and different x
 							a = a.add(0, 0, 1);
 							if (a.x > b.x) {
@@ -192,11 +187,11 @@ public class VisualizeBorders {
 								a = a.add(0, 0, 1);
 							}
 						}
-						lineData = new LineData(a, b);
+						LineData lineData = new LineData(a, b);
 						lineData.color = borderColor(mainBiome, neighborBiome);
 						lines.add(lineData);
-						cornerDataA = new CornerData(a);
-						cornerDataB = new CornerData(b);
+						CornerData cornerDataA = new CornerData(a);
+						CornerData cornerDataB = new CornerData(b);
 						if (a.x == b.x) {
 							cornerDataA.showMinusZ = false;
 							cornerDataB.showPlusZ = false;
