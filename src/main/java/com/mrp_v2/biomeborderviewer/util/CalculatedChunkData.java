@@ -10,18 +10,18 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
 
-public class ChunkBiomeBorderData {
+public class CalculatedChunkData {
 	private final ArrayList<LineData> lines;
 	private final ArrayList<CornerData> corners;
 	private final IWorld world;
 
-	public ChunkBiomeBorderData(ArrayList<LineData> lines, ArrayList<CornerData> corners, IWorld world) {
+	public CalculatedChunkData(ArrayList<LineData> lines, ArrayList<CornerData> corners, IWorld world) {
 		this.lines = lines;
 		this.corners = corners;
 		this.world = world;
 	}
 
-	public ChunkBiomeBorderData(QueuedChunkData data) {
+	public CalculatedChunkData(QueuedChunkData data) {
 		world = data.getWorld();
 		lines = new ArrayList<LineData>();
 		corners = new ArrayList<CornerData>();

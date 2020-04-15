@@ -8,7 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.mrp_v2.biomeborderviewer.BiomeBorderViewer;
 import com.mrp_v2.biomeborderviewer.config.ConfigOptions;
-import com.mrp_v2.biomeborderviewer.util.ChunkBiomeBorderData;
+import com.mrp_v2.biomeborderviewer.util.CalculatedChunkData;
 import com.mrp_v2.biomeborderviewer.util.Color;
 import com.mrp_v2.biomeborderviewer.util.QueuedChunkData;
 
@@ -47,7 +47,7 @@ public class VisualizeBorders {
 
 	public static ConfigOptions.RenderModes renderMode;
 
-	private static ConcurrentHashMap<ChunkPos, ChunkBiomeBorderData> calculatedChunks = new ConcurrentHashMap<ChunkPos, ChunkBiomeBorderData>(
+	private static ConcurrentHashMap<ChunkPos, CalculatedChunkData> calculatedChunks = new ConcurrentHashMap<ChunkPos, CalculatedChunkData>(
 			128);
 
 	private static ConcurrentHashMap<ChunkPos, QueuedChunkData> queuedChunks = new ConcurrentHashMap<ChunkPos, QueuedChunkData>(
@@ -63,7 +63,7 @@ public class VisualizeBorders {
 		loadedChunks.add(event.getChunk().getPos());
 		if (chunkReadyForCalculations(event.getChunk().getPos())) {
 			calculatedChunks.put(event.getChunk().getPos(),
-					new ChunkBiomeBorderData(new QueuedChunkData(event.getChunk().getPos(), event.getWorld())));
+					new CalculatedChunkData(new QueuedChunkData(event.getChunk().getPos(), event.getWorld())));
 		} else {
 			queuedChunks.put(event.getChunk().getPos(),
 					new QueuedChunkData(event.getChunk().getPos(), event.getWorld().getWorld()));
@@ -71,7 +71,7 @@ public class VisualizeBorders {
 		for (ChunkPos pos : getNeighborChunks(event.getChunk().getPos())) {
 			if (queuedChunks.containsKey(pos)) {
 				if (chunkReadyForCalculations(pos)) {
-					calculatedChunks.put(pos, new ChunkBiomeBorderData(queuedChunks.get(pos)));
+					calculatedChunks.put(pos, new CalculatedChunkData(queuedChunks.get(pos)));
 				}
 			}
 		}
