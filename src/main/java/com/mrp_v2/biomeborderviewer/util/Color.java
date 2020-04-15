@@ -35,4 +35,8 @@ public class Color {
 		this.b = b;
 		this.a = a;
 	}
+	
+	public void set(Color color) {
+		set(color.r, color.g, color.b, color.a);
+	}
 }
