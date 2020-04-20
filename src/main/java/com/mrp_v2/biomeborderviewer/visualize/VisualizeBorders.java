@@ -5,7 +5,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
 
-import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.mrp_v2.biomeborderviewer.BiomeBorderViewer;
 import com.mrp_v2.biomeborderviewer.config.ConfigOptions;
 import com.mrp_v2.biomeborderviewer.util.CalculatedChunkData;
@@ -13,8 +12,6 @@ import com.mrp_v2.biomeborderviewer.util.Color;
 import com.mrp_v2.biomeborderviewer.util.QueuedChunkData;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.Matrix4f;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.ChunkPos;
@@ -116,19 +113,19 @@ public class VisualizeBorders {
 			PlayerEntity player = Minecraft.getInstance().player;
 			ChunkPos playerChunk = new ChunkPos(player.getPosition());
 			Vec3d playerPos = player.getEyePosition(event.getPartialTicks());
-			IVertexBuilder builder = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource()
-					.getBuffer(RenderType.getLightning());
-			event.getMatrixStack().push();
-			event.getMatrixStack().translate(-playerPos.x, -playerPos.y, -playerPos.z);
-			Matrix4f matrix = event.getMatrixStack().getLast().getMatrix();
 			for (ChunkPos pos : calculatedChunks.keySet()) {
-				if (pos.getChessboardDistance(playerChunk) <= viewRange) {
-					calculatedChunks.get(pos).draw(matrix, builder, playerPos);
+				if (chessboardDistance(pos, playerChunk) <= viewRange) {
+					calculatedChunks.get(pos).draw(playerPos);
 				}
 			}
-			event.getMatrixStack().pop();
-			Minecraft.getInstance().getRenderTypeBuffers().getBufferSource().finish(RenderType.getLightning());
 		}
+	}
+
+	private static int chessboardDistance(ChunkPos a, ChunkPos b) {
+		if (a.x - b.x < a.z - b.z) {
+			return Math.abs(a.x - b.x);
+		}
+		return Math.abs(a.z - b.z);
 	}
 
 	private static ChunkPos[] getNeighborChunks(ChunkPos chunk) {

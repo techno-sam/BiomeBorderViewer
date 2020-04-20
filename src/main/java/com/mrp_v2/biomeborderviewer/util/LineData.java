@@ -1,9 +1,10 @@
 package com.mrp_v2.biomeborderviewer.util;
 
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import org.lwjgl.opengl.GL11;
+
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders;
 
-import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IWorld;
 
@@ -36,84 +37,87 @@ public class LineData {
 		return false;
 	}
 
-	public void drawLine(Matrix4f matrix, IVertexBuilder builder, IWorld world, Vec3d playerPos) {
+	public void drawLine(IWorld world, Vec3d playerPos) {
 		float ay = VisualizeBorders.heightForPos(a.getX(), a.getZ(), world, playerPos);
 		float by = VisualizeBorders.heightForPos(b.getX(), b.getZ(), world, playerPos);
 		Color color = VisualizeBorders.borderColor(similarTemperature);
+		GlStateManager.color4f(color.a, color.r, color.g, color.b);
+		GlStateManager.begin(GL11.GL_QUADS);
 		if (a.getX() == b.getX()) {
 			// top
-			builder.pos(matrix, a.getX() + VisualizeBorders.radius, ay + VisualizeBorders.radius,
-					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
-					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() - VisualizeBorders.radius, by + VisualizeBorders.radius,
-					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
-					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			GlStateManager.vertex3f(a.getX() + VisualizeBorders.radius, ay + VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius);
+			GlStateManager.vertex3f(b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f(b.getX() - VisualizeBorders.radius, by + VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f(a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius);
 			// bottom
-			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
-					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() - VisualizeBorders.radius, by - VisualizeBorders.radius,
-					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
-					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, a.getX() + VisualizeBorders.radius, ay - VisualizeBorders.radius,
-					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			GlStateManager.vertex3f(a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius);
+			GlStateManager.vertex3f(b.getX() - VisualizeBorders.radius, by - VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f(b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f(a.getX() + VisualizeBorders.radius, ay - VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius);
 			// -x side
-			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
-					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() - VisualizeBorders.radius, by + VisualizeBorders.radius,
-					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() - VisualizeBorders.radius, by - VisualizeBorders.radius,
-					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
-					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			GlStateManager.vertex3f(a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius);
+			GlStateManager.vertex3f(b.getX() - VisualizeBorders.radius, by + VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f(b.getX() - VisualizeBorders.radius, by - VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f(a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius);
 			// +x side
-			builder.pos(matrix, a.getX() + VisualizeBorders.radius, ay - VisualizeBorders.radius,
-					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
-					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
-					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, a.getX() + VisualizeBorders.radius, ay + VisualizeBorders.radius,
-					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			GlStateManager.vertex3f(a.getX() + VisualizeBorders.radius, ay - VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius);
+			GlStateManager.vertex3f(b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f(b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f(a.getX() + VisualizeBorders.radius, ay + VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius);
 		} else {
 			// top
-			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
-					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
-					b.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
-					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
-					a.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			GlStateManager.vertex3f(a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius);
+			GlStateManager.vertex3f(b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
+					b.getZ() - VisualizeBorders.radius);
+			GlStateManager.vertex3f(b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f(a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
+					a.getZ() + VisualizeBorders.radius);
 			// bottom
-			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
-					a.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
-					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
-					b.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
-					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			GlStateManager.vertex3f(a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
+					a.getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f(b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f(b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
+					b.getZ() - VisualizeBorders.radius);
+			GlStateManager.vertex3f(a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius);
 			// -z side
-			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
-					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
-					b.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
-					b.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
-					a.getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			GlStateManager.vertex3f(a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius);
+			GlStateManager.vertex3f(b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
+					b.getZ() - VisualizeBorders.radius);
+			GlStateManager.vertex3f(b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
+					b.getZ() - VisualizeBorders.radius);
+			GlStateManager.vertex3f(a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
+					a.getZ() - VisualizeBorders.radius);
 			// +z side
-			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
-					a.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
-					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
-					b.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
-					a.getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			GlStateManager.vertex3f(a.getX() - VisualizeBorders.radius, ay + VisualizeBorders.radius,
+					a.getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f(b.getX() + VisualizeBorders.radius, by + VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f(b.getX() + VisualizeBorders.radius, by - VisualizeBorders.radius,
+					b.getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f(a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
+					a.getZ() + VisualizeBorders.radius);
+			GlStateManager.end();
 		}
 	}
 
@@ -121,46 +125,33 @@ public class LineData {
 	private static final float maxWallHeight = 255;
 	private static final float wallOffsetDivisor = 1f / 0b11111111;
 
-	public void drawWall(Matrix4f matrix, IVertexBuilder builder) {
+	public void drawWall() {
 		Color color = VisualizeBorders.borderColor(similarTemperature);
+		GlStateManager.color4f(color.a, color.r, color.g, color.b);
+		GlStateManager.begin(GL11.GL_QUADS);
 		if (a.getX() == b.getX()) {
 			// -x side
-			builder.pos(matrix, a.getX() + wallOffsetDivisor, minWallHeight, a.getZ())
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() + wallOffsetDivisor, minWallHeight, b.getZ())
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() + wallOffsetDivisor, maxWallHeight, b.getZ())
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, a.getX() + wallOffsetDivisor, maxWallHeight, a.getZ())
-					.color(color.r, color.g, color.b, color.a).endVertex();
+			GlStateManager.vertex3f(a.getX() + wallOffsetDivisor, minWallHeight, a.getZ());
+			GlStateManager.vertex3f(b.getX() + wallOffsetDivisor, minWallHeight, b.getZ());
+			GlStateManager.vertex3f(b.getX() + wallOffsetDivisor, maxWallHeight, b.getZ());
+			GlStateManager.vertex3f(a.getX() + wallOffsetDivisor, maxWallHeight, a.getZ());
 			// +x side
-			builder.pos(matrix, a.getX() - wallOffsetDivisor, maxWallHeight, a.getZ())
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() - wallOffsetDivisor, maxWallHeight, b.getZ())
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX() - wallOffsetDivisor, minWallHeight, b.getZ())
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, a.getX() - wallOffsetDivisor, minWallHeight, a.getZ())
-					.color(color.r, color.g, color.b, color.a).endVertex();
+			GlStateManager.vertex3f(a.getX() - wallOffsetDivisor, maxWallHeight, a.getZ());
+			GlStateManager.vertex3f(b.getX() - wallOffsetDivisor, maxWallHeight, b.getZ());
+			GlStateManager.vertex3f(b.getX() - wallOffsetDivisor, minWallHeight, b.getZ());
+			GlStateManager.vertex3f(a.getX() - wallOffsetDivisor, minWallHeight, a.getZ());
 		} else {
 			// -z side
-			builder.pos(matrix, a.getX(), minWallHeight, a.getZ() - wallOffsetDivisor)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX(), minWallHeight, b.getZ() - wallOffsetDivisor)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX(), maxWallHeight, b.getZ() - wallOffsetDivisor)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, a.getX(), maxWallHeight, a.getZ() - wallOffsetDivisor)
-					.color(color.r, color.g, color.b, color.a).endVertex();
+			GlStateManager.vertex3f(a.getX(), minWallHeight, a.getZ() - wallOffsetDivisor);
+			GlStateManager.vertex3f(b.getX(), minWallHeight, b.getZ() - wallOffsetDivisor);
+			GlStateManager.vertex3f(b.getX(), maxWallHeight, b.getZ() - wallOffsetDivisor);
+			GlStateManager.vertex3f(a.getX(), maxWallHeight, a.getZ() - wallOffsetDivisor);
 			// +z side
-			builder.pos(matrix, a.getX(), maxWallHeight, a.getZ() + wallOffsetDivisor)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX(), maxWallHeight, b.getZ() + wallOffsetDivisor)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, b.getX(), minWallHeight, b.getZ() + wallOffsetDivisor)
-					.color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, a.getX(), minWallHeight, a.getZ() + wallOffsetDivisor)
-					.color(color.r, color.g, color.b, color.a).endVertex();
+			GlStateManager.vertex3f(a.getX(), maxWallHeight, a.getZ() + wallOffsetDivisor);
+			GlStateManager.vertex3f(b.getX(), maxWallHeight, b.getZ() + wallOffsetDivisor);
+			GlStateManager.vertex3f(b.getX(), minWallHeight, b.getZ() + wallOffsetDivisor);
+			GlStateManager.vertex3f(a.getX(), minWallHeight, a.getZ() + wallOffsetDivisor);
 		}
+		GlStateManager.end();
 	}
 }

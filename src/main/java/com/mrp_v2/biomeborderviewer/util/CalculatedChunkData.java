@@ -2,10 +2,8 @@ package com.mrp_v2.biomeborderviewer.util;
 
 import java.util.ArrayList;
 
-import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders;
 
-import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
@@ -106,19 +104,19 @@ public class CalculatedChunkData {
 		return world;
 	}
 
-	public void draw(Matrix4f matrix, IVertexBuilder builder, Vec3d playerPos) {
+	public void draw(Vec3d playerPos) {
 		switch (VisualizeBorders.renderMode) {
 		case WALL:
 			for (LineData lineData : lines) {
-				lineData.drawWall(matrix, builder);
+				lineData.drawWall();
 			}
 			break;
 		default:
 			for (LineData lineData : lines) {
-				lineData.drawLine(matrix, builder, world, playerPos);
+				lineData.drawLine(world, playerPos);
 			}
 			for (CornerData cornerData : corners) {
-				cornerData.drawCorner(matrix, builder, world, playerPos);
+				cornerData.drawCorner(world, playerPos);
 			}
 			break;
 		}

@@ -59,7 +59,8 @@ public class ConfigOptions {
 			lineAR = builder.comment("The red value of the line's color when the 2 biomes have a similar temperature.")
 					.translation(translationKey + "lineAR").defineInRange("lineAR", 0, 0, 255);
 
-			lineAG = builder.comment("The green value of the line's color when the 2 biomes have a similar temperature.")
+			lineAG = builder
+					.comment("The green value of the line's color when the 2 biomes have a similar temperature.")
 					.translation(translationKey + "lineAG").defineInRange("lineAG", 255, 0, 255);
 
 			lineAB = builder.comment("The blue value of the line's color when the 2 biomes have a similar temperature.")
@@ -119,14 +120,14 @@ public class ConfigOptions {
 	}
 
 	@SubscribeEvent
-	public static void onFileChange(final ModConfig.Reloading configEvent) {
+	public static void onFileChange(final ModConfig.ConfigReloading configEvent) {
 		VisualizeBorders.loadConfigSettings();
 	}
-	
+
 	public static Color getColorA() {
 		return new Color(lineAR.get(), lineAG.get(), lineAB.get(), lineAA.get());
 	}
-	
+
 	public static Color getColorB() {
 		return new Color(lineBR.get(), lineBG.get(), lineBB.get(), lineBA.get());
 	}

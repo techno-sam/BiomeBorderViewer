@@ -1,9 +1,10 @@
 package com.mrp_v2.biomeborderviewer.util;
 
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import org.lwjgl.opengl.GL11;
+
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders;
 
-import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IWorld;
 
@@ -42,70 +43,73 @@ public class CornerData extends Int3 {
 		}
 	}
 
-	public void drawCorner(Matrix4f matrix, IVertexBuilder builder, IWorld world, Vec3d playerPos) {
+	public void drawCorner(IWorld world, Vec3d playerPos) {
 		float y = VisualizeBorders.heightForPos(getX(), getZ(), world, playerPos);
 		Color color = VisualizeBorders.borderColor(similarTemperature);
+		GlStateManager.color4f(color.a, color.r, color.g, color.b);
+		GlStateManager.begin(GL11.GL_QUADS);
 		if (showPlusX) {
 			// +x side
-			builder.pos(matrix, (float) getX() + VisualizeBorders.radius, y - VisualizeBorders.radius,
-					(float) getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) getX() + VisualizeBorders.radius, y + VisualizeBorders.radius,
-					(float) getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) getX() + VisualizeBorders.radius, y + VisualizeBorders.radius,
-					(float) getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) getX() + VisualizeBorders.radius, y - VisualizeBorders.radius,
-					(float) getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			GlStateManager.vertex3f((float) getX() + VisualizeBorders.radius, y - VisualizeBorders.radius,
+					(float) getZ() - VisualizeBorders.radius);
+			GlStateManager.vertex3f((float) getX() + VisualizeBorders.radius, y + VisualizeBorders.radius,
+					(float) getZ() - VisualizeBorders.radius);
+			GlStateManager.vertex3f((float) getX() + VisualizeBorders.radius, y + VisualizeBorders.radius,
+					(float) getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f((float) getX() + VisualizeBorders.radius, y - VisualizeBorders.radius,
+					(float) getZ() + VisualizeBorders.radius);
 		}
 		if (showMinusX) {
 			// -x side
-			builder.pos(matrix, (float) getX() - VisualizeBorders.radius, y - VisualizeBorders.radius,
-					(float) getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) getX() - VisualizeBorders.radius, y + VisualizeBorders.radius,
-					(float) getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) getX() - VisualizeBorders.radius, y + VisualizeBorders.radius,
-					(float) getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) getX() - VisualizeBorders.radius, y - VisualizeBorders.radius,
-					(float) getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			GlStateManager.vertex3f((float) getX() - VisualizeBorders.radius, y - VisualizeBorders.radius,
+					(float) getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f((float) getX() - VisualizeBorders.radius, y + VisualizeBorders.radius,
+					(float) getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f((float) getX() - VisualizeBorders.radius, y + VisualizeBorders.radius,
+					(float) getZ() - VisualizeBorders.radius);
+			GlStateManager.vertex3f((float) getX() - VisualizeBorders.radius, y - VisualizeBorders.radius,
+					(float) getZ() - VisualizeBorders.radius);
 		}
 		if (showPlusZ) {
 			// +z side
-			builder.pos(matrix, (float) getX() + VisualizeBorders.radius, y - VisualizeBorders.radius,
-					(float) getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) getX() + VisualizeBorders.radius, y + VisualizeBorders.radius,
-					(float) getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) getX() - VisualizeBorders.radius, y + VisualizeBorders.radius,
-					(float) getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) getX() - VisualizeBorders.radius, y - VisualizeBorders.radius,
-					(float) getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			GlStateManager.vertex3f((float) getX() + VisualizeBorders.radius, y - VisualizeBorders.radius,
+					(float) getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f((float) getX() + VisualizeBorders.radius, y + VisualizeBorders.radius,
+					(float) getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f((float) getX() - VisualizeBorders.radius, y + VisualizeBorders.radius,
+					(float) getZ() + VisualizeBorders.radius);
+			GlStateManager.vertex3f((float) getX() - VisualizeBorders.radius, y - VisualizeBorders.radius,
+					(float) getZ() + VisualizeBorders.radius);
 		}
 		if (showMinusZ) {
 			// -z side
-			builder.pos(matrix, (float) getX() - VisualizeBorders.radius, y - VisualizeBorders.radius,
-					(float) getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) getX() - VisualizeBorders.radius, y + VisualizeBorders.radius,
-					(float) getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) getX() + VisualizeBorders.radius, y + VisualizeBorders.radius,
-					(float) getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-			builder.pos(matrix, (float) getX() + VisualizeBorders.radius, y - VisualizeBorders.radius,
-					(float) getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+			GlStateManager.vertex3f((float) getX() - VisualizeBorders.radius, y - VisualizeBorders.radius,
+					(float) getZ() - VisualizeBorders.radius);
+			GlStateManager.vertex3f((float) getX() - VisualizeBorders.radius, y + VisualizeBorders.radius,
+					(float) getZ() - VisualizeBorders.radius);
+			GlStateManager.vertex3f((float) getX() + VisualizeBorders.radius, y + VisualizeBorders.radius,
+					(float) getZ() - VisualizeBorders.radius);
+			GlStateManager.vertex3f((float) getX() + VisualizeBorders.radius, y - VisualizeBorders.radius,
+					(float) getZ() - VisualizeBorders.radius);
 		}
 		// top
-		builder.pos(matrix, (float) getX() + VisualizeBorders.radius, y + VisualizeBorders.radius,
-				(float) getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-		builder.pos(matrix, (float) getX() + VisualizeBorders.radius, y + VisualizeBorders.radius,
-				(float) getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-		builder.pos(matrix, (float) getX() - VisualizeBorders.radius, y + VisualizeBorders.radius,
-				(float) getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-		builder.pos(matrix, (float) getX() - VisualizeBorders.radius, y + VisualizeBorders.radius,
-				(float) getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+		GlStateManager.vertex3f((float) getX() + VisualizeBorders.radius, y + VisualizeBorders.radius,
+				(float) getZ() + VisualizeBorders.radius);
+		GlStateManager.vertex3f((float) getX() + VisualizeBorders.radius, y + VisualizeBorders.radius,
+				(float) getZ() - VisualizeBorders.radius);
+		GlStateManager.vertex3f((float) getX() - VisualizeBorders.radius, y + VisualizeBorders.radius,
+				(float) getZ() - VisualizeBorders.radius);
+		GlStateManager.vertex3f((float) getX() - VisualizeBorders.radius, y + VisualizeBorders.radius,
+				(float) getZ() + VisualizeBorders.radius);
 		// bottom
-		builder.pos(matrix, (float) getX() - VisualizeBorders.radius, y - VisualizeBorders.radius,
-				(float) getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-		builder.pos(matrix, (float) getX() - VisualizeBorders.radius, y - VisualizeBorders.radius,
-				(float) getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-		builder.pos(matrix, (float) getX() + VisualizeBorders.radius, y - VisualizeBorders.radius,
-				(float) getZ() - VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
-		builder.pos(matrix, (float) getX() + VisualizeBorders.radius, y - VisualizeBorders.radius,
-				(float) getZ() + VisualizeBorders.radius).color(color.r, color.g, color.b, color.a).endVertex();
+		GlStateManager.vertex3f((float) getX() - VisualizeBorders.radius, y - VisualizeBorders.radius,
+				(float) getZ() + VisualizeBorders.radius);
+		GlStateManager.vertex3f((float) getX() - VisualizeBorders.radius, y - VisualizeBorders.radius,
+				(float) getZ() - VisualizeBorders.radius);
+		GlStateManager.vertex3f((float) getX() + VisualizeBorders.radius, y - VisualizeBorders.radius,
+				(float) getZ() - VisualizeBorders.radius);
+		GlStateManager.vertex3f((float) getX() + VisualizeBorders.radius, y - VisualizeBorders.radius,
+				(float) getZ() + VisualizeBorders.radius);
+		GlStateManager.end();
 	}
 }
