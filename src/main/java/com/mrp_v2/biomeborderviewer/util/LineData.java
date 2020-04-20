@@ -41,7 +41,7 @@ public class LineData {
 		float ay = VisualizeBorders.heightForPos(a.getX(), a.getZ(), world, playerPos);
 		float by = VisualizeBorders.heightForPos(b.getX(), b.getZ(), world, playerPos);
 		Color color = VisualizeBorders.borderColor(similarTemperature);
-		GlStateManager.color4f(color.a, color.r, color.g, color.b);
+		GlStateManager.color4f(color.r, color.g, color.b, color.a);
 		GlStateManager.begin(GL11.GL_QUADS);
 		if (a.getX() == b.getX()) {
 			// top
@@ -127,7 +127,7 @@ public class LineData {
 
 	public void drawWall() {
 		Color color = VisualizeBorders.borderColor(similarTemperature);
-		GlStateManager.color4f(color.a, color.r, color.g, color.b);
+		GlStateManager.color4f(color.r, color.g, color.b, color.a);
 		GlStateManager.begin(GL11.GL_QUADS);
 		if (a.getX() == b.getX()) {
 			// -x side

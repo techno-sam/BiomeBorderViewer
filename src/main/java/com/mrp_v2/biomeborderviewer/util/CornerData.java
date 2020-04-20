@@ -46,7 +46,7 @@ public class CornerData extends Int3 {
 	public void drawCorner(IWorld world, Vec3d playerPos) {
 		float y = VisualizeBorders.heightForPos(getX(), getZ(), world, playerPos);
 		Color color = VisualizeBorders.borderColor(similarTemperature);
-		GlStateManager.color4f(color.a, color.r, color.g, color.b);
+		GlStateManager.color4f(color.r, color.g, color.b, color.a);
 		GlStateManager.begin(GL11.GL_QUADS);
 		if (showPlusX) {
 			// +x side
