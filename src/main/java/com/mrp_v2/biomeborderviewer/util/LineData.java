@@ -117,8 +117,8 @@ public class LineData {
 					b.getZ() + VisualizeBorders.radius);
 			GlStateManager.vertex3f(a.getX() - VisualizeBorders.radius, ay - VisualizeBorders.radius,
 					a.getZ() + VisualizeBorders.radius);
-			GlStateManager.end();
 		}
+		GlStateManager.end();
 	}
 
 	private static final float minWallHeight = 0;
