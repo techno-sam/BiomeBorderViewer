@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mrp_v2.biomeborderviewer.BiomeBorderViewer;
 import com.mrp_v2.biomeborderviewer.config.ConfigOptions;
 import com.mrp_v2.biomeborderviewer.util.CalculatedChunkData;
@@ -113,11 +114,18 @@ public class VisualizeBorders {
 			PlayerEntity player = Minecraft.getInstance().player;
 			ChunkPos playerChunk = new ChunkPos(player.getPosition());
 			Vec3d playerPos = player.getEyePosition(event.getPartialTicks());
+			GlStateManager.pushMatrix();
+			GlStateManager.disableBlend();
+			GlStateManager.disableTexture();
+			GlStateManager.translated(-playerPos.x, -playerPos.y, -playerPos.z);
 			for (ChunkPos pos : calculatedChunks.keySet()) {
 				if (chessboardDistance(pos, playerChunk) <= viewRange) {
 					calculatedChunks.get(pos).draw(playerPos);
 				}
 			}
+			GlStateManager.enableBlend();
+			GlStateManager.enableTexture();
+			GlStateManager.popMatrix();
 		}
 	}
 
