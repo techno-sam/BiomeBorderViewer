@@ -4,7 +4,7 @@ issueTrackerURL="https://www.curseforge.com/minecraft/mc-mods/biome-border-viewe
 logoFile="BiomeBorderViewerLogo.png"
 [[mods]]
 modId="biomeborderviewer"
-version="1.15.2-4.0.0.0"
+version="1.14.4-4.0.0.0"
 displayName="Biome Border Viewer"
 updateJSONURL="https://raw.githubusercontent.com/mrp-v2/ModUpdateFiles/master/BiomeBorderViewer.json"
 displayURL="https://www.curseforge.com/minecraft/mc-mods/biome-border-viewer"
@@ -16,12 +16,12 @@ Visualizes the borders of biomes.
 [[dependencies.biomeborderviewer]]
     modId="forge"
     mandatory=true
-    versionRange="[31,)"
+    versionRange="[28,)"
     ordering="NONE"
     side="CLIENT"
 [[dependencies.biomeborderviewer]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.15.2]"
+    versionRange="[1.14.4]"
     ordering="NONE"
     side="CLIENT"
