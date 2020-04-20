@@ -115,15 +115,17 @@ public class VisualizeBorders {
 			ChunkPos playerChunk = new ChunkPos(player.getPosition());
 			Vec3d playerPos = player.getEyePosition(event.getPartialTicks());
 			GlStateManager.pushMatrix();
-			GlStateManager.disableBlend();
+			GlStateManager.enableBlend();
 			GlStateManager.disableTexture();
+			GlStateManager.enableAlphaTest();
 			GlStateManager.translated(-playerPos.x, -playerPos.y, -playerPos.z);
 			for (ChunkPos pos : calculatedChunks.keySet()) {
 				if (chessboardDistance(pos, playerChunk) <= viewRange) {
 					calculatedChunks.get(pos).draw(playerPos);
 				}
 			}
-			GlStateManager.enableBlend();
+			GlStateManager.disableAlphaTest();
+			GlStateManager.disableBlend();
 			GlStateManager.enableTexture();
 			GlStateManager.popMatrix();
 		}
