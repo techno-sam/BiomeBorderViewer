@@ -2,32 +2,32 @@
 <classpath>
 	<classpathentry kind="src" output="bin/main" path="src/main/java">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:\Users\matth\Documents\Making Mods\Mods\1.15.2\1.15.2 Biome Border Viewer\build\natives"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:\Users\matth\Documents\Making Mods\Mods\1.15.2\Biome Border Viewer\build\natives"/>
 			<attribute name="gradle_scope" value="main"/>
 			<attribute name="gradle_used_by_scope" value="main,test"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" output="bin/main" path="src/main/resources">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:\Users\matth\Documents\Making Mods\Mods\1.15.2\1.15.2 Biome Border Viewer\build\natives"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:\Users\matth\Documents\Making Mods\Mods\1.15.2\Biome Border Viewer\build\natives"/>
 			<attribute name="gradle_scope" value="main"/>
 			<attribute name="gradle_used_by_scope" value="main,test"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" output="bin/test" path="src/test/java">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:\Users\matth\Documents\Making Mods\Mods\1.15.2\1.15.2 Biome Border Viewer\build\natives"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:\Users\matth\Documents\Making Mods\Mods\1.15.2\Biome Border Viewer\build\natives"/>
 			<attribute name="gradle_scope" value="test"/>
 			<attribute name="gradle_used_by_scope" value="test"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" output="bin/test" path="src/test/resources">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:\Users\matth\Documents\Making Mods\Mods\1.15.2\1.15.2 Biome Border Viewer\build\natives"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:\Users\matth\Documents\Making Mods\Mods\1.15.2\Biome Border Viewer\build\natives"/>
 			<attribute name="gradle_scope" value="test"/>
 			<attribute name="gradle_used_by_scope" value="test"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/forge-1.15.2-31.1.41-mdk"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/forge-1.15.2-31.2.0-mdk"/>
 	<classpathentry kind="output" path="bin/default"/>
 </classpath>
