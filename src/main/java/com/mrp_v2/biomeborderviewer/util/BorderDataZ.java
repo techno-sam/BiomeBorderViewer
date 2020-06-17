@@ -6,6 +6,22 @@ import net.minecraft.client.renderer.Matrix4f;
 
 public class BorderDataZ extends BorderDataBase {
 
+	static public BorderDataZ merge(BorderDataZ a, BorderDataZ b) {
+		if (a.y1 == b.y1 && a.y2 == b.y2) {
+			if (a.x1 == b.x2) {
+				return new BorderDataZ(a.similarBiome, b.x1, a.x2, a.y1, a.y2, a.z1, a.z2);
+			} else {
+				return new BorderDataZ(a.similarBiome, a.x1, b.x2, a.y1, a.y2, a.z1, a.z2);
+			}
+		} else {
+			if (a.y1 == b.y2) {
+				return new BorderDataZ(a.similarBiome, a.x1, a.x2, b.y1, a.y2, a.z1, a.z2);
+			} else {
+				return new BorderDataZ(a.similarBiome, a.x1, a.x2, a.y1, b.y2, a.z1, a.z2);
+			}
+		}
+	}
+
 	static public BorderDataZ newBorder(Int3 a, Int3 b, boolean similarBiome) {
 		if (a.getZ() < b.getZ()) {
 			return new BorderDataZ(similarBiome, a.getX(), a.getX() + 1, a.getY(), a.getY() + 1, b.getZ() - offset,
@@ -77,21 +93,5 @@ public class BorderDataZ extends BorderDataBase {
 			return false;
 		}
 		return true;
-	}
-
-	static public BorderDataZ merge(BorderDataZ a, BorderDataZ b) {
-		if (a.y1 == b.y1 && a.y2 == b.y2) {
-			if (a.x1 == b.x2) {
-				return new BorderDataZ(a.similarBiome, b.x1, a.x2, a.y1, a.y2, a.z1, a.z2);
-			} else {
-				return new BorderDataZ(a.similarBiome, a.x1, b.x2, a.y1, a.y2, a.z1, a.z2);
-			}
-		} else {
-			if (a.y1 == b.y2) {
-				return new BorderDataZ(a.similarBiome, a.x1, a.x2, b.y1, a.y2, a.z1, a.z2);
-			} else {
-				return new BorderDataZ(a.similarBiome, a.x1, a.x2, a.y1, b.y2, a.z1, a.z2);
-			}
-		}
 	}
 }
