@@ -6,33 +6,48 @@ import net.minecraft.client.renderer.Matrix4f;
 
 public class BorderDataX extends BorderDataBase {
 
-	private final float x1, x2, y1, y2, z1, z2;
-
-	private final int hashCode;
-
-	public BorderDataX(Int3 a, Int3 b, boolean similarBiome) {
-		super(similarBiome);
+	static public BorderDataX newBorder(Int3 a, Int3 b, boolean similarBiome) {
 		if (a.getX() < b.getX()) {
-			x1 = b.getX() - offset;
-			x2 = b.getX() + offset;
+			return new BorderDataX(similarBiome, b.getX() - offset, b.getX() + offset, a.getY(), a.getY() + 1, a.getZ(),
+					a.getZ() + 1);
 		} else {
-			x1 = a.getX() - offset;
-			x2 = a.getX() + offset;
+			return new BorderDataX(similarBiome, a.getX() - offset, a.getX() + offset, a.getY(), a.getY() + 1, a.getZ(),
+					a.getZ() + 1);
 		}
-		y1 = a.getY();
-		y2 = y1 + 1;
-		z1 = a.getZ();
-		z2 = z1 + 1;
-		// hash code
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + Float.floatToIntBits(x1);
-		result = prime * result + Float.floatToIntBits(x2);
-		result = prime * result + Float.floatToIntBits(y1);
-		result = prime * result + Float.floatToIntBits(y2);
-		result = prime * result + Float.floatToIntBits(z1);
-		result = prime * result + Float.floatToIntBits(z2);
-		hashCode = result;
+	}
+
+	private BorderDataX(boolean similarBiome, float x1, float x2, float y1, float y2, float z1, float z2) {
+		super(similarBiome, x1, x2, y1, y2, z1, z2);
+	}
+
+	@Override
+	public boolean canMerge(BorderDataBase border) {
+		if (!super.canMerge(border)) {
+			return false;
+		}
+		if (!(border instanceof BorderDataX)) {
+			return false;
+		}
+		BorderDataX other = (BorderDataX) border;
+		if (equals(border)) {
+			return true;
+		}
+		if (x1 != other.x1) {
+			return false;
+		}
+		if (x2 != other.x2) {
+			return false;
+		}
+		if (y1 == other.y1 && y2 == other.y2) {
+			if (z1 == other.z2 || z2 == other.z1) {
+				return true;
+			}
+		} else if (z1 == other.z1 && z2 == other.z2) {
+			if (y1 == other.y2 || y2 == other.y1) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -61,30 +76,22 @@ public class BorderDataX extends BorderDataBase {
 		if (!(obj instanceof BorderDataX)) {
 			return false;
 		}
-		BorderDataX other = (BorderDataX) obj;
-		if (Float.floatToIntBits(x1) != Float.floatToIntBits(other.x1)) {
-			return false;
-		}
-		if (Float.floatToIntBits(x2) != Float.floatToIntBits(other.x2)) {
-			return false;
-		}
-		if (Float.floatToIntBits(y1) != Float.floatToIntBits(other.y1)) {
-			return false;
-		}
-		if (Float.floatToIntBits(y2) != Float.floatToIntBits(other.y2)) {
-			return false;
-		}
-		if (Float.floatToIntBits(z1) != Float.floatToIntBits(other.z1)) {
-			return false;
-		}
-		if (Float.floatToIntBits(z2) != Float.floatToIntBits(other.z2)) {
-			return false;
-		}
 		return true;
 	}
 
-	@Override
-	public int hashCode() {
-		return hashCode;
+	static public BorderDataX merge(BorderDataX a, BorderDataX b) {
+		if (a.y1 == b.y1 && a.y2 == b.y2) {
+			if (a.z1 == b.z2) {
+				return new BorderDataX(a.similarBiome, a.x1, a.x2, a.y1, a.y2, b.z1, a.z2);
+			} else {
+				return new BorderDataX(a.similarBiome, a.x1, a.x2, a.y1, a.y2, a.z1, b.z2);
+			}
+		} else {
+			if (a.y1 == b.y2) {
+				return new BorderDataX(a.similarBiome, a.x1, a.x2, b.y1, a.y2, a.z1, a.z2);
+			} else {
+				return new BorderDataX(a.similarBiome, a.x1, a.x2, a.y1, b.y2, a.z1, a.z2);
+			}
+		}
 	}
 }
