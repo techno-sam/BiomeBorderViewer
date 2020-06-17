@@ -24,10 +24,14 @@ public abstract class BorderDataBase {
 
 	protected static final float offset = 1f / 0b11111111;
 
-	private final boolean similarBiome;
+	protected final boolean similarBiome;
 
 	protected BorderDataBase(boolean similarBiome) {
 		this.similarBiome = similarBiome;
+	}
+
+	public boolean canMerge(BorderDataBase border) {
+		return similarBiome == border.similarBiome;
 	}
 
 	abstract public void draw(Matrix4f matrix, IVertexBuilder builder);
