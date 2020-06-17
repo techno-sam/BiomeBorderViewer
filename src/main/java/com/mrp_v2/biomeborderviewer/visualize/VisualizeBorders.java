@@ -32,14 +32,31 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber
 public class VisualizeBorders {
 
-	private static boolean showingBorders;
+	private static class ChunkCalculator extends Thread {
 
+		private final ChunkPos pos;
+		private final QueuedChunkData data;
+
+		public ChunkCalculator(ChunkPos pos, QueuedChunkData data) {
+			this.setPriority(NORM_PRIORITY - 2);
+			this.pos = pos;
+			this.data = data;
+		}
+
+		public void run() {
+			CalculatedChunkData calculatedData = new CalculatedChunkData(data);
+			chunkCalculated(pos, calculatedData);
+		}
+	}
+
+	private static boolean showingBorders;
 	private static int horizontalViewRange;
+
 	private static int verticalViewRange;
 
 	public static float radius;
-
 	private static Color colorA = new Color();
+
 	private static Color colorB = new Color();
 
 	private static ConcurrentHashMap<ChunkPos, CalculatedChunkData> calculatedChunks = new ConcurrentHashMap<ChunkPos, CalculatedChunkData>(
@@ -51,6 +68,14 @@ public class VisualizeBorders {
 	private static Set<ChunkPos> calculatingChunks = Collections.synchronizedSet(new HashSet<ChunkPos>());
 
 	private static Set<ChunkPos> loadedChunks = Collections.synchronizedSet(new HashSet<ChunkPos>());
+
+	public static Color borderColor(boolean isSimilar) {
+		if (isSimilar) {
+			return colorA;
+		} else {
+			return colorB;
+		}
+	}
 
 	private static void chunkCalculated(ChunkPos pos, CalculatedChunkData data) {
 		if (calculatingChunks.contains(pos)) {
@@ -83,6 +108,18 @@ public class VisualizeBorders {
 		}
 	}
 
+	private static boolean chunkReadyForCalculations(ChunkPos pos) {
+		if (!loadedChunks.contains(pos)) {
+			return false;
+		}
+		for (ChunkPos neighbor : getNeighborChunks(pos)) {
+			if (!loadedChunks.contains(neighbor)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	@SubscribeEvent
 	public static void chunkUnload(ChunkEvent.Unload event) {
 		if (event.getWorld() == null || !(event.getWorld() instanceof ClientWorld)) {
@@ -94,15 +131,15 @@ public class VisualizeBorders {
 		calculatingChunks.remove(event.getChunk().getPos());
 	}
 
-	@SubscribeEvent
-	public static void worldUnload(WorldEvent.Unload event) {
-		if (event.getWorld() == null || !(event.getWorld() instanceof ClientWorld)) {
-			return;
-		}
-		calculatedChunks.clear();
-		queuedChunks.clear();
-		loadedChunks.clear();
-		calculatingChunks.clear();
+	private static ChunkPos[] getNeighborChunks(ChunkPos chunk) {
+		return new ChunkPos[] { new ChunkPos(chunk.x + 1, chunk.z), new ChunkPos(chunk.x - 1, chunk.z),
+				new ChunkPos(chunk.x, chunk.z + 1), new ChunkPos(chunk.x, chunk.z - 1),
+				new ChunkPos(chunk.x + 1, chunk.z + 1), new ChunkPos(chunk.x - 1, chunk.z - 1),
+				new ChunkPos(chunk.x - 1, chunk.z + 1), new ChunkPos(chunk.x + 1, chunk.z - 1) };
+	}
+
+	public static int GetVerticalViewRange() {
+		return verticalViewRange;
 	}
 
 	@SuppressWarnings("resource")
@@ -114,6 +151,14 @@ public class VisualizeBorders {
 			Minecraft.getInstance().player
 					.sendMessage(new StringTextComponent("Showing borders is now " + showingBorders));
 		}
+	}
+
+	public static void loadConfigSettings() {
+		LogManager.getLogger().debug("Loading config settings for border lines.");
+		horizontalViewRange = ConfigOptions.horizontalViewRange.get();
+		verticalViewRange = ConfigOptions.verticalViewRange.get();
+		colorA.set(ConfigOptions.getColorA());
+		colorB.set(ConfigOptions.getColorB());
 	}
 
 	@SubscribeEvent
@@ -139,59 +184,14 @@ public class VisualizeBorders {
 		}
 	}
 
-	private static ChunkPos[] getNeighborChunks(ChunkPos chunk) {
-		return new ChunkPos[] { new ChunkPos(chunk.x + 1, chunk.z), new ChunkPos(chunk.x - 1, chunk.z),
-				new ChunkPos(chunk.x, chunk.z + 1), new ChunkPos(chunk.x, chunk.z - 1),
-				new ChunkPos(chunk.x + 1, chunk.z + 1), new ChunkPos(chunk.x - 1, chunk.z - 1),
-				new ChunkPos(chunk.x - 1, chunk.z + 1), new ChunkPos(chunk.x + 1, chunk.z - 1) };
-	}
-
-	private static boolean chunkReadyForCalculations(ChunkPos pos) {
-		if (!loadedChunks.contains(pos)) {
-			return false;
+	@SubscribeEvent
+	public static void worldUnload(WorldEvent.Unload event) {
+		if (event.getWorld() == null || !(event.getWorld() instanceof ClientWorld)) {
+			return;
 		}
-		for (ChunkPos neighbor : getNeighborChunks(pos)) {
-			if (!loadedChunks.contains(neighbor)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public static Color borderColor(boolean isSimilar) {
-		if (isSimilar) {
-			return colorA;
-		} else {
-			return colorB;
-		}
-	}
-
-	public static void loadConfigSettings() {
-		LogManager.getLogger().debug("Loading config settings for border lines.");
-		horizontalViewRange = ConfigOptions.horizontalViewRange.get();
-		verticalViewRange = ConfigOptions.verticalViewRange.get();
-		colorA.set(ConfigOptions.getColorA());
-		colorB.set(ConfigOptions.getColorB());
-	}
-
-	public static int GetVerticalViewRange() {
-		return verticalViewRange;
-	}
-
-	private static class ChunkCalculator extends Thread {
-
-		private final ChunkPos pos;
-		private final QueuedChunkData data;
-
-		public ChunkCalculator(ChunkPos pos, QueuedChunkData data) {
-			this.setPriority(NORM_PRIORITY - 2);
-			this.pos = pos;
-			this.data = data;
-		}
-
-		public void run() {
-			CalculatedChunkData calculatedData = new CalculatedChunkData(data);
-			chunkCalculated(pos, calculatedData);
-		}
+		calculatedChunks.clear();
+		queuedChunks.clear();
+		loadedChunks.clear();
+		calculatingChunks.clear();
 	}
 }

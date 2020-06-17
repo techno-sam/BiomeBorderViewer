@@ -12,21 +12,6 @@ import net.minecraftforge.fml.config.ModConfig;
 
 public class ConfigOptions {
 
-	private static final String translationKey = "biomeborderviewer.configgui.";
-
-	public static IntValue borderA_R;
-	public static IntValue borderA_G;
-	public static IntValue borderA_B;
-	public static IntValue borderA_A;
-
-	public static IntValue borderB_R;
-	public static IntValue borderB_G;
-	public static IntValue borderB_B;
-	public static IntValue borderB_A;
-
-	public static IntValue horizontalViewRange;
-	public static IntValue verticalViewRange;
-
 	public static class Client {
 
 		Client(ForgeConfigSpec.Builder builder) {
@@ -70,6 +55,21 @@ public class ConfigOptions {
 		}
 	}
 
+	private static final String translationKey = "biomeborderviewer.configgui.";
+	public static IntValue borderA_R;
+	public static IntValue borderA_G;
+	public static IntValue borderA_B;
+
+	public static IntValue borderA_A;
+	public static IntValue borderB_R;
+	public static IntValue borderB_G;
+	public static IntValue borderB_B;
+
+	public static IntValue borderB_A;
+	public static IntValue horizontalViewRange;
+
+	public static IntValue verticalViewRange;
+
 	public static final ForgeConfigSpec clientSpec;
 	public static final Client CLIENT;
 	static {
@@ -78,21 +78,21 @@ public class ConfigOptions {
 		CLIENT = specPair.getLeft();
 	}
 
-	@SubscribeEvent
-	public static void onLoad(final ModConfig.Loading configEvent) {
-		VisualizeBorders.loadConfigSettings();
+	public static Color getColorA() {
+		return new Color(borderA_R.get(), borderA_G.get(), borderA_B.get(), borderA_A.get());
 	}
 
+	public static Color getColorB() {
+		return new Color(borderB_R.get(), borderB_G.get(), borderB_B.get(), borderB_A.get());
+	}
+	
 	@SubscribeEvent
 	public static void onFileChange(final ModConfig.Reloading configEvent) {
 		VisualizeBorders.loadConfigSettings();
 	}
 	
-	public static Color getColorA() {
-		return new Color(borderA_R.get(), borderA_G.get(), borderA_B.get(), borderA_A.get());
-	}
-	
-	public static Color getColorB() {
-		return new Color(borderB_R.get(), borderB_G.get(), borderB_B.get(), borderB_A.get());
+	@SubscribeEvent
+	public static void onLoad(final ModConfig.Loading configEvent) {
+		VisualizeBorders.loadConfigSettings();
 	}
 }

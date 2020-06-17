@@ -14,10 +14,6 @@ public class Color {
 		this.a = a;
 	}
 
-	public int hashCode() {
-		return r * g * b * a;
-	}
-
 	public boolean equals(Color color) {
 		return r == color.r && g == color.g && b == color.b && a == color.a;
 	}
@@ -29,14 +25,18 @@ public class Color {
 		return false;
 	}
 
+	public int hashCode() {
+		return r * g * b * a;
+	}
+
+	public void set(Color color) {
+		set(color.r, color.g, color.b, color.a);
+	}
+	
 	public void set(int r, int g, int b, int a) {
 		this.r = r;
 		this.g = g;
 		this.b = b;
 		this.a = a;
-	}
-	
-	public void set(Color color) {
-		set(color.r, color.g, color.b, color.a);
 	}
 }

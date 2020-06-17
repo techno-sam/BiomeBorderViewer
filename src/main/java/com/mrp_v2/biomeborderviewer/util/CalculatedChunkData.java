@@ -12,6 +12,29 @@ import net.minecraft.world.biome.Biome;
 
 public class CalculatedChunkData {
 
+	private class CalculatedSubChunkData {
+		private final int subChunkHeight;
+		private final HashSet<BorderDataBase> borders;
+
+		public CalculatedSubChunkData(Collection<BorderDataBase> borders, int subChunkHeight) {
+			this.borders = new HashSet<BorderDataBase>(borders);
+			this.subChunkHeight = subChunkHeight;
+			simplifyBorders();
+		}
+
+		public void draw(Matrix4f matrix, IVertexBuilder builder, int playerY) {
+			if (Math.abs(((subChunkHeight * 16) + 8) - playerY) < VisualizeBorders.GetVerticalViewRange() * 16) {
+				for (BorderDataBase lineData : borders) {
+					lineData.draw(matrix, builder);
+				}
+			}
+		}
+		
+		private void simplifyBorders() {
+			
+		}
+	}
+
 	private final ArrayList<CalculatedSubChunkData> borders;
 
 	public CalculatedChunkData(QueuedChunkData data) {
@@ -66,29 +89,6 @@ public class CalculatedChunkData {
 	public void draw(Matrix4f matrix, IVertexBuilder builder, int playerY) {
 		for (CalculatedSubChunkData subChunkData : borders) {
 			subChunkData.draw(matrix, builder, playerY);
-		}
-	}
-
-	private class CalculatedSubChunkData {
-		private final int subChunkHeight;
-		private final HashSet<BorderDataBase> borders;
-
-		public CalculatedSubChunkData(Collection<BorderDataBase> borders, int subChunkHeight) {
-			this.borders = new HashSet<BorderDataBase>(borders);
-			this.subChunkHeight = subChunkHeight;
-			simplifyBorders();
-		}
-
-		public void draw(Matrix4f matrix, IVertexBuilder builder, int playerY) {
-			if (Math.abs(((subChunkHeight * 16) + 8) - playerY) < VisualizeBorders.GetVerticalViewRange() * 16) {
-				for (BorderDataBase lineData : borders) {
-					lineData.draw(matrix, builder);
-				}
-			}
-		}
-		
-		private void simplifyBorders() {
-			
 		}
 	}
 }

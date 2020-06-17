@@ -20,13 +20,13 @@ public class BiomeBorderViewer {
 	public static final KeyBinding showBorders = new KeyBinding(MODID + ".key.showBorders", GLFW.GLFW_KEY_B,
 			MODID + ".key.categories");
 
+	static {
+		ClientRegistry.registerKeyBinding(showBorders);
+	}
+
 	public BiomeBorderViewer() {
 		final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ConfigOptions.clientSpec);
 		modEventBus.register(ConfigOptions.class);
-	}
-
-	static {
-		ClientRegistry.registerKeyBinding(showBorders);
 	}
 }
