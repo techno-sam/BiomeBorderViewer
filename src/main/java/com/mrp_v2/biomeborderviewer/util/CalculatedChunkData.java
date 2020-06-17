@@ -65,13 +65,13 @@ public class CalculatedChunkData {
 						neighborBiome = data.getWorld().getBiome(neighborPos.toBlockPos());
 						if (!neighborBiome.equals(mainBiome)) {
 							if (mainPos.getX() != neighborPos.getX()) {
-								borderData = new BorderDataX(mainPos, neighborPos,
+								borderData = BorderDataX.newBorder(mainPos, neighborPos,
 										mainBiome.getTempCategory() == neighborBiome.getTempCategory());
 							} else if (mainPos.getZ() != neighborPos.getZ()) {
-								borderData = new BorderDataZ(mainPos, neighborPos,
+								borderData = BorderDataZ.newBorder(mainPos, neighborPos,
 										mainBiome.getTempCategory() == neighborBiome.getTempCategory());
 							} else {
-								borderData = new BorderDataY(mainPos, neighborPos,
+								borderData = BorderDataY.newBorder(mainPos, neighborPos,
 										mainBiome.getTempCategory() == neighborBiome.getTempCategory());
 							}
 							subBorders.add(borderData);
