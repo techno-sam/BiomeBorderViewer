@@ -65,7 +65,6 @@ public class VisualizeBorders {
 			if (queuedChunks.containsKey(pos)) {
 				if (chunkReadyForCalculations(pos)) {
 					new ChunkCalculator(pos, queuedChunks.get(pos)).start();
-					//calculatedChunks.put(pos, new CalculatedChunkData(queuedChunks.get(pos)));
 				}
 			}
 		}
