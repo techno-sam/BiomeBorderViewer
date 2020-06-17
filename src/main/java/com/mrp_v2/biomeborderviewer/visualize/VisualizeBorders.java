@@ -64,7 +64,8 @@ public class VisualizeBorders {
 		for (ChunkPos pos : getNeighborChunks(event.getChunk().getPos())) {
 			if (queuedChunks.containsKey(pos)) {
 				if (chunkReadyForCalculations(pos)) {
-					calculatedChunks.put(pos, new CalculatedChunkData(queuedChunks.get(pos)));
+					new ChunkCalculator(pos, queuedChunks.get(pos)).start();
+					//calculatedChunks.put(pos, new CalculatedChunkData(queuedChunks.get(pos)));
 				}
 			}
 		}
@@ -161,5 +162,22 @@ public class VisualizeBorders {
 	
 	public static int GetVerticalViewRange() {
 		return verticalViewRange;
+	}
+	
+	private static class ChunkCalculator extends Thread {
+		
+		private final ChunkPos pos;
+		private final QueuedChunkData data;
+		
+		public ChunkCalculator(ChunkPos pos, QueuedChunkData data) {
+			this.setPriority(NORM_PRIORITY - 2);
+			this.pos = pos;
+			this.data = data;
+		}
+		
+		public void run() {
+			CalculatedChunkData calculatedData = new CalculatedChunkData(data);
+			calculatedChunks.put(pos, calculatedData);
+		}
 	}
 }
