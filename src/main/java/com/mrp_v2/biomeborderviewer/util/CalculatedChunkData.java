@@ -1,6 +1,8 @@
 package com.mrp_v2.biomeborderviewer.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders;
@@ -9,6 +11,7 @@ import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.world.biome.Biome;
 
 public class CalculatedChunkData {
+
 	private final ArrayList<CalculatedSubChunkData> borders;
 
 	public CalculatedChunkData(QueuedChunkData data) {
@@ -68,11 +71,12 @@ public class CalculatedChunkData {
 
 	private class CalculatedSubChunkData {
 		private final int subChunkHeight;
-		private final ArrayList<BorderDataBase> borders;
+		private final HashSet<BorderDataBase> borders;
 
-		public CalculatedSubChunkData(ArrayList<BorderDataBase> borders, int subChunkHeight) {
-			this.borders = borders;
+		public CalculatedSubChunkData(Collection<BorderDataBase> borders, int subChunkHeight) {
+			this.borders = new HashSet<BorderDataBase>(borders);
 			this.subChunkHeight = subChunkHeight;
+			simplifyBorders();
 		}
 
 		public void draw(Matrix4f matrix, IVertexBuilder builder, int playerY) {
@@ -81,6 +85,10 @@ public class CalculatedChunkData {
 					lineData.draw(matrix, builder);
 				}
 			}
+		}
+		
+		private void simplifyBorders() {
+			
 		}
 	}
 }

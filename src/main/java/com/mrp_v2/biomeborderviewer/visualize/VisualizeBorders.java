@@ -1,6 +1,8 @@
 package com.mrp_v2.biomeborderviewer.visualize;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
@@ -46,7 +48,16 @@ public class VisualizeBorders {
 	private static ConcurrentHashMap<ChunkPos, QueuedChunkData> queuedChunks = new ConcurrentHashMap<ChunkPos, QueuedChunkData>(
 			32);
 
-	private static ArrayList<ChunkPos> loadedChunks = new ArrayList<ChunkPos>();
+	private static Set<ChunkPos> calculatingChunks = Collections.synchronizedSet(new HashSet<ChunkPos>());
+
+	private static Set<ChunkPos> loadedChunks = Collections.synchronizedSet(new HashSet<ChunkPos>());
+
+	private static void chunkCalculated(ChunkPos pos, CalculatedChunkData data) {
+		if (calculatingChunks.contains(pos)) {
+			calculatingChunks.remove(pos);
+			calculatedChunks.put(pos, data);
+		}
+	}
 
 	@SubscribeEvent
 	public static void chunkLoad(ChunkEvent.Load event) {
@@ -64,6 +75,8 @@ public class VisualizeBorders {
 		for (ChunkPos pos : getNeighborChunks(event.getChunk().getPos())) {
 			if (queuedChunks.containsKey(pos)) {
 				if (chunkReadyForCalculations(pos)) {
+					calculatingChunks.add(pos);
+					queuedChunks.remove(pos);
 					new ChunkCalculator(pos, queuedChunks.get(pos)).start();
 				}
 			}
@@ -78,6 +91,7 @@ public class VisualizeBorders {
 		calculatedChunks.remove(event.getChunk().getPos());
 		queuedChunks.remove(event.getChunk().getPos());
 		loadedChunks.remove(event.getChunk().getPos());
+		calculatingChunks.remove(event.getChunk().getPos());
 	}
 
 	@SubscribeEvent
@@ -88,6 +102,7 @@ public class VisualizeBorders {
 		calculatedChunks.clear();
 		queuedChunks.clear();
 		loadedChunks.clear();
+		calculatingChunks.clear();
 	}
 
 	@SuppressWarnings("resource")
@@ -113,7 +128,7 @@ public class VisualizeBorders {
 			event.getMatrixStack().push();
 			event.getMatrixStack().translate(-playerPos.x, -playerPos.y, -playerPos.z);
 			Matrix4f matrix = event.getMatrixStack().getLast().getMatrix();
-			int playerY = (int)playerPos.getY();
+			int playerY = (int) playerPos.getY();
 			for (ChunkPos pos : calculatedChunks.keySet()) {
 				if (pos.getChessboardDistance(playerChunk) <= horizontalViewRange) {
 					calculatedChunks.get(pos).draw(matrix, builder, playerY);
@@ -158,25 +173,25 @@ public class VisualizeBorders {
 		colorA.set(ConfigOptions.getColorA());
 		colorB.set(ConfigOptions.getColorB());
 	}
-	
+
 	public static int GetVerticalViewRange() {
 		return verticalViewRange;
 	}
-	
+
 	private static class ChunkCalculator extends Thread {
-		
+
 		private final ChunkPos pos;
 		private final QueuedChunkData data;
-		
+
 		public ChunkCalculator(ChunkPos pos, QueuedChunkData data) {
 			this.setPriority(NORM_PRIORITY - 2);
 			this.pos = pos;
 			this.data = data;
 		}
-		
+
 		public void run() {
 			CalculatedChunkData calculatedData = new CalculatedChunkData(data);
-			calculatedChunks.put(pos, calculatedData);
+			chunkCalculated(pos, calculatedData);
 		}
 	}
 }
