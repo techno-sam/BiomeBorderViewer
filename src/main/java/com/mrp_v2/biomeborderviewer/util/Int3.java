@@ -1,6 +1,7 @@
 package com.mrp_v2.biomeborderviewer.util;
 
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 public class Int3 {
 
@@ -20,6 +21,18 @@ public class Int3 {
 
 	public Int3(BlockPos pos) {
 		this(pos.getX(), pos.getY(), pos.getZ());
+	}
+
+	public Int3(float x, float y, float z) {
+		this(Math.round(x), Math.round(y), Math.round(z));
+	}
+
+	public Int3(Vec3d pos) {
+		this(pos.x, pos.y, pos.z);
+	}
+
+	public Int3(double x, double y, double z) {
+		this((float) x, (float) y, (float) z);
 	}
 
 	public Int3 add(int xIn, int yIn, int zIn) {
@@ -44,5 +57,9 @@ public class Int3 {
 
 	public int getZ() {
 		return z;
+	}
+
+	public int axisDistance(Int3 other) {
+		return Math.max(Math.max(Math.abs(x - other.x), Math.abs(y - other.y)), Math.abs(z - other.z));
 	}
 }

@@ -6,102 +6,67 @@ import com.mrp_v2.biomeborderviewer.util.Color;
 import com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders;
 
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.ForgeConfigSpec.DoubleValue;
-import net.minecraftforge.common.ForgeConfigSpec.EnumValue;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.config.ModConfig;
 
 public class ConfigOptions {
 
-	private static final String translationKey = "mrp_v2.biomeborderviewer.configgui.";
+	private static final String translationKey = "biomeborderviewer.configgui.";
 
-	public enum RenderModes {
-		LINE_FOLLOW_PLAYER_HEIGHT, LINE_MATCH_TERRAIN, LINE_FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN, LINE_FIXED_HEIGHT,
-		WALL
-	}
+	public static IntValue borderA_R;
+	public static IntValue borderA_G;
+	public static IntValue borderA_B;
+	public static IntValue borderA_A;
 
-	public static EnumValue<RenderModes> renderMode;
+	public static IntValue borderB_R;
+	public static IntValue borderB_G;
+	public static IntValue borderB_B;
+	public static IntValue borderB_A;
 
-	public static IntValue lineAR;
-	public static IntValue lineAG;
-	public static IntValue lineAB;
-	public static IntValue lineAA;
-
-	public static IntValue lineBR;
-	public static IntValue lineBG;
-	public static IntValue lineBB;
-	public static IntValue lineBA;
-
-	public static DoubleValue playerHeightOffset;
-	public static DoubleValue terrainHeightOffset;
-	public static DoubleValue fixedHeight;
-
-	public static DoubleValue lineWidth;
-
-	public static IntValue viewRange;
+	public static IntValue horizontalViewRange;
+	public static IntValue verticalViewRange;
 
 	public static class Client {
 
 		Client(ForgeConfigSpec.Builder builder) {
 			builder.comment("biome border viewer client settings").push("client");
 
-			renderMode = builder.comment("What the reference point for the border-line height is."
-					+ "\nWall is the preferred option, as all others will likely be removed in 1.16"
-					+ "\nWall is also the most performance friendly."
-					+ "\n LINE_FOLLOW_PLAYER_HEIGHT - The line follows the height of the player + playerHeightOffset"
-					+ "\n LINE_MATCH_TERRAIN - The line follows the height of the highest block + terrainHeightOffset"
-					+ "\n LINE_FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN - The line follows the player height, unless the terrain height is higher."
-					+ "\n LINE_FIXED_HEIGHT - The height of the line is fixed at fixedHeight"
-					+ "\n WALL - Makes a wall going from y 0-255. It is recommened to make the line more transparent (decrease the alpha value) in this scenario.")
-					.translation(translationKey + "renderMode").defineEnum("renderMode", RenderModes.WALL);
+			borderA_R = builder.comment("The red value of the line's color when the 2 biomes have similar temperatures.")
+					.translation(translationKey + "borderA_R").defineInRange("borderA_R", 0, 0, 255);
 
-			lineAR = builder.comment("The red value of the line's color when the 2 biomes have a similar temperature.")
-					.translation(translationKey + "lineAR").defineInRange("lineAR", 0, 0, 255);
+			borderA_G = builder.comment("The green value of the line's color when the 2 biomes have similar temperatures.")
+					.translation(translationKey + "borderA_G").defineInRange("borderA_G", 255, 0, 255);
 
-			lineAG = builder.comment("The green value of the line's color when the 2 biomes have a similar temperature.")
-					.translation(translationKey + "lineAG").defineInRange("lineAG", 255, 0, 255);
+			borderA_B = builder.comment("The blue value of the line's color when the 2 biomes have similar temperatures.")
+					.translation(translationKey + "borderA_B").defineInRange("borderA_B", 0, 0, 255);
 
-			lineAB = builder.comment("The blue value of the line's color when the 2 biomes have a similar temperature.")
-					.translation(translationKey + "lineAB").defineInRange("lineAB", 0, 0, 255);
+			borderA_A = builder.comment(
+					"The alpha (transparency) value of the line's color when the 2 biomes have similar temperatures.")
+					.translation(translationKey + "borderA_A").defineInRange("borderA_A", 128, 0, 255);
 
-			lineAA = builder.comment(
-					"The alpha (transparency) value of the line's color when the 2 biomes have a similar temperature.")
-					.translation(translationKey + "lineAA").defineInRange("lineAA", 128, 0, 255);
+			borderB_R = builder.comment("The red value of the line's color when the 2 biomes have unsimilar temperatures.")
+					.translation(translationKey + "borderB_R").defineInRange("borderB_R", 255, 0, 255);
 
-			lineBR = builder.comment("The red value of the line's color when the 2 biomes have unsimilar temperatures.")
-					.translation(translationKey + "lineBR").defineInRange("lineBR", 255, 0, 255);
-
-			lineBG = builder
+			borderB_G = builder
 					.comment("The green value of the line's color when the 2 biomes have unsimilar temperatures.")
-					.translation(translationKey + "lineBG").defineInRange("lineBG", 0, 0, 255);
+					.translation(translationKey + "borderB_G").defineInRange("borderB_G", 0, 0, 255);
 
-			lineBB = builder
+			borderB_B = builder
 					.comment("The blue value of the line's color when the 2 biomes have unsimilar temperatures.")
-					.translation(translationKey + "lineBB").defineInRange("lineBB", 0, 0, 255);
+					.translation(translationKey + "borderB_B").defineInRange("borderB_B", 0, 0, 255);
 
-			lineBA = builder.comment(
+			borderB_A = builder.comment(
 					"The alpha (transparency) value of the line's color when the 2 biomes have unsimilar temperatures.")
-					.translation(translationKey + "lineBA").defineInRange("lineBA", 128, 0, 255);
+					.translation(translationKey + "borderB_A").defineInRange("borderB_A", 128, 0, 255);
 
-			playerHeightOffset = builder
-					.comment("The height offset from the player's eyes that the lines are drawn at.")
-					.translation(translationKey + "playerHeightOffset")
-					.defineInRange("playerHeightOffset", 1.0, -256.0, 256.0);
-
-			terrainHeightOffset = builder.comment("The height offset from the terrain that the lines are drawn at.")
-					.translation(translationKey + "terrainHeightOffset")
-					.defineInRange("terrainHeightOffset", 1.0, -256.0, 256.0);
-
-			fixedHeight = builder.comment("The height that the lines are drawn at.")
-					.translation(translationKey + "fixedHeight").defineInRange("fixedHeight", 64.0, 0.0, 256.0);
-
-			lineWidth = builder.comment("The width of the line").translation(translationKey + "lineWidth")
-					.defineInRange("lineWidth", .0625, 0.01, 0.4);
-
-			viewRange = builder.comment("The radius of the square of chunks around the player to show the border.\n"
-					+ "Similar to render distance, but for the biome border.\nHigh values may impact performance.")
-					.translation(translationKey + "viewRange").defineInRange("viewRange", 4, 1, 32);
+			horizontalViewRange = builder.comment("The horizontal distance to show biome borders around the player.\n"
+					+ "Like render distance, but for the biome border.\nHigh values may impact performance.")
+					.translation(translationKey + "horizontalViewRange").defineInRange("horizontalViewRange", 4, 1, 32);
+			
+			verticalViewRange = builder.comment("The vertical distance to show biome borders above and below the player.\n"
+					+ "High values may impact performance.")
+					.translation(translationKey + "verticalViewRange").defineInRange("verticalViewRange", 4, 1, 16);
 		}
 	}
 
@@ -124,10 +89,10 @@ public class ConfigOptions {
 	}
 	
 	public static Color getColorA() {
-		return new Color(lineAR.get(), lineAG.get(), lineAB.get(), lineAA.get());
+		return new Color(borderA_R.get(), borderA_G.get(), borderA_B.get(), borderA_A.get());
 	}
 	
 	public static Color getColorB() {
-		return new Color(lineBR.get(), lineBG.get(), lineBB.get(), lineBA.get());
+		return new Color(borderB_R.get(), borderB_G.get(), borderB_B.get(), borderB_A.get());
 	}
 }

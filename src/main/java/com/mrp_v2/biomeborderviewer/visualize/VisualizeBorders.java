@@ -20,8 +20,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.client.event.InputEvent.KeyInputEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.world.ChunkEvent;
@@ -34,18 +32,13 @@ public class VisualizeBorders {
 
 	private static boolean showingBorders;
 
-	private static int viewRange;
-
-	private static double playerHeightOffset;
-	private static double terrainHeightOffset;
-	private static double fixedHeight;
+	private static int horizontalViewRange;
+	private static int verticalViewRange;
 
 	public static float radius;
 
 	private static Color colorA = new Color();
 	private static Color colorB = new Color();
-
-	public static ConfigOptions.RenderModes renderMode;
 
 	private static ConcurrentHashMap<ChunkPos, CalculatedChunkData> calculatedChunks = new ConcurrentHashMap<ChunkPos, CalculatedChunkData>(
 			128);
@@ -102,8 +95,7 @@ public class VisualizeBorders {
 	public static void keyPressed(KeyInputEvent event) {
 		if (BiomeBorderViewer.showBorders.isPressed()) {
 			showingBorders = !showingBorders;
-			LogManager.getLogger().debug("Show Borders hotkey pressed. showingBorders is now " + showingBorders
-					+ ", render mode = " + renderMode.toString());
+			LogManager.getLogger().debug("Show Borders hotkey pressed. showingBorders is now " + showingBorders);
 			Minecraft.getInstance().player
 					.sendMessage(new StringTextComponent("Showing borders is now " + showingBorders));
 		}
@@ -121,9 +113,10 @@ public class VisualizeBorders {
 			event.getMatrixStack().push();
 			event.getMatrixStack().translate(-playerPos.x, -playerPos.y, -playerPos.z);
 			Matrix4f matrix = event.getMatrixStack().getLast().getMatrix();
+			int playerY = (int)playerPos.getY();
 			for (ChunkPos pos : calculatedChunks.keySet()) {
-				if (pos.getChessboardDistance(playerChunk) <= viewRange) {
-					calculatedChunks.get(pos).draw(matrix, builder, playerPos);
+				if (pos.getChessboardDistance(playerChunk) <= horizontalViewRange) {
+					calculatedChunks.get(pos).draw(matrix, builder, playerY);
 				}
 			}
 			event.getMatrixStack().pop();
@@ -158,55 +151,15 @@ public class VisualizeBorders {
 		}
 	}
 
-	public static float heightForPos(double x, double z, IWorld world, Vec3d playerPos) {
-		switch (renderMode) {
-		case LINE_FIXED_HEIGHT:
-			return (float) fixedHeight;
-		case LINE_FOLLOW_PLAYER_HEIGHT:
-			return playerBasedHeight(playerPos);
-		case LINE_FOLLOW_PLAYER_IF_HIGHER_THAN_TERRAIN:
-			float playerBasedHeight = playerBasedHeight(playerPos);
-			float terrainBasedHeight = terrainBasedHeight(x, z, world);
-			if (playerBasedHeight >= terrainBasedHeight)
-				return playerBasedHeight;
-			else
-				return terrainBasedHeight;
-		case LINE_MATCH_TERRAIN:
-			return terrainBasedHeight(x, z, world);
-		default:
-			return 64;
-		}
-	}
-
-	private static float playerBasedHeight(Vec3d playerPos) {
-		float height = (float) (playerPos.y + playerHeightOffset);
-		return height;
-	}
-
-	private static float terrainBasedHeight(double xf, double zf, IWorld world) {
-		int x = (int) Math.round(xf);
-		int z = (int) Math.round(zf);
-		float height = 0;
-		for (int tempX = x - 1; tempX <= x; tempX++) {
-			for (int tempZ = z - 1; tempZ <= z; tempZ++) {
-				int y = world.getHeight(Heightmap.Type.MOTION_BLOCKING, tempX, tempZ);
-				if (y > height) {
-					height = y;
-				}
-			}
-		}
-		return (float) (height + terrainHeightOffset);
-	}
-
 	public static void loadConfigSettings() {
 		LogManager.getLogger().debug("Loading config settings for border lines.");
-		viewRange = ConfigOptions.viewRange.get();
-		playerHeightOffset = ConfigOptions.playerHeightOffset.get();
-		terrainHeightOffset = ConfigOptions.terrainHeightOffset.get();
-		fixedHeight = ConfigOptions.fixedHeight.get();
-		renderMode = ConfigOptions.renderMode.get();
+		horizontalViewRange = ConfigOptions.horizontalViewRange.get();
+		verticalViewRange = ConfigOptions.verticalViewRange.get();
 		colorA.set(ConfigOptions.getColorA());
 		colorB.set(ConfigOptions.getColorB());
-		radius = ConfigOptions.lineWidth.get().floatValue() / 2;
+	}
+	
+	public static int GetVerticalViewRange() {
+		return verticalViewRange;
 	}
 }
