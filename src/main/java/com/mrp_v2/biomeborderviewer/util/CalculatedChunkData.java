@@ -2,6 +2,8 @@ package com.mrp_v2.biomeborderviewer.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders;
@@ -12,10 +14,11 @@ import net.minecraft.world.biome.Biome;
 public class CalculatedChunkData {
 
 	private class CalculatedSubChunkData {
+
 		public final int subChunkHeight;
 		public final BorderDataBase[] borders;
 
-		public CalculatedSubChunkData(Collection<BorderDataBase> borders, int subChunkHeight) {
+		public CalculatedSubChunkData(Set<BorderDataBase> borders, int subChunkHeight) {
 			this.subChunkHeight = subChunkHeight;
 			this.borders = simplifyBorders(borders).toArray(new BorderDataBase[0]);
 		}
@@ -30,24 +33,17 @@ public class CalculatedChunkData {
 
 		private ArrayList<BorderDataBase> simplifyBorders(Collection<BorderDataBase> datas) {
 			boolean didSomething = false;
-			BorderDataBase borderA, borderB;
 			ArrayList<BorderDataBase> borders = new ArrayList<BorderDataBase>(datas);
+			BorderDataBase borderA, borderB, merged;
 			for (int i1 = 0; i1 < borders.size() - 1; i1++) {
 				borderA = borders.get(i1);
 				for (int i2 = i1 + 1; i2 < borders.size(); i2++) {
 					borderB = borders.get(i2);
-					if (borderB == borderA) {
-						continue;
-					}
-					if (!borderA.sameType(borderB)) {
-						continue;
-					}
 					if (!borderA.canMerge(borderB)) {
 						continue;
 					}
 					borders.remove(i2);
 					borders.remove(i1);
-					BorderDataBase merged;
 					if (borderA instanceof BorderDataX) {
 						merged = BorderDataX.merge((BorderDataX) borderA, (BorderDataX) borderB);
 					} else if (borderA instanceof BorderDataY) {
@@ -62,7 +58,7 @@ public class CalculatedChunkData {
 				}
 			}
 			if (didSomething) {
-				return simplifyBorders(borders);
+				return simplifyBorders(new HashSet<BorderDataBase>(borders));
 			}
 			return borders;
 		}
@@ -79,7 +75,7 @@ public class CalculatedChunkData {
 		Biome mainBiome, neighborBiome;
 		Int3[] neighbors = new Int3[6];
 		BorderDataBase borderData;
-		ArrayList<BorderDataBase> subBorders = new ArrayList<BorderDataBase>();
+		HashSet<BorderDataBase> subBorders = new HashSet<BorderDataBase>();
 		for (y = 0; y < 256; y++) {
 			for (x = xOrigin; x < xOrigin + 16; x++) {
 				for (z = zOrigin; z < zOrigin + 16; z += 2) {
@@ -114,11 +110,11 @@ public class CalculatedChunkData {
 			}
 			if ((y + 1) % 16 == 0) {
 				int subChunkYPos = (y - 15) / 16;
-				borders[subChunkYPos] = new CalculatedSubChunkData(new ArrayList<BorderDataBase>(subBorders), subChunkYPos);
+				borders[subChunkYPos] = new CalculatedSubChunkData(subBorders, subChunkYPos);
 				subBorders.clear();
 			}
 		}
-		//System.out.println("Borders: " + borders.get(0).borders.length);
+		// System.out.println("Borders: " + borders.get(0).borders.length);
 	}
 
 	public void draw(Matrix4f matrix, IVertexBuilder builder, int playerY) {

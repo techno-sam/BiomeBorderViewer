@@ -98,6 +98,4 @@ public abstract class BorderDataBase {
 	public int hashCode() {
 		return hashCode;
 	}
-	
-	abstract public boolean sameType(BorderDataBase border);
 }

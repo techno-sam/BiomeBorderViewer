@@ -94,9 +94,4 @@ public class BorderDataY extends BorderDataBase {
 		}
 		return true;
 	}
-	
-	@Override
-	public boolean sameType(BorderDataBase border) {
-		return border instanceof BorderDataY;
-	}
 }
