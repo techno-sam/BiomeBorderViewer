@@ -39,6 +39,7 @@ public class VisualizeBorders {
 
 		public ChunkCalculator(ChunkPos pos, QueuedChunkData data) {
 			this.setPriority(NORM_PRIORITY - 2);
+			this.setName("Biome Border Calculator [ChunkPos: " + pos.toString() + "]");
 			this.pos = pos;
 			this.data = data;
 		}
@@ -101,8 +102,8 @@ public class VisualizeBorders {
 			if (queuedChunks.containsKey(pos)) {
 				if (chunkReadyForCalculations(pos)) {
 					calculatingChunks.add(pos);
-					queuedChunks.remove(pos);
 					new ChunkCalculator(pos, queuedChunks.get(pos)).start();
+					queuedChunks.remove(pos);
 				}
 			}
 		}

@@ -2,7 +2,6 @@ package com.mrp_v2.biomeborderviewer.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders;
@@ -13,13 +12,12 @@ import net.minecraft.world.biome.Biome;
 public class CalculatedChunkData {
 
 	private class CalculatedSubChunkData {
-		private final int subChunkHeight;
-		private final HashSet<BorderDataBase> borders;
+		public final int subChunkHeight;
+		public final BorderDataBase[] borders;
 
 		public CalculatedSubChunkData(Collection<BorderDataBase> borders, int subChunkHeight) {
-			this.borders = new HashSet<BorderDataBase>(borders);
 			this.subChunkHeight = subChunkHeight;
-			simplifyBorders();
+			this.borders = simplifyBorders(borders).toArray(new BorderDataBase[0]);
 		}
 
 		public void draw(Matrix4f matrix, IVertexBuilder builder, int playerY) {
@@ -29,9 +27,44 @@ public class CalculatedChunkData {
 				}
 			}
 		}
-		
-		private void simplifyBorders() {
-			
+
+		private ArrayList<BorderDataBase> simplifyBorders(Collection<BorderDataBase> datas) {
+			boolean didSomething = false;
+			BorderDataBase borderA, borderB;
+			ArrayList<BorderDataBase> borders = new ArrayList<BorderDataBase>(datas);
+			for (int i1 = 0; i1 < borders.size() - 1; i1++) {
+				borderA = borders.get(i1);
+				for (int i2 = i1 + 1; i2 < borders.size(); i2++) {
+					borderB = borders.get(i2);
+					if (borderB == borderA) {
+						continue;
+					}
+					if (!borderA.sameType(borderB)) {
+						continue;
+					}
+					if (!borderA.canMerge(borderB)) {
+						continue;
+					}
+					borders.remove(i2);
+					borders.remove(i1);
+					BorderDataBase merged;
+					if (borderA instanceof BorderDataX) {
+						merged = BorderDataX.merge((BorderDataX) borderA, (BorderDataX) borderB);
+					} else if (borderA instanceof BorderDataY) {
+						merged = BorderDataY.merge((BorderDataY) borderA, (BorderDataY) borderB);
+					} else {
+						merged = BorderDataZ.merge((BorderDataZ) borderA, (BorderDataZ) borderB);
+					}
+					borders.add(i1, merged);
+					didSomething = true;
+					i2--;
+					borderA = borders.get(i1);
+				}
+			}
+			if (didSomething) {
+				return simplifyBorders(borders);
+			}
+			return borders;
 		}
 	}
 
@@ -84,6 +117,7 @@ public class CalculatedChunkData {
 				subBorders.clear();
 			}
 		}
+		//System.out.println("Borders: " + borders.get(0).borders.length);
 	}
 
 	public void draw(Matrix4f matrix, IVertexBuilder builder, int playerY) {
