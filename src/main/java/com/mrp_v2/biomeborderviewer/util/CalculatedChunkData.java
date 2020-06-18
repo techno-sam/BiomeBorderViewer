@@ -68,10 +68,10 @@ public class CalculatedChunkData {
 		}
 	}
 
-	private final ArrayList<CalculatedSubChunkData> borders;
+	private final CalculatedSubChunkData[] borders;
 
 	public CalculatedChunkData(QueuedChunkData data) {
-		borders = new ArrayList<CalculatedSubChunkData>();
+		borders = new CalculatedSubChunkData[16];
 		int xOrigin = data.getChunkPos().getXStart(), zOrigin = data.getChunkPos().getZStart();
 		// Declarations to avoid reallocation
 		int x, z, y;
@@ -113,7 +113,8 @@ public class CalculatedChunkData {
 				}
 			}
 			if ((y + 1) % 16 == 0) {
-				borders.add(new CalculatedSubChunkData(new ArrayList<BorderDataBase>(subBorders), (y - 15) / 16));
+				int subChunkYPos = (y - 15) / 16;
+				borders[subChunkYPos] = new CalculatedSubChunkData(new ArrayList<BorderDataBase>(subBorders), subChunkYPos);
 				subBorders.clear();
 			}
 		}
