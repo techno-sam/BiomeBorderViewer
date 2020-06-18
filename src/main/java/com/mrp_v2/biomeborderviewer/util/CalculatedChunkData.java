@@ -114,7 +114,7 @@ public class CalculatedChunkData {
 				subBorders.clear();
 			}
 		}
-		// System.out.println("Borders: " + borders.get(0).borders.length);
+		// System.out.println("Borders: " + borders[0].borders.length);
 	}
 
 	public void draw(Matrix4f matrix, IVertexBuilder builder, int playerY) {
