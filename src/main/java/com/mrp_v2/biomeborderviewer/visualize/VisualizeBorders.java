@@ -26,6 +26,7 @@ import net.minecraftforge.client.event.InputEvent.KeyInputEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -85,7 +86,7 @@ public class VisualizeBorders {
 		}
 	}
 
-	@SubscribeEvent
+	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public static void chunkLoad(ChunkEvent.Load event) {
 		if (event.getWorld() == null || !(event.getWorld() instanceof ClientWorld)) {
 			return;
@@ -121,7 +122,7 @@ public class VisualizeBorders {
 		return true;
 	}
 
-	@SubscribeEvent
+	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public static void chunkUnload(ChunkEvent.Unload event) {
 		if (event.getWorld() == null || !(event.getWorld() instanceof ClientWorld)) {
 			return;
@@ -185,7 +186,7 @@ public class VisualizeBorders {
 		}
 	}
 
-	@SubscribeEvent
+	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public static void worldUnload(WorldEvent.Unload event) {
 		if (event.getWorld() == null || !(event.getWorld() instanceof ClientWorld)) {
 			return;
