@@ -52,13 +52,11 @@ public class VisualizeBorders {
 	}
 
 	private static boolean showingBorders;
-	private static int horizontalViewRange;
 
+	private static int horizontalViewRange;
 	private static int verticalViewRange;
 
-	public static float radius;
 	private static Color colorA = new Color();
-
 	private static Color colorB = new Color();
 
 	private static ConcurrentHashMap<ChunkPos, CalculatedChunkData> calculatedChunks = new ConcurrentHashMap<ChunkPos, CalculatedChunkData>(
