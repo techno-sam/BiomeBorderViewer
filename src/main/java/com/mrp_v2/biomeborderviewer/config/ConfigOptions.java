@@ -11,9 +11,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.config.ModConfig;
 
 public class ConfigOptions {
-	
+
 	public static class Client {
-		
+
 		Client(ForgeConfigSpec.Builder builder) {
 			builder.comment("biome border viewer client settings").push("client");
 
