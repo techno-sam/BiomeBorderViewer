@@ -1,6 +1,7 @@
 package com.mrp_v2.biomeborderviewer.visualize;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,10 +41,7 @@ public class VisualizeBorders {
 
 		private final QueuedChunkData data;
 
-		public ChunkCalculator(QueuedChunkData data) throws NullDataException {
-			if (data == null) {
-				throw new NullDataException();
-			}
+		public ChunkCalculator(QueuedChunkData data) {
 			this.data = data;
 		}
 
@@ -51,18 +49,9 @@ public class VisualizeBorders {
 			CalculatedChunkData calculatedData = new CalculatedChunkData(data);
 			chunkCalculated(data.getChunkPos(), calculatedData);
 		}
-
-		public class NullDataException extends Exception {
-
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = -3674801833330111277L;
-
-		}
 	}
 
-	private static ExecutorService threadPool = Executors.newFixedThreadPool(1);
+	private static ExecutorService threadPool = Executors.newFixedThreadPool(4);
 
 	private static boolean showingBorders;
 
@@ -72,15 +61,15 @@ public class VisualizeBorders {
 	private static Color colorA = new Color();
 	private static Color colorB = new Color();
 
-	private static ConcurrentHashMap<ChunkPos, CalculatedChunkData> calculatedChunks = new ConcurrentHashMap<ChunkPos, CalculatedChunkData>(
+	private static HashMap<ChunkPos, CalculatedChunkData> calculatedChunks = new HashMap<ChunkPos, CalculatedChunkData>(
 			128);
 
-	private static ConcurrentHashMap<ChunkPos, QueuedChunkData> queuedChunks = new ConcurrentHashMap<ChunkPos, QueuedChunkData>(
-			32);
+	private static ConcurrentHashMap<ChunkPos, CalculatedChunkData> queuedCalculatedChunks = new ConcurrentHashMap<ChunkPos, CalculatedChunkData>(
+			128);
 
 	private static Set<ChunkPos> calculatingChunks = Collections.synchronizedSet(new HashSet<ChunkPos>());
 
-	private static Set<ChunkPos> loadedChunks = Collections.synchronizedSet(new HashSet<ChunkPos>());
+	private static HashSet<ChunkPos> loadedChunks = new HashSet<ChunkPos>();
 
 	public static Color borderColor(boolean isSimilar) {
 		if (isSimilar) {
@@ -93,37 +82,16 @@ public class VisualizeBorders {
 	private static void chunkCalculated(ChunkPos pos, CalculatedChunkData data) {
 		if (calculatingChunks.contains(pos)) {
 			calculatingChunks.remove(pos);
-			calculatedChunks.put(pos, data);
+			queuedCalculatedChunks.put(pos, data);
 		}
 	}
 
-	@SubscribeEvent(priority = EventPriority.LOWEST)
+	@SubscribeEvent(priority = EventPriority.LOW)
 	public static void chunkLoad(ChunkEvent.Load event) {
 		if (event.getWorld() == null || !(event.getWorld() instanceof ClientWorld)) {
 			return;
 		}
 		loadedChunks.add(event.getChunk().getPos());
-		if (chunkReadyForCalculations(event.getChunk().getPos())) {
-			startChunkCalculations(event.getChunk().getPos());
-		} else {
-			queuedChunks.put(event.getChunk().getPos(),
-					new QueuedChunkData(event.getChunk().getPos(), event.getWorld().getWorld()));
-		}
-		for (ChunkPos pos : getNeighborChunks(event.getChunk().getPos())) {
-			if (queuedChunks.containsKey(pos)) {
-				if (chunkReadyForCalculations(pos)) {
-					startChunkCalculations(pos);
-				}
-			}
-		}
-	}
-
-	private static void startChunkCalculations(ChunkPos pos) {
-		calculatingChunks.add(pos);
-		try {
-			threadPool.execute(new ChunkCalculator(queuedChunks.remove(pos)));
-		} catch (com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders.ChunkCalculator.NullDataException e) {
-		}
 	}
 
 	private static boolean chunkReadyForCalculations(ChunkPos pos) {
@@ -138,13 +106,12 @@ public class VisualizeBorders {
 		return true;
 	}
 
-	@SubscribeEvent(priority = EventPriority.LOWEST)
+	@SubscribeEvent(priority = EventPriority.LOW)
 	public static void chunkUnload(ChunkEvent.Unload event) {
 		if (event.getWorld() == null || !(event.getWorld() instanceof ClientWorld)) {
 			return;
 		}
 		calculatedChunks.remove(event.getChunk().getPos());
-		queuedChunks.remove(event.getChunk().getPos());
 		loadedChunks.remove(event.getChunk().getPos());
 		calculatingChunks.remove(event.getChunk().getPos());
 	}
@@ -155,7 +122,18 @@ public class VisualizeBorders {
 		if (!Minecraft.getInstance().gameSettings.showDebugInfo) {
 			return;
 		}
-		event.getLeft().add("Chunk Biome Border Calculators: " + calculatingChunks.size());
+		event.getLeft().add("Chunks Waiting for Biome Border Calculations: " + calculatingChunks.size());
+	}
+
+	private static ChunkPos[] getChunkSquare(int radius, ChunkPos center) {
+		int sqaureSideLength = radius * 2 + 1;
+		ChunkPos[] result = new ChunkPos[sqaureSideLength * sqaureSideLength];
+		for (int x = 0; x < sqaureSideLength; x++) {
+			for (int z = 0; z < sqaureSideLength; z++) {
+				result[z + x * sqaureSideLength] = new ChunkPos(center.x - radius + x, center.z - radius + z);
+			}
+		}
+		return result;
 	}
 
 	private static ChunkPos[] getNeighborChunks(ChunkPos chunk) {
@@ -174,14 +152,14 @@ public class VisualizeBorders {
 	public static void keyPressed(KeyInputEvent event) {
 		if (BiomeBorderViewer.showBorders.isPressed()) {
 			showingBorders = !showingBorders;
-			LogManager.getLogger().debug("Show Borders hotkey pressed. showingBorders is now " + showingBorders);
+			LogManager.getLogger().debug("Show Borders hotkey pressed, showingBorders is now " + showingBorders);
 			Minecraft.getInstance().player
 					.sendMessage(new StringTextComponent("Showing borders is now " + showingBorders));
 		}
 	}
 
 	public static void loadConfigSettings() {
-		LogManager.getLogger().debug("Loading config settings for border lines.");
+		LogManager.getLogger().debug("Loading config settings for Biome Border Viewer.");
 		horizontalViewRange = ConfigOptions.horizontalViewRange.get();
 		verticalViewRange = ConfigOptions.verticalViewRange.get();
 		colorA.set(ConfigOptions.getColorA());
@@ -190,10 +168,13 @@ public class VisualizeBorders {
 
 	@SubscribeEvent
 	public static void renderEvent(RenderWorldLastEvent event) {
+		if (queuedCalculatedChunks.size() > 0) {
+			calculatedChunks.putAll(queuedCalculatedChunks);
+			queuedCalculatedChunks.clear();
+		}
 		if (showingBorders) {
 			@SuppressWarnings("resource")
 			PlayerEntity player = Minecraft.getInstance().player;
-			ChunkPos playerChunk = new ChunkPos(player.getPosition());
 			Vec3d playerPos = player.getEyePosition(event.getPartialTicks());
 			IVertexBuilder builder = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource()
 					.getBuffer(RenderType.getLightning());
@@ -201,9 +182,11 @@ public class VisualizeBorders {
 			event.getMatrixStack().translate(-playerPos.x, -playerPos.y, -playerPos.z);
 			Matrix4f matrix = event.getMatrixStack().getLast().getMatrix();
 			int playerY = (int) playerPos.getY();
-			for (ChunkPos pos : calculatedChunks.keySet()) {
-				if (pos.getChessboardDistance(playerChunk) <= horizontalViewRange) {
+			for (ChunkPos pos : getChunkSquare(horizontalViewRange, new ChunkPos(player.getPosition()))) {
+				if (calculatedChunks.containsKey(pos)) {
 					calculatedChunks.get(pos).draw(matrix, builder, playerY);
+				} else if (chunkReadyForCalculations(pos)) {
+					startChunkCalculations(new QueuedChunkData(pos, player.world));
 				}
 			}
 			event.getMatrixStack().pop();
@@ -211,13 +194,18 @@ public class VisualizeBorders {
 		}
 	}
 
-	@SubscribeEvent(priority = EventPriority.LOWEST)
+	private static void startChunkCalculations(QueuedChunkData data) {
+		ChunkCalculator cc = new ChunkCalculator(data);
+		calculatingChunks.add(data.getChunkPos());
+		threadPool.execute(cc);
+	}
+
+	@SubscribeEvent(priority = EventPriority.LOW)
 	public static void worldUnload(WorldEvent.Unload event) {
 		if (event.getWorld() == null || !(event.getWorld() instanceof ClientWorld)) {
 			return;
 		}
 		calculatedChunks.clear();
-		queuedChunks.clear();
 		loadedChunks.clear();
 		calculatingChunks.clear();
 	}
