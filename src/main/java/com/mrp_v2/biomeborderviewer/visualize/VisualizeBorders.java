@@ -39,7 +39,10 @@ public class VisualizeBorders {
 		private final ChunkPos pos;
 		private final QueuedChunkData data;
 
-		public ChunkCalculator(ChunkPos pos, QueuedChunkData data) {
+		public ChunkCalculator(ChunkPos pos, QueuedChunkData data) throws NullDataException {
+			if (data == null) {
+				throw new NullDataException();
+			}
 			this.setPriority(NORM_PRIORITY - 2);
 			this.setName("Biome Border Calculator [ChunkPos: " + pos.toString() + "]");
 			this.pos = pos;
@@ -49,6 +52,15 @@ public class VisualizeBorders {
 		public void run() {
 			CalculatedChunkData calculatedData = new CalculatedChunkData(data);
 			chunkCalculated(pos, calculatedData);
+		}
+
+		public class NullDataException extends Exception {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -3674801833330111277L;
+
 		}
 	}
 
@@ -108,7 +120,10 @@ public class VisualizeBorders {
 
 	private static void startChunkCalculations(ChunkPos pos) {
 		calculatingChunks.add(pos);
-		new ChunkCalculator(pos, queuedChunks.remove(pos)).start();
+		try {
+			new ChunkCalculator(pos, queuedChunks.remove(pos)).start();
+		} catch (com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders.ChunkCalculator.NullDataException e) {
+		}
 	}
 
 	private static boolean chunkReadyForCalculations(ChunkPos pos) {
