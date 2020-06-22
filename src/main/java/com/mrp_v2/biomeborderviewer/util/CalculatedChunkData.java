@@ -67,9 +67,9 @@ public class CalculatedChunkData {
 	private final CalculatedSubChunkData[] borders;
 
 	public CalculatedChunkData(QueuedChunkData data) {
-		borders = new CalculatedSubChunkData[16];
-		int xOrigin = data.getChunkPos().getXStart(), zOrigin = data.getChunkPos().getZStart();
-		// Declarations to avoid reallocation
+		ArrayList<CalculatedSubChunkData> tempBorders = new ArrayList<CalculatedSubChunkData>();
+		int xOrigin = data.getChunkPos().getXStart();
+		int zOrigin = data.getChunkPos().getZStart();
 		int x, z, y;
 		Int3 mainPos;
 		Biome mainBiome, neighborBiome;
@@ -110,10 +110,14 @@ public class CalculatedChunkData {
 			}
 			if ((y + 1) % 16 == 0) {
 				int subChunkYPos = (y - 15) / 16;
-				borders[subChunkYPos] = new CalculatedSubChunkData(subBorders, subChunkYPos);
+				CalculatedSubChunkData cscd = new CalculatedSubChunkData(subBorders, subChunkYPos);
+				if (cscd.borders.length > 0) {
+					tempBorders.add(cscd);
+				}
 				subBorders.clear();
 			}
 		}
+		borders = tempBorders.toArray(new CalculatedSubChunkData[0]);
 		// System.out.println("Borders: " + borders[0].borders.length);
 	}
 
