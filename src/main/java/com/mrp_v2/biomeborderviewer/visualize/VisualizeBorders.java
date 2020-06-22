@@ -23,6 +23,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.client.event.InputEvent.KeyInputEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -91,8 +92,7 @@ public class VisualizeBorders {
 		}
 		loadedChunks.add(event.getChunk().getPos());
 		if (chunkReadyForCalculations(event.getChunk().getPos())) {
-			calculatedChunks.put(event.getChunk().getPos(),
-					new CalculatedChunkData(new QueuedChunkData(event.getChunk().getPos(), event.getWorld())));
+			startChunkCalculations(event.getChunk().getPos());
 		} else {
 			queuedChunks.put(event.getChunk().getPos(),
 					new QueuedChunkData(event.getChunk().getPos(), event.getWorld().getWorld()));
@@ -100,12 +100,15 @@ public class VisualizeBorders {
 		for (ChunkPos pos : getNeighborChunks(event.getChunk().getPos())) {
 			if (queuedChunks.containsKey(pos)) {
 				if (chunkReadyForCalculations(pos)) {
-					calculatingChunks.add(pos);
-					new ChunkCalculator(pos, queuedChunks.get(pos)).start();
-					queuedChunks.remove(pos);
+					startChunkCalculations(pos);
 				}
 			}
 		}
+	}
+
+	private static void startChunkCalculations(ChunkPos pos) {
+		calculatingChunks.add(pos);
+		new ChunkCalculator(pos, queuedChunks.remove(pos)).start();
 	}
 
 	private static boolean chunkReadyForCalculations(ChunkPos pos) {
@@ -129,6 +132,15 @@ public class VisualizeBorders {
 		queuedChunks.remove(event.getChunk().getPos());
 		loadedChunks.remove(event.getChunk().getPos());
 		calculatingChunks.remove(event.getChunk().getPos());
+	}
+
+	@SuppressWarnings("resource")
+	@SubscribeEvent
+	public static void debugScreen(RenderGameOverlayEvent.Text event) {
+		if (!Minecraft.getInstance().gameSettings.showDebugInfo) {
+			return;
+		}
+		event.getLeft().add("Chunk Biome Border Calculators: " + calculatingChunks.size());
 	}
 
 	private static ChunkPos[] getNeighborChunks(ChunkPos chunk) {
