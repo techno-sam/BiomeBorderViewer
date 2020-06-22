@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.logging.log4j.LogManager;
 
@@ -34,24 +36,20 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber
 public class VisualizeBorders {
 
-	private static class ChunkCalculator extends Thread {
+	private static class ChunkCalculator implements Runnable {
 
-		private final ChunkPos pos;
 		private final QueuedChunkData data;
 
-		public ChunkCalculator(ChunkPos pos, QueuedChunkData data) throws NullDataException {
+		public ChunkCalculator(QueuedChunkData data) throws NullDataException {
 			if (data == null) {
 				throw new NullDataException();
 			}
-			this.setPriority(NORM_PRIORITY - 2);
-			this.setName("Biome Border Calculator [ChunkPos: " + pos.toString() + "]");
-			this.pos = pos;
 			this.data = data;
 		}
 
 		public void run() {
 			CalculatedChunkData calculatedData = new CalculatedChunkData(data);
-			chunkCalculated(pos, calculatedData);
+			chunkCalculated(data.getChunkPos(), calculatedData);
 		}
 
 		public class NullDataException extends Exception {
@@ -63,6 +61,8 @@ public class VisualizeBorders {
 
 		}
 	}
+
+	private static ExecutorService threadPool = Executors.newFixedThreadPool(1);
 
 	private static boolean showingBorders;
 
@@ -121,7 +121,7 @@ public class VisualizeBorders {
 	private static void startChunkCalculations(ChunkPos pos) {
 		calculatingChunks.add(pos);
 		try {
-			new ChunkCalculator(pos, queuedChunks.remove(pos)).start();
+			threadPool.execute(new ChunkCalculator(queuedChunks.remove(pos)));
 		} catch (com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders.ChunkCalculator.NullDataException e) {
 		}
 	}
