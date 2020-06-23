@@ -1,9 +1,7 @@
 package com.mrp_v2.biomeborderviewer.visualize;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,7 +24,6 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.client.event.InputEvent.KeyInputEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -61,14 +58,14 @@ public class VisualizeBorders {
 	private static Color colorA = new Color();
 	private static Color colorB = new Color();
 
+	// all events are on same thread
 	private static HashMap<ChunkPos, CalculatedChunkData> calculatedChunks = new HashMap<ChunkPos, CalculatedChunkData>(
 			128);
 
 	private static ConcurrentHashMap<ChunkPos, CalculatedChunkData> queuedCalculatedChunks = new ConcurrentHashMap<ChunkPos, CalculatedChunkData>(
 			128);
 
-	private static Set<ChunkPos> calculatingChunks = Collections.synchronizedSet(new HashSet<ChunkPos>());
-
+	// all events are on same thread
 	private static HashSet<ChunkPos> loadedChunks = new HashSet<ChunkPos>();
 
 	public static Color borderColor(boolean isSimilar) {
@@ -80,10 +77,7 @@ public class VisualizeBorders {
 	}
 
 	private static void chunkCalculated(ChunkPos pos, CalculatedChunkData data) {
-		if (calculatingChunks.contains(pos)) {
-			calculatingChunks.remove(pos);
-			queuedCalculatedChunks.put(pos, data);
-		}
+		queuedCalculatedChunks.putIfAbsent(pos, data);
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOW)
@@ -113,16 +107,6 @@ public class VisualizeBorders {
 		}
 		calculatedChunks.remove(event.getChunk().getPos());
 		loadedChunks.remove(event.getChunk().getPos());
-		calculatingChunks.remove(event.getChunk().getPos());
-	}
-
-	@SuppressWarnings("resource")
-	@SubscribeEvent
-	public static void debugScreen(RenderGameOverlayEvent.Text event) {
-		if (!Minecraft.getInstance().gameSettings.showDebugInfo) {
-			return;
-		}
-		event.getLeft().add("Chunks Waiting for Biome Border Calculations: " + calculatingChunks.size());
 	}
 
 	private static ChunkPos[] getChunkSquare(int radius, ChunkPos center) {
@@ -195,9 +179,7 @@ public class VisualizeBorders {
 	}
 
 	private static void startChunkCalculations(QueuedChunkData data) {
-		ChunkCalculator cc = new ChunkCalculator(data);
-		calculatingChunks.add(data.getChunkPos());
-		threadPool.execute(cc);
+		threadPool.execute(new ChunkCalculator(data));
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOW)
@@ -207,6 +189,5 @@ public class VisualizeBorders {
 		}
 		calculatedChunks.clear();
 		loadedChunks.clear();
-		calculatingChunks.clear();
 	}
 }
