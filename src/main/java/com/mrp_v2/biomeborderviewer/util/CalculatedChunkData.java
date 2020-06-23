@@ -91,6 +91,9 @@ public class CalculatedChunkData {
 					neighbors[4] = mainPos.add(0, 0, 1);
 					neighbors[5] = mainPos.add(0, 0, -1);
 					for (Int3 neighborPos : neighbors) {
+						if (neighborPos.getY() < 0 || neighborPos.getY() > 255) {
+							continue;
+						}
 						neighborBiome = data.getWorld().getBiome(neighborPos.toBlockPos());
 						if (!neighborBiome.equals(mainBiome)) {
 							if (mainPos.getX() != neighborPos.getX()) {
@@ -109,16 +112,13 @@ public class CalculatedChunkData {
 				}
 			}
 			if ((y + 1) % 16 == 0) {
-				int subChunkYPos = (y - 15) / 16;
-				CalculatedSubChunkData cscd = new CalculatedSubChunkData(subBorders, subChunkYPos);
-				if (cscd.borders.length > 0) {
-					tempBorders.add(cscd);
+				if (subBorders.size() > 0) {
+					tempBorders.add(new CalculatedSubChunkData(subBorders, (y - 15) / 16));
+					subBorders.clear();
 				}
-				subBorders.clear();
 			}
 		}
 		borders = tempBorders.toArray(new CalculatedSubChunkData[0]);
-		// System.out.println("Borders: " + borders[0].borders.length);
 	}
 
 	public void draw(Matrix4f matrix, IVertexBuilder builder, int playerY) {
