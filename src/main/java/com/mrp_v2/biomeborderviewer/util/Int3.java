@@ -1,7 +1,7 @@
 package com.mrp_v2.biomeborderviewer.util;
 
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 public class Int3 {
 
@@ -31,7 +31,7 @@ public class Int3 {
 		z = source.z;
 	}
 
-	public Int3(Vec3d pos) {
+	public Int3(Vector3d pos) {
 		this(pos.x, pos.y, pos.z);
 	}
 

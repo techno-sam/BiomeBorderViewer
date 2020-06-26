@@ -2,7 +2,7 @@ package com.mrp_v2.biomeborderviewer.util;
 
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 
-import net.minecraft.client.renderer.Matrix4f;
+import net.minecraft.util.math.vector.Matrix4f;
 
 public class BorderDataZ extends BorderDataBase {
 

@@ -2,6 +2,7 @@ package com.mrp_v2.biomeborderviewer.visualize;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,12 +17,13 @@ import com.mrp_v2.biomeborderviewer.util.Color;
 import com.mrp_v2.biomeborderviewer.util.QueuedChunkData;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.client.event.InputEvent.KeyInputEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -137,8 +139,8 @@ public class VisualizeBorders {
 		if (BiomeBorderViewer.showBorders.isPressed()) {
 			showingBorders = !showingBorders;
 			LogManager.getLogger().debug("Show Borders hotkey pressed, showingBorders is now " + showingBorders);
-			Minecraft.getInstance().player
-					.sendMessage(new StringTextComponent("Showing borders is now " + showingBorders));
+			Minecraft.getInstance().player.sendMessage(
+					new StringTextComponent("Showing borders is now " + showingBorders), UUID.randomUUID());
 		}
 	}
 
@@ -159,14 +161,15 @@ public class VisualizeBorders {
 		if (showingBorders) {
 			@SuppressWarnings("resource")
 			PlayerEntity player = Minecraft.getInstance().player;
-			Vec3d playerPos = player.getEyePosition(event.getPartialTicks());
+			Vector3d playerPos = player.getEyePosition(event.getPartialTicks());
 			IVertexBuilder builder = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource()
 					.getBuffer(RenderType.getLightning());
 			event.getMatrixStack().push();
 			event.getMatrixStack().translate(-playerPos.x, -playerPos.y, -playerPos.z);
 			Matrix4f matrix = event.getMatrixStack().getLast().getMatrix();
 			int playerY = (int) playerPos.getY();
-			for (ChunkPos pos : getChunkSquare(horizontalViewRange, new ChunkPos(player.getPosition()))) {
+			for (ChunkPos pos : getChunkSquare(horizontalViewRange,
+					new ChunkPos(new BlockPos(player.getPositionVec())))) {
 				if (calculatedChunks.containsKey(pos)) {
 					calculatedChunks.get(pos).draw(matrix, builder, playerY);
 				} else if (chunkReadyForCalculations(pos)) {

@@ -8,7 +8,7 @@ import java.util.Set;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders;
 
-import net.minecraft.client.renderer.Matrix4f;
+import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.world.biome.Biome;
 
 public class CalculatedChunkData {
