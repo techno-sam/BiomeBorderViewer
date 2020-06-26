@@ -31,7 +31,7 @@ public class ConfigOptions {
 
 			borderA_A = builder.comment(
 					"The alpha (transparency) value of the line's color when the 2 biomes have similar temperatures.")
-					.translation(translationKey + "borderA_A").defineInRange("borderA_A", 128, 0, 255);
+					.translation(translationKey + "borderA_A").defineInRange("borderA_A", 64, 0, 255);
 
 			borderB_R = builder
 					.comment("The red value of the line's color when the 2 biomes have unsimilar temperatures.")
@@ -47,17 +47,17 @@ public class ConfigOptions {
 
 			borderB_A = builder.comment(
 					"The alpha (transparency) value of the line's color when the 2 biomes have unsimilar temperatures.")
-					.translation(translationKey + "borderB_A").defineInRange("borderB_A", 128, 0, 255);
+					.translation(translationKey + "borderB_A").defineInRange("borderB_A", 64, 0, 255);
 
 			horizontalViewRange = builder
 					.comment("The horizontal distance to show biome borders around the player.\n"
 							+ "Like render distance, but for the biome border.\nHigh values may impact performance.")
-					.translation(translationKey + "horizontalViewRange").defineInRange("horizontalViewRange", 4, 1, 32);
+					.translation(translationKey + "horizontalViewRange").defineInRange("horizontalViewRange", 2, 1, 32);
 
 			verticalViewRange = builder
 					.comment("The vertical distance to show biome borders above and below the player.\n"
 							+ "High values may impact performance.")
-					.translation(translationKey + "verticalViewRange").defineInRange("verticalViewRange", 4, 1, 16);
+					.translation(translationKey + "verticalViewRange").defineInRange("verticalViewRange", 2, 1, 16);
 		}
 	}
 
