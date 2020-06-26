@@ -20,7 +20,8 @@ public class CalculatedChunkData {
 
 		public CalculatedSubChunkData(Set<BorderDataBase> borders, int subChunkHeight) {
 			this.subChunkHeight = subChunkHeight;
-			this.borders = simplifyBorders(borders).toArray(new BorderDataBase[0]);
+			ArrayList<BorderDataBase> temp = simplifyBorders(borders);
+			this.borders = temp.toArray(new BorderDataBase[temp.size()]);
 		}
 
 		public void draw(Matrix4f matrix, IVertexBuilder builder, int playerY) {
