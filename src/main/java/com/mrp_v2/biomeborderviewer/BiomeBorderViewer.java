@@ -12,10 +12,10 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
-@Mod("biomeborderviewer")
+@Mod(BiomeBorderViewer.MODID)
 public class BiomeBorderViewer {
 
-	public static String MODID = "biomeborderviewer";
+	public static final String MODID = "biomeborderviewer";
 
 	public static final KeyBinding showBorders = new KeyBinding(MODID + ".key.showBorders", GLFW.GLFW_KEY_B,
 			MODID + ".key.categories");
