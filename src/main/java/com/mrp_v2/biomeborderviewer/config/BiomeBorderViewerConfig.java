@@ -10,7 +10,7 @@ import net.minecraftforge.common.ForgeConfigSpec.IntValue;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.config.ModConfig;
 
-public class ConfigOptions {
+public class BiomeBorderViewerConfig {
 
 	public static class Client {
 

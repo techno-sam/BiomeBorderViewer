@@ -13,7 +13,7 @@ import org.apache.logging.log4j.LogManager;
 
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.mrp_v2.biomeborderviewer.BiomeBorderViewer;
-import com.mrp_v2.biomeborderviewer.config.ConfigOptions;
+import com.mrp_v2.biomeborderviewer.config.BiomeBorderViewerConfig;
 import com.mrp_v2.biomeborderviewer.util.CalculatedChunkData;
 import com.mrp_v2.biomeborderviewer.util.Color;
 
@@ -154,10 +154,10 @@ public class VisualizeBorders {
 
 	public static void loadConfigSettings() {
 		LogManager.getLogger().debug("Loading config settings for Biome Border Viewer.");
-		horizontalViewRange = ConfigOptions.CLIENT.horizontalViewRange.get();
-		verticalViewRange = ConfigOptions.CLIENT.verticalViewRange.get();
-		colorA.set(ConfigOptions.getColorA());
-		colorB.set(ConfigOptions.getColorB());
+		horizontalViewRange = BiomeBorderViewerConfig.CLIENT.horizontalViewRange.get();
+		verticalViewRange = BiomeBorderViewerConfig.CLIENT.verticalViewRange.get();
+		colorA.set(BiomeBorderViewerConfig.getColorA());
+		colorB.set(BiomeBorderViewerConfig.getColorB());
 	}
 
 	@SubscribeEvent

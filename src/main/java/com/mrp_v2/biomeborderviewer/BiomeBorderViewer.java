@@ -2,7 +2,7 @@ package com.mrp_v2.biomeborderviewer;
 
 import org.lwjgl.glfw.GLFW;
 
-import com.mrp_v2.biomeborderviewer.config.ConfigOptions;
+import com.mrp_v2.biomeborderviewer.config.BiomeBorderViewerConfig;
 
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -26,7 +26,7 @@ public class BiomeBorderViewer {
 
 	public BiomeBorderViewer() {
 		final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ConfigOptions.clientSpec);
-		modEventBus.register(ConfigOptions.class);
+		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, BiomeBorderViewerConfig.clientSpec);
+		modEventBus.register(BiomeBorderViewerConfig.class);
 	}
 }
