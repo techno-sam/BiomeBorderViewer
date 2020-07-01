@@ -3,7 +3,7 @@ loaderVersion="[32,)"
 logoFile="BiomeBorderViewerLogo.png"
 [[mods]]
 	modId="biomeborderviewer"
-	version="1.16.1-5.0.0.0"
+	version="1.16.1-5.0.0.1"
 	displayName="Biome Border Viewer"
 	updateJSONURL="https://raw.githubusercontent.com/mrp-v2/ModUpdateFiles/master/BiomeBorderViewer.json"
 	issueTrackerURL="https://www.curseforge.com/minecraft/mc-mods/biome-border-viewer/issues"
