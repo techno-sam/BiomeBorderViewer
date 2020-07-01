@@ -8,7 +8,9 @@ import java.util.Set;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders;
 
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 
 public class CalculatedChunkData {
@@ -67,10 +69,10 @@ public class CalculatedChunkData {
 
 	private final CalculatedSubChunkData[] borders;
 
-	public CalculatedChunkData(QueuedChunkData data) {
+	public CalculatedChunkData(ChunkPos pos, World world) {
 		ArrayList<CalculatedSubChunkData> tempBorders = new ArrayList<CalculatedSubChunkData>();
-		int xOrigin = data.getChunkPos().getXStart();
-		int zOrigin = data.getChunkPos().getZStart();
+		int xOrigin = pos.getXStart();
+		int zOrigin = pos.getZStart();
 		int x, z, y;
 		Int3 mainPos;
 		Biome mainBiome, neighborBiome;
@@ -84,7 +86,7 @@ public class CalculatedChunkData {
 						z++;
 					}
 					mainPos = new Int3(x, y, z);
-					mainBiome = data.getWorld().getBiome(mainPos.toBlockPos());
+					mainBiome = world.getBiome(mainPos.toBlockPos());
 					neighbors[0] = mainPos.add(0, 1, 0);
 					neighbors[1] = mainPos.add(0, -1, 0);
 					neighbors[2] = mainPos.add(1, 0, 0);
@@ -95,7 +97,7 @@ public class CalculatedChunkData {
 						if (neighborPos.getY() < 0 || neighborPos.getY() > 255) {
 							continue;
 						}
-						neighborBiome = data.getWorld().getBiome(neighborPos.toBlockPos());
+						neighborBiome = world.getBiome(neighborPos.toBlockPos());
 						if (!neighborBiome.equals(mainBiome)) {
 							if (mainPos.getX() != neighborPos.getX()) {
 								borderData = BorderDataX.newBorder(mainPos, neighborPos,

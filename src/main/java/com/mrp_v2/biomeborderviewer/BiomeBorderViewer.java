@@ -17,11 +17,11 @@ public class BiomeBorderViewer {
 
 	public static final String MODID = "biomeborderviewer";
 
-	public static final KeyBinding showBorders = new KeyBinding(MODID + ".key.showBorders", GLFW.GLFW_KEY_B,
+	public static final KeyBinding SHOW_BORDERS = new KeyBinding(MODID + ".key.showBorders", GLFW.GLFW_KEY_B,
 			MODID + ".key.categories");
 
 	static {
-		ClientRegistry.registerKeyBinding(showBorders);
+		ClientRegistry.registerKeyBinding(SHOW_BORDERS);
 	}
 
 	public BiomeBorderViewer() {
