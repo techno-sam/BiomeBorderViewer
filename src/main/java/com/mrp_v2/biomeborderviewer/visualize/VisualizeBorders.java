@@ -145,6 +145,9 @@ public class VisualizeBorders {
 	@SubscribeEvent
 	public static void keyPressed(KeyInputEvent event) {
 		if (BiomeBorderViewer.SHOW_BORDERS.isPressed()) {
+			if (loadedChunks.isEmpty()) {
+				return;
+			}
 			showingBorders = !showingBorders;
 			LogManager.getLogger().debug("Show Borders hotkey pressed, showingBorders is now " + showingBorders);
 			Minecraft.getInstance().player.sendMessage(
@@ -162,33 +165,37 @@ public class VisualizeBorders {
 
 	@SubscribeEvent
 	public static void renderEvent(RenderWorldLastEvent event) {
-		if (CALCULATED_CHUNKS_TO_ADD.size() > 0) {
-			CALCULATED_CHUNKS.putAll(CALCULATED_CHUNKS_TO_ADD);
-			CALCULATED_CHUNKS_TO_ADD.clear();
-		}
-		if (showingBorders) {
-			@SuppressWarnings("resource")
-			PlayerEntity player = Minecraft.getInstance().player;
-			Vector3d playerPos = player.getEyePosition(event.getPartialTicks());
-			IVertexBuilder builder = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource()
-					.getBuffer(RenderType.getLightning());
-			event.getMatrixStack().push();
-			event.getMatrixStack().translate(-playerPos.x, -playerPos.y, -playerPos.z);
-			Matrix4f matrix = event.getMatrixStack().getLast().getMatrix();
-			int playerY = (int) playerPos.getY();
-			HashSet<ChunkPos> chunksToQueue = new HashSet<ChunkPos>();
-			for (ChunkPos pos : getChunkSquare(horizontalViewRange,
-					new ChunkPos(new BlockPos(player.getPositionVec())))) {
-				if (CALCULATED_CHUNKS.containsKey(pos)) {
-					CALCULATED_CHUNKS.get(pos).draw(matrix, builder, playerY);
-				} else if (chunkReadyForCalculations(pos)) {
-					chunksToQueue.add(pos);
+		synchronized (CHUNKS_QUEUED_FOR_CALCULATION) {
+			synchronized (CALCULATED_CHUNKS_TO_ADD) {
+				if (CALCULATED_CHUNKS_TO_ADD.size() > 0) {
+					CALCULATED_CHUNKS.putAll(CALCULATED_CHUNKS_TO_ADD);
+					CALCULATED_CHUNKS_TO_ADD.clear();
 				}
 			}
-			event.getMatrixStack().pop();
-			Minecraft.getInstance().getRenderTypeBuffers().getBufferSource().finish(RenderType.getLightning());
-			chunksToQueue.removeAll(CHUNKS_QUEUED_FOR_CALCULATION);
-			startChunkCalculations(chunksToQueue, player.world);
+			if (showingBorders) {
+				@SuppressWarnings("resource")
+				PlayerEntity player = Minecraft.getInstance().player;
+				Vector3d playerPos = player.getEyePosition(event.getPartialTicks());
+				IVertexBuilder builder = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource()
+						.getBuffer(RenderType.getLightning());
+				event.getMatrixStack().push();
+				event.getMatrixStack().translate(-playerPos.x, -playerPos.y, -playerPos.z);
+				Matrix4f matrix = event.getMatrixStack().getLast().getMatrix();
+				int playerY = (int) playerPos.getY();
+				HashSet<ChunkPos> chunksToQueue = new HashSet<ChunkPos>();
+				for (ChunkPos pos : getChunkSquare(horizontalViewRange,
+						new ChunkPos(new BlockPos(player.getPositionVec())))) {
+					if (CALCULATED_CHUNKS.containsKey(pos)) {
+						CALCULATED_CHUNKS.get(pos).draw(matrix, builder, playerY);
+					} else if (chunkReadyForCalculations(pos)) {
+						chunksToQueue.add(pos);
+					}
+				}
+				event.getMatrixStack().pop();
+				Minecraft.getInstance().getRenderTypeBuffers().getBufferSource().finish(RenderType.getLightning());
+				chunksToQueue.removeAll(CHUNKS_QUEUED_FOR_CALCULATION);
+				startChunkCalculations(chunksToQueue, player.world);
+			}
 		}
 	}
 
