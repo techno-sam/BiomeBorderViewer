@@ -81,6 +81,8 @@ public class BiomeBorderViewerConfig {
 					.comment("The vertical distance to show biome borders above and below the player.\n"
 							+ "High values may impact performance.")
 					.translation(TRANSLATION_KEY + vVR).defineInRange(vVR, 2, 1, 16);
+
+			builder.pop();
 		}
 	}
 
