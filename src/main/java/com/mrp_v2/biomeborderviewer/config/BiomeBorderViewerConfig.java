@@ -30,51 +30,71 @@ public class BiomeBorderViewerConfig {
 		Client(ForgeConfigSpec.Builder builder) {
 			builder.comment("biome border viewer client settings").push("client");
 
+			final String bAR = join(BORDER_A_KEY, RED_KEY);
 			borderA_R = builder
 					.comment("The red value of the line's color when the 2 biomes have similar temperatures.")
-					.translation(TRANSLATION_KEY + "borderA_R").defineInRange("borderA_R", 0, 0, 255);
+					.translation(TRANSLATION_KEY + bAR).defineInRange(bAR, 0, 0, 255);
 
+			final String bAG = join(BORDER_A_KEY, GREEN_KEY);
 			borderA_G = builder
 					.comment("The green value of the line's color when the 2 biomes have similar temperatures.")
-					.translation(TRANSLATION_KEY + "borderA_G").defineInRange("borderA_G", 255, 0, 255);
+					.translation(TRANSLATION_KEY + bAG).defineInRange(bAG, 255, 0, 255);
 
+			final String bAB = join(BORDER_A_KEY, BLUE_KEY);
 			borderA_B = builder
 					.comment("The blue value of the line's color when the 2 biomes have similar temperatures.")
-					.translation(TRANSLATION_KEY + "borderA_B").defineInRange("borderA_B", 0, 0, 255);
+					.translation(TRANSLATION_KEY + bAB).defineInRange(bAB, 0, 0, 255);
 
+			final String bAA = join(BORDER_A_KEY, ALPHA_KEY);
 			borderA_A = builder.comment(
 					"The alpha (transparency) value of the line's color when the 2 biomes have similar temperatures.")
-					.translation(TRANSLATION_KEY + "borderA_A").defineInRange("borderA_A", 64, 0, 255);
+					.translation(TRANSLATION_KEY + bAA).defineInRange(bAA, 64, 0, 255);
 
+			final String bBR = join(BORDER_B_KEY, RED_KEY);
 			borderB_R = builder
 					.comment("The red value of the line's color when the 2 biomes have unsimilar temperatures.")
-					.translation(TRANSLATION_KEY + "borderB_R").defineInRange("borderB_R", 255, 0, 255);
+					.translation(TRANSLATION_KEY + bBR).defineInRange(bBR, 255, 0, 255);
 
+			final String bBG = join(BORDER_B_KEY, GREEN_KEY);
 			borderB_G = builder
 					.comment("The green value of the line's color when the 2 biomes have unsimilar temperatures.")
-					.translation(TRANSLATION_KEY + "borderB_G").defineInRange("borderB_G", 0, 0, 255);
+					.translation(TRANSLATION_KEY + bBG).defineInRange(bBG, 0, 0, 255);
 
+			final String bBB = join(BORDER_B_KEY, BLUE_KEY);
 			borderB_B = builder
 					.comment("The blue value of the line's color when the 2 biomes have unsimilar temperatures.")
-					.translation(TRANSLATION_KEY + "borderB_B").defineInRange("borderB_B", 0, 0, 255);
+					.translation(TRANSLATION_KEY + bBB).defineInRange(bBB, 0, 0, 255);
 
+			final String bBA = join(BORDER_B_KEY, ALPHA_KEY);
 			borderB_A = builder.comment(
 					"The alpha (transparency) value of the line's color when the 2 biomes have unsimilar temperatures.")
-					.translation(TRANSLATION_KEY + "borderB_A").defineInRange("borderB_A", 64, 0, 255);
+					.translation(TRANSLATION_KEY + bBA).defineInRange(bBA, 64, 0, 255);
 
+			final String hVR = "horizontalViewRange";
 			horizontalViewRange = builder
 					.comment("The horizontal distance to show biome borders around the player.\n"
 							+ "Like render distance, but for the biome border.\nHigh values may impact performance.")
-					.translation(TRANSLATION_KEY + "horizontalViewRange").defineInRange("horizontalViewRange", 2, 1, 32);
+					.translation(TRANSLATION_KEY + hVR).defineInRange(hVR, 2, 1, 32);
 
+			final String vVR = "verticalViewRange";
 			verticalViewRange = builder
 					.comment("The vertical distance to show biome borders above and below the player.\n"
 							+ "High values may impact performance.")
-					.translation(TRANSLATION_KEY + "verticalViewRange").defineInRange("verticalViewRange", 2, 1, 16);
+					.translation(TRANSLATION_KEY + vVR).defineInRange(vVR, 2, 1, 16);
 		}
 	}
 
 	private static final String TRANSLATION_KEY = "biomeborderviewer.configgui.";
+	private static final String BORDER_A_KEY = "border.a";
+	private static final String BORDER_B_KEY = "border.b";
+	private static final String RED_KEY = "red";
+	private static final String GREEN_KEY = "green";
+	private static final String BLUE_KEY = "blue";
+	private static final String ALPHA_KEY = "alpha";
+
+	private static String join(String a, String b) {
+		return a + "." + b;
+	}
 
 	public static final ForgeConfigSpec clientSpec;
 	public static final Client CLIENT;
