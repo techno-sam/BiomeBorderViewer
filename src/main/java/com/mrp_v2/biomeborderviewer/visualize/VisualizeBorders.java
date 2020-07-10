@@ -43,7 +43,7 @@ public class VisualizeBorders {
 	private abstract static class BiomeBorderRenderType extends RenderType {
 
 		private static final RenderType BIOME_BORDER = RenderType.makeType("biome_border",
-				DefaultVertexFormats.POSITION_COLOR, 7, 256, false, true,
+				DefaultVertexFormats.POSITION_COLOR, 7, 256, true, true,
 				RenderType.State.getBuilder().writeMask(COLOR_DEPTH_WRITE).transparency(TRANSLUCENT_TRANSPARENCY)
 						.target(field_239236_S_).shadeModel(SHADE_ENABLED).build(false));
 
