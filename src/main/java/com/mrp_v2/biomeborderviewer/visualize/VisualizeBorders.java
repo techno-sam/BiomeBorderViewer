@@ -1,11 +1,10 @@
 package com.mrp_v2.biomeborderviewer.visualize;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -19,6 +18,8 @@ import com.mrp_v2.biomeborderviewer.util.Color;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -27,30 +28,56 @@ import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent.KeyInputEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
-@Mod.EventBusSubscriber
+@EventBusSubscriber(value = Dist.CLIENT)
 public class VisualizeBorders {
+
+	private abstract static class BiomeBorderRenderType extends RenderType {
+
+		private static final RenderType BIOME_BORDER = RenderType.makeType("biome_border",
+				DefaultVertexFormats.POSITION_COLOR, 7, 256, false, true,
+				RenderType.State.getBuilder().writeMask(COLOR_DEPTH_WRITE).transparency(TRANSLUCENT_TRANSPARENCY)
+						.target(field_239236_S_).shadeModel(SHADE_ENABLED).build(false));
+
+		public BiomeBorderRenderType(String nameIn, VertexFormat formatIn, int drawModeIn, int bufferSizeIn,
+				boolean useDelegateIn, boolean needsSortingIn, Runnable setupTaskIn, Runnable clearTaskIn) {
+			super(nameIn, formatIn, drawModeIn, bufferSizeIn, useDelegateIn, needsSortingIn, setupTaskIn, clearTaskIn);
+		}
+
+		public static RenderType getBiomeBorder() {
+			return BIOME_BORDER;
+		}
+	}
 
 	private static class ChunkCalculator implements Runnable {
 
 		private final ChunkPos pos;
 		private final World world;
+		private final Set<ChunkPos> queuedSet;
+		private final Map<ChunkPos, CalculatedChunkData> resultMap;
 
-		public ChunkCalculator(ChunkPos pos, World world) {
+		public ChunkCalculator(ChunkPos pos, World world, Set<ChunkPos> queuedSet,
+				Map<ChunkPos, CalculatedChunkData> resultMap) {
 			this.pos = pos;
 			this.world = world;
+			this.queuedSet = queuedSet;
+			this.resultMap = resultMap;
 		}
 
 		public void run() {
 			CalculatedChunkData calculatedData = new CalculatedChunkData(pos, world);
-			chunkCalculated(pos, calculatedData);
+			synchronized (THREAD_LOCK) {
+				queuedSet.remove(pos);
+				resultMap.put(pos, calculatedData);
+			}
 		}
 	}
 
@@ -61,33 +88,25 @@ public class VisualizeBorders {
 	private static int horizontalViewRange;
 	private static int verticalViewRange;
 
-	private static Color colorA = new Color();
-	private static Color colorB = new Color();
+	private static Color COLOR_A = new Color();
+	private static Color COLOR_B = new Color();
 
 	// all events are on same thread
-	private static final HashMap<ChunkPos, CalculatedChunkData> CALCULATED_CHUNKS = new HashMap<ChunkPos, CalculatedChunkData>(
-			128);
+	private static final HashMap<ChunkPos, CalculatedChunkData> calculatedChunks = new HashMap<ChunkPos, CalculatedChunkData>();
 
-	private static final ConcurrentHashMap<ChunkPos, CalculatedChunkData> CALCULATED_CHUNKS_TO_ADD = new ConcurrentHashMap<ChunkPos, CalculatedChunkData>(
-			128);
-
-	private static final Set<ChunkPos> CHUNKS_QUEUED_FOR_CALCULATION = Collections
-			.synchronizedSet(new HashSet<ChunkPos>());
+	private static HashMap<ChunkPos, CalculatedChunkData> calculatedChunksToAdd = new HashMap<ChunkPos, CalculatedChunkData>();
+	private static Set<ChunkPos> chunksQueuedForCalculation = new HashSet<ChunkPos>();
+	private static final Object THREAD_LOCK = new Object();
 
 	// all events are on same thread
 	private static HashSet<ChunkPos> loadedChunks = new HashSet<ChunkPos>();
 
 	public static Color borderColor(boolean isSimilar) {
 		if (isSimilar) {
-			return colorA;
+			return COLOR_A;
 		} else {
-			return colorB;
+			return COLOR_B;
 		}
-	}
-
-	private static void chunkCalculated(ChunkPos pos, CalculatedChunkData data) {
-		CALCULATED_CHUNKS_TO_ADD.putIfAbsent(pos, data);
-		CHUNKS_QUEUED_FOR_CALCULATION.remove(pos);
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOW)
@@ -115,7 +134,7 @@ public class VisualizeBorders {
 		if (event.getWorld() == null || !(event.getWorld() instanceof ClientWorld)) {
 			return;
 		}
-		CALCULATED_CHUNKS.remove(event.getChunk().getPos());
+		calculatedChunks.remove(event.getChunk().getPos());
 		loadedChunks.remove(event.getChunk().getPos());
 	}
 
@@ -159,25 +178,23 @@ public class VisualizeBorders {
 		LogManager.getLogger().debug("Loading config settings for Biome Border Viewer.");
 		horizontalViewRange = BiomeBorderViewerConfig.CLIENT.horizontalViewRange.get();
 		verticalViewRange = BiomeBorderViewerConfig.CLIENT.verticalViewRange.get();
-		colorA.set(BiomeBorderViewerConfig.getColorA());
-		colorB.set(BiomeBorderViewerConfig.getColorB());
+		COLOR_A.set(BiomeBorderViewerConfig.getColorA());
+		COLOR_B.set(BiomeBorderViewerConfig.getColorB());
 	}
 
 	@SubscribeEvent
 	public static void renderEvent(RenderWorldLastEvent event) {
-		synchronized (CHUNKS_QUEUED_FOR_CALCULATION) {
-			synchronized (CALCULATED_CHUNKS_TO_ADD) {
-				if (CALCULATED_CHUNKS_TO_ADD.size() > 0) {
-					CALCULATED_CHUNKS.putAll(CALCULATED_CHUNKS_TO_ADD);
-					CALCULATED_CHUNKS_TO_ADD.clear();
-				}
+		synchronized (THREAD_LOCK) {
+			if (calculatedChunksToAdd.size() > 0) {
+				calculatedChunks.putAll(calculatedChunksToAdd);
+				calculatedChunksToAdd.clear();
 			}
 			if (showingBorders) {
 				@SuppressWarnings("resource")
 				PlayerEntity player = Minecraft.getInstance().player;
 				Vector3d playerPos = player.getEyePosition(event.getPartialTicks());
 				IVertexBuilder builder = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource()
-						.getBuffer(RenderType.getLightning());
+						.getBuffer(BiomeBorderRenderType.getBiomeBorder());
 				event.getMatrixStack().push();
 				event.getMatrixStack().translate(-playerPos.x, -playerPos.y, -playerPos.z);
 				Matrix4f matrix = event.getMatrixStack().getLast().getMatrix();
@@ -185,15 +202,16 @@ public class VisualizeBorders {
 				HashSet<ChunkPos> chunksToQueue = new HashSet<ChunkPos>();
 				for (ChunkPos pos : getChunkSquare(horizontalViewRange,
 						new ChunkPos(new BlockPos(player.getPositionVec())))) {
-					if (CALCULATED_CHUNKS.containsKey(pos)) {
-						CALCULATED_CHUNKS.get(pos).draw(matrix, builder, playerY);
+					if (calculatedChunks.containsKey(pos)) {
+						calculatedChunks.get(pos).draw(matrix, builder, playerY);
 					} else if (chunkReadyForCalculations(pos)) {
 						chunksToQueue.add(pos);
 					}
 				}
 				event.getMatrixStack().pop();
-				Minecraft.getInstance().getRenderTypeBuffers().getBufferSource().finish(RenderType.getLightning());
-				chunksToQueue.removeAll(CHUNKS_QUEUED_FOR_CALCULATION);
+				Minecraft.getInstance().getRenderTypeBuffers().getBufferSource()
+						.finish(BiomeBorderRenderType.getBiomeBorder());
+				chunksToQueue.removeAll(chunksQueuedForCalculation);
 				startChunkCalculations(chunksToQueue, player.world);
 			}
 		}
@@ -201,8 +219,8 @@ public class VisualizeBorders {
 
 	private static void startChunkCalculations(Set<ChunkPos> data, World world) {
 		for (ChunkPos pos : data) {
-			CHUNKS_QUEUED_FOR_CALCULATION.add(pos);
-			THREAD_POOL.execute(new ChunkCalculator(pos, world));
+			chunksQueuedForCalculation.add(pos);
+			THREAD_POOL.execute(new ChunkCalculator(pos, world, chunksQueuedForCalculation, calculatedChunksToAdd));
 		}
 	}
 
@@ -211,8 +229,11 @@ public class VisualizeBorders {
 		if (event.getWorld() == null || !(event.getWorld() instanceof ClientWorld)) {
 			return;
 		}
-		CALCULATED_CHUNKS.clear();
+		synchronized (THREAD_LOCK) {
+			chunksQueuedForCalculation = new HashSet<ChunkPos>();
+			calculatedChunksToAdd = new HashMap<ChunkPos, CalculatedChunkData>();
+		}
+		calculatedChunks.clear();
 		loadedChunks.clear();
-		THREAD_POOL.shutdownNow();
 	}
 }
