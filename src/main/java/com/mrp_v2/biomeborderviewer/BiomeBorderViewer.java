@@ -16,6 +16,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 public class BiomeBorderViewer {
 
 	public static final String MODID = "biomeborderviewer";
+	public static final String DISPLAY_NAME = "Biome Border Viewer";
 
 	public static final KeyBinding SHOW_BORDERS = new KeyBinding(MODID + ".key.showBorders", GLFW.GLFW_KEY_B,
 			MODID + ".key.categories");

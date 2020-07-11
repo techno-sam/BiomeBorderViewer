@@ -1,7 +1,9 @@
 package com.mrp_v2.biomeborderviewer.config;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
 
+import com.mrp_v2.biomeborderviewer.BiomeBorderViewer;
 import com.mrp_v2.biomeborderviewer.util.Color;
 import com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders;
 
@@ -119,11 +121,14 @@ public class BiomeBorderViewerConfig {
 
 	@SubscribeEvent
 	public static void onFileChange(final ModConfig.Reloading configEvent) {
+		LogManager.getLogger().debug(BiomeBorderViewer.DISPLAY_NAME + " config just got changed on the file system!");
 		VisualizeBorders.loadConfigSettings();
 	}
 
 	@SubscribeEvent
 	public static void onLoad(final ModConfig.Loading configEvent) {
+		LogManager.getLogger().debug("Loaded " + BiomeBorderViewer.DISPLAY_NAME + " config file {}",
+				configEvent.getConfig().getFileName());
 		VisualizeBorders.loadConfigSettings();
 	}
 }
