@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mrp_v2.biomeborderviewer.BiomeBorderViewer;
 import com.mrp_v2.biomeborderviewer.client.renderer.debug.util.BiomeBorderDataCollection;
 import com.mrp_v2.biomeborderviewer.client.renderer.debug.util.CalculatedChunkData;
@@ -14,11 +14,13 @@ import com.mrp_v2.biomeborderviewer.client.renderer.debug.util.Color;
 import com.mrp_v2.biomeborderviewer.config.Config;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.vector.Matrix4f;
@@ -131,32 +133,42 @@ public class VisualizeBorders {
 	}
 
 	private static void renderBorders(float partialTicks, MatrixStack stack) {
-		@SuppressWarnings("resource")
-		PlayerEntity player = Minecraft.getInstance().player;
-		Vector3d playerPos = player.getEyePosition(partialTicks);
-		IVertexBuilder builder = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource()
-				.getBuffer(BiomeBorderRenderType.getBiomeBorder());
+		Entity player = Minecraft.getInstance().getRenderViewEntity();
+		double cameraX = player.lastTickPosX + (player.getPosX() - player.lastTickPosX) * (double) partialTicks;
+		double cameraY = player.lastTickPosY + (player.getPosY() - player.lastTickPosY) * (double) partialTicks
+				+ player.getEyeHeight(player.getPose());
+		double cameraZ = player.lastTickPosZ + (player.getPosZ() - player.lastTickPosZ) * (double) partialTicks;
+		Vector3d playerPos = new Vector3d(cameraX, cameraY, cameraZ);
+		Tessellator tessellator = Tessellator.getInstance();
+		BufferBuilder bufferBuilder = tessellator.getBuffer();
 		stack.push();
 		stack.translate(-playerPos.x, -playerPos.y, -playerPos.z);
+		RenderSystem.disableTexture();
+		RenderSystem.disableBlend();
+		RenderSystem.enableAlphaTest();
+		RenderSystem.enableDepthTest();
+		bufferBuilder.begin(7, DefaultVertexFormats.POSITION_COLOR);
 		Matrix4f matrix = stack.getLast().getMatrix();
 		int playerY = ((int) playerPos.getY()) << 4;
 		HashSet<ChunkPos> chunksToQueue = new HashSet<ChunkPos>();
 		for (ChunkPos pos : getChunkSquare(horizontalViewRange, new ChunkPos(new BlockPos(playerPos)))) {
 			CalculatedChunkData data = biomeBorderData.getChunk(pos);
 			if (data != null) {
-				data.draw(matrix, builder, playerY);
+				data.draw(matrix, bufferBuilder, playerY);
 			} else if (biomeBorderData.chunkReadyForCalculations(pos)) {
 				chunksToQueue.add(pos);
 			}
 		}
 		// test draw
-		builder.pos(matrix, 0, 70, 0).color(255, 255, 255, 255).endVertex();
-		builder.pos(matrix, 1, 70, 0).color(255, 255, 255, 255).endVertex();
-		builder.pos(matrix, 1, 70, 1).color(255, 255, 255, 255).endVertex();
-		builder.pos(matrix, 0, 70, 1).color(255, 255, 255, 255).endVertex();
+		bufferBuilder.pos(matrix, 0, 70, 0).color(255, 255, 255, 255).endVertex();
+		bufferBuilder.pos(matrix, 1, 70, 0).color(255, 255, 255, 255).endVertex();
+		bufferBuilder.pos(matrix, 1, 70, 1).color(255, 255, 255, 255).endVertex();
+		bufferBuilder.pos(matrix, 0, 70, 1).color(255, 255, 255, 255).endVertex();
 		// end test draw
+		tessellator.draw();
 		stack.pop();
-		Minecraft.getInstance().getRenderTypeBuffers().getBufferSource().finish(BiomeBorderRenderType.getBiomeBorder());
+		RenderSystem.enableBlend();
+		RenderSystem.enableTexture();
 		biomeBorderData.updateCalculatedChunks(chunksToQueue, player.world);
 	}
 
