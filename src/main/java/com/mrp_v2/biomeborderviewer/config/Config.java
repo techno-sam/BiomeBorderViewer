@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import com.mrp_v2.biomeborderviewer.BiomeBorderViewer;
 import com.mrp_v2.biomeborderviewer.client.renderer.debug.VisualizeBorders;
 import com.mrp_v2.biomeborderviewer.client.renderer.debug.util.Color;
+import com.mrp_v2.biomeborderviewer.util.Util;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
@@ -32,57 +33,67 @@ public class Config {
 		Client(ForgeConfigSpec.Builder builder) {
 			builder.comment("biome border viewer client settings").push("client");
 
-			final String bAR = join(BORDER_A_KEY, RED_KEY);
+			final String bAR = Util.join(BORDER_A_KEY, RED_KEY);
 			borderA_R = builder
 					.comment("The red value of the line's color when the 2 biomes have similar temperatures.")
-					.translation(TRANSLATION_KEY + bAR).defineInRange(bAR, 0, 0, 255);
+					.translation(TRANSLATION_KEY + bAR)
+					.defineInRange(bAR, 0, 0, 255);
 
-			final String bAG = join(BORDER_A_KEY, GREEN_KEY);
+			final String bAG = Util.join(BORDER_A_KEY, GREEN_KEY);
 			borderA_G = builder
 					.comment("The green value of the line's color when the 2 biomes have similar temperatures.")
-					.translation(TRANSLATION_KEY + bAG).defineInRange(bAG, 255, 0, 255);
+					.translation(TRANSLATION_KEY + bAG)
+					.defineInRange(bAG, 255, 0, 255);
 
-			final String bAB = join(BORDER_A_KEY, BLUE_KEY);
+			final String bAB = Util.join(BORDER_A_KEY, BLUE_KEY);
 			borderA_B = builder
 					.comment("The blue value of the line's color when the 2 biomes have similar temperatures.")
-					.translation(TRANSLATION_KEY + bAB).defineInRange(bAB, 0, 0, 255);
+					.translation(TRANSLATION_KEY + bAB)
+					.defineInRange(bAB, 0, 0, 255);
 
-			final String bAA = join(BORDER_A_KEY, ALPHA_KEY);
+			final String bAA = Util.join(BORDER_A_KEY, ALPHA_KEY);
 			borderA_A = builder.comment(
 					"The alpha (transparency) value of the line's color when the 2 biomes have similar temperatures.")
-					.translation(TRANSLATION_KEY + bAA).defineInRange(bAA, 64, 0, 255);
+					.translation(TRANSLATION_KEY + bAA)
+					.defineInRange(bAA, 64, 0, 255);
 
-			final String bBR = join(BORDER_B_KEY, RED_KEY);
+			final String bBR = Util.join(BORDER_B_KEY, RED_KEY);
 			borderB_R = builder
 					.comment("The red value of the line's color when the 2 biomes have unsimilar temperatures.")
-					.translation(TRANSLATION_KEY + bBR).defineInRange(bBR, 255, 0, 255);
+					.translation(TRANSLATION_KEY + bBR)
+					.defineInRange(bBR, 255, 0, 255);
 
-			final String bBG = join(BORDER_B_KEY, GREEN_KEY);
+			final String bBG = Util.join(BORDER_B_KEY, GREEN_KEY);
 			borderB_G = builder
 					.comment("The green value of the line's color when the 2 biomes have unsimilar temperatures.")
-					.translation(TRANSLATION_KEY + bBG).defineInRange(bBG, 0, 0, 255);
+					.translation(TRANSLATION_KEY + bBG)
+					.defineInRange(bBG, 0, 0, 255);
 
-			final String bBB = join(BORDER_B_KEY, BLUE_KEY);
+			final String bBB = Util.join(BORDER_B_KEY, BLUE_KEY);
 			borderB_B = builder
 					.comment("The blue value of the line's color when the 2 biomes have unsimilar temperatures.")
-					.translation(TRANSLATION_KEY + bBB).defineInRange(bBB, 0, 0, 255);
+					.translation(TRANSLATION_KEY + bBB)
+					.defineInRange(bBB, 0, 0, 255);
 
-			final String bBA = join(BORDER_B_KEY, ALPHA_KEY);
+			final String bBA = Util.join(BORDER_B_KEY, ALPHA_KEY);
 			borderB_A = builder.comment(
 					"The alpha (transparency) value of the line's color when the 2 biomes have unsimilar temperatures.")
-					.translation(TRANSLATION_KEY + bBA).defineInRange(bBA, 64, 0, 255);
+					.translation(TRANSLATION_KEY + bBA)
+					.defineInRange(bBA, 64, 0, 255);
 
 			final String hVR = "horizontalViewRange";
 			horizontalViewRange = builder
 					.comment("The horizontal distance to show biome borders around the player.\n"
 							+ "Like render distance, but for the biome border.\nHigh values may impact performance.")
-					.translation(TRANSLATION_KEY + hVR).defineInRange(hVR, 2, 1, 32);
+					.translation(TRANSLATION_KEY + hVR)
+					.defineInRange(hVR, 2, 1, 32);
 
 			final String vVR = "verticalViewRange";
 			verticalViewRange = builder
 					.comment("The vertical distance to show biome borders above and below the player.\n"
 							+ "High values may impact performance.")
-					.translation(TRANSLATION_KEY + vVR).defineInRange(vVR, 2, 1, 16);
+					.translation(TRANSLATION_KEY + vVR)
+					.defineInRange(vVR, 2, 1, 16);
 
 			builder.pop();
 		}
@@ -95,10 +106,6 @@ public class Config {
 	private static final String GREEN_KEY = "green";
 	private static final String BLUE_KEY = "blue";
 	private static final String ALPHA_KEY = "alpha";
-
-	private static String join(String a, String b) {
-		return a + "." + b;
-	}
 
 	public static final ForgeConfigSpec clientSpec;
 	public static final Client CLIENT;

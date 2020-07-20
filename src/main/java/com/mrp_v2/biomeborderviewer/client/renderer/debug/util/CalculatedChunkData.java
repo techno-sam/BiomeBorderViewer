@@ -27,7 +27,7 @@ public class CalculatedChunkData {
 		}
 
 		public void draw(Matrix4f matrix, IVertexBuilder builder, int playerY) {
-			if (Math.abs(subChunkHeight - playerY) <= VisualizeBorders.GetVerticalViewRange()) {
+			if (Math.abs(subChunkHeight - playerY) <= VisualizeBorders.getVerticalViewRange()) {
 				for (BorderDataBase lineData : borders) {
 					lineData.draw(matrix, builder);
 				}

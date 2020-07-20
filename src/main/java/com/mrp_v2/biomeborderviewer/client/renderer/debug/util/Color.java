@@ -32,7 +32,7 @@ public class Color {
 	public void set(Color color) {
 		set(color.r, color.g, color.b, color.a);
 	}
-	
+
 	public void set(int r, int g, int b, int a) {
 		this.r = r;
 		this.g = g;
