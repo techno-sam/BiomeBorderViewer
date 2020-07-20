@@ -1,4 +1,4 @@
-package com.mrp_v2.biomeborderviewer.util;
+package com.mrp_v2.biomeborderviewer.client.renderer.debug.util;
 
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 

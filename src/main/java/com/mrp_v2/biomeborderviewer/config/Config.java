@@ -4,15 +4,15 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 
 import com.mrp_v2.biomeborderviewer.BiomeBorderViewer;
-import com.mrp_v2.biomeborderviewer.util.Color;
-import com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders;
+import com.mrp_v2.biomeborderviewer.client.renderer.debug.VisualizeBorders;
+import com.mrp_v2.biomeborderviewer.client.renderer.debug.util.Color;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.config.ModConfig;
 
-public class BiomeBorderViewerConfig {
+public class Config {
 
 	public static class Client {
 

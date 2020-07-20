@@ -1,4 +1,4 @@
-package com.mrp_v2.biomeborderviewer.util;
+package com.mrp_v2.biomeborderviewer.client.renderer.debug.util;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;

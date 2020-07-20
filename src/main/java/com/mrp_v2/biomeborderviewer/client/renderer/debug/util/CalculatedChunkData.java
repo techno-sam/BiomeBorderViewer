@@ -1,4 +1,4 @@
-package com.mrp_v2.biomeborderviewer.util;
+package com.mrp_v2.biomeborderviewer.client.renderer.debug.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-import com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders;
+import com.mrp_v2.biomeborderviewer.client.renderer.debug.VisualizeBorders;
 
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.vector.Matrix4f;
@@ -27,7 +27,7 @@ public class CalculatedChunkData {
 		}
 
 		public void draw(Matrix4f matrix, IVertexBuilder builder, int playerY) {
-			if (Math.abs(((subChunkHeight * 16) + 8) - playerY) < VisualizeBorders.GetVerticalViewRange() * 16) {
+			if (Math.abs(subChunkHeight - playerY) <= VisualizeBorders.GetVerticalViewRange()) {
 				for (BorderDataBase lineData : borders) {
 					lineData.draw(matrix, builder);
 				}

@@ -1,16 +1,17 @@
-package com.mrp_v2.biomeborderviewer.visualize;
+package com.mrp_v2.biomeborderviewer.client.renderer.debug;
 
 import java.util.HashSet;
 import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.mrp_v2.biomeborderviewer.BiomeBorderViewer;
-import com.mrp_v2.biomeborderviewer.config.BiomeBorderViewerConfig;
-import com.mrp_v2.biomeborderviewer.util.BiomeBorderDataCollection;
-import com.mrp_v2.biomeborderviewer.util.CalculatedChunkData;
-import com.mrp_v2.biomeborderviewer.util.Color;
+import com.mrp_v2.biomeborderviewer.client.renderer.debug.util.BiomeBorderDataCollection;
+import com.mrp_v2.biomeborderviewer.client.renderer.debug.util.CalculatedChunkData;
+import com.mrp_v2.biomeborderviewer.client.renderer.debug.util.Color;
+import com.mrp_v2.biomeborderviewer.config.Config;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
@@ -116,45 +117,47 @@ public class VisualizeBorders {
 	}
 
 	public static void loadConfigSettings() {
-		horizontalViewRange = BiomeBorderViewerConfig.CLIENT.horizontalViewRange.get();
-		verticalViewRange = BiomeBorderViewerConfig.CLIENT.verticalViewRange.get();
-		COLOR_A.set(BiomeBorderViewerConfig.getColorA());
-		COLOR_B.set(BiomeBorderViewerConfig.getColorB());
+		horizontalViewRange = Config.CLIENT.horizontalViewRange.get();
+		verticalViewRange = Config.CLIENT.verticalViewRange.get();
+		COLOR_A.set(Config.getColorA());
+		COLOR_B.set(Config.getColorB());
 	}
 
 	@SubscribeEvent
 	public static void renderEvent(RenderWorldLastEvent event) {
 		if (showingBorders) {
-			@SuppressWarnings("resource")
-			PlayerEntity player = Minecraft.getInstance().player;
-			Vector3d playerPos = player.getEyePosition(event.getPartialTicks());
-			IVertexBuilder builder = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource()
-					.getBuffer(BiomeBorderRenderType.getBiomeBorder());
-			event.getMatrixStack().push();
-			event.getMatrixStack().translate(-playerPos.x, -playerPos.y, -playerPos.z);
-			Matrix4f matrix = event.getMatrixStack().getLast().getMatrix();
-			int playerY = (int) playerPos.getY();
-			HashSet<ChunkPos> chunksToQueue = new HashSet<ChunkPos>();
-			for (ChunkPos pos : getChunkSquare(horizontalViewRange,
-					new ChunkPos(new BlockPos(player.getPositionVec())))) {
-				CalculatedChunkData data = biomeBorderData.getChunk(pos);
-				if (data != null) {
-					data.draw(matrix, builder, playerY);
-				} else if (biomeBorderData.chunkReadyForCalculations(pos)) {
-					chunksToQueue.add(pos);
-				}
-			}
-			// test draw
-			builder.pos(matrix, 0, 70, 0).color(255, 255, 255, 255).endVertex();
-			builder.pos(matrix, 1, 70, 0).color(255, 255, 255, 255).endVertex();
-			builder.pos(matrix, 1, 70, 1).color(255, 255, 255, 255).endVertex();
-			builder.pos(matrix, 0, 70, 1).color(255, 255, 255, 255).endVertex();
-			// end test draw
-			event.getMatrixStack().pop();
-			Minecraft.getInstance().getRenderTypeBuffers().getBufferSource()
-					.finish(BiomeBorderRenderType.getBiomeBorder());
-			biomeBorderData.updateCalculatedChunks(chunksToQueue, player.world);
+			renderBorders(event.getPartialTicks(), event.getMatrixStack());
 		}
+	}
+
+	private static void renderBorders(float partialTicks, MatrixStack stack) {
+		@SuppressWarnings("resource")
+		PlayerEntity player = Minecraft.getInstance().player;
+		Vector3d playerPos = player.getEyePosition(partialTicks);
+		IVertexBuilder builder = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource()
+				.getBuffer(BiomeBorderRenderType.getBiomeBorder());
+		stack.push();
+		stack.translate(-playerPos.x, -playerPos.y, -playerPos.z);
+		Matrix4f matrix = stack.getLast().getMatrix();
+		int playerY = ((int) playerPos.getY()) << 4;
+		HashSet<ChunkPos> chunksToQueue = new HashSet<ChunkPos>();
+		for (ChunkPos pos : getChunkSquare(horizontalViewRange, new ChunkPos(new BlockPos(playerPos)))) {
+			CalculatedChunkData data = biomeBorderData.getChunk(pos);
+			if (data != null) {
+				data.draw(matrix, builder, playerY);
+			} else if (biomeBorderData.chunkReadyForCalculations(pos)) {
+				chunksToQueue.add(pos);
+			}
+		}
+		// test draw
+		builder.pos(matrix, 0, 70, 0).color(255, 255, 255, 255).endVertex();
+		builder.pos(matrix, 1, 70, 0).color(255, 255, 255, 255).endVertex();
+		builder.pos(matrix, 1, 70, 1).color(255, 255, 255, 255).endVertex();
+		builder.pos(matrix, 0, 70, 1).color(255, 255, 255, 255).endVertex();
+		// end test draw
+		stack.pop();
+		Minecraft.getInstance().getRenderTypeBuffers().getBufferSource().finish(BiomeBorderRenderType.getBiomeBorder());
+		biomeBorderData.updateCalculatedChunks(chunksToQueue, player.world);
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOW)

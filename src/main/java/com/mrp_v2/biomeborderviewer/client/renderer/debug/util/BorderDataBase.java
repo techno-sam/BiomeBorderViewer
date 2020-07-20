@@ -1,7 +1,7 @@
-package com.mrp_v2.biomeborderviewer.util;
+package com.mrp_v2.biomeborderviewer.client.renderer.debug.util;
 
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-import com.mrp_v2.biomeborderviewer.visualize.VisualizeBorders;
+import com.mrp_v2.biomeborderviewer.client.renderer.debug.VisualizeBorders;
 
 import net.minecraft.util.math.vector.Matrix4f;
 

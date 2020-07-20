@@ -1,4 +1,4 @@
-package com.mrp_v2.biomeborderviewer.util;
+package com.mrp_v2.biomeborderviewer.client.renderer.debug.util;
 
 import java.util.Map;
 import java.util.Set;
@@ -57,7 +57,7 @@ public class BiomeBorderDataCollection {
 		if (!loadedChunks.contains(pos)) {
 			return false;
 		}
-		for (ChunkPos neighbor : BBVUtil.getNeighborChunks(pos)) {
+		for (ChunkPos neighbor : Util.getNeighborChunks(pos)) {
 			if (!loadedChunks.contains(neighbor)) {
 				return false;
 			}
