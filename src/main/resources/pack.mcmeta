@@ -1,6 +1,6 @@
 {
     "pack": {
-        "description": "biomeborderviewer resources",
-        "pack_format": 5
+        "description": "${modDisplayName} resources",
+        "pack_format": 6
     }
 }

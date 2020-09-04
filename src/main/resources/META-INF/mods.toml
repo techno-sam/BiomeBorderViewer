@@ -1,24 +1,25 @@
 modLoader="javafml"
-loaderVersion="[32,)"
-logoFile="BiomeBorderViewerLogo.png"
+loaderVersion="[${forgeMajor},)"
+license="All rights reserved"
 [[mods]]
-	modId="biomeborderviewer"
+	modId="${modId}"
 	version="${version}"
-	displayName="Biome Border Viewer"
-	updateJSONURL="https://raw.githubusercontent.com/mrp-v2/ModUpdateFiles/master/BiomeBorderViewer.json"
-	issueTrackerURL="https://www.curseforge.com/minecraft/mc-mods/biome-border-viewer/issues"
-	displayURL="https://www.curseforge.com/minecraft/mc-mods/biome-border-viewer"
-	authors="mrp_v2"
-	description='''Visualizes the borders of biomes.'''
-[[dependencies.biomeborderviewer]]
+	displayName="${modDisplayName}"
+	logoFile="${logo}"
+	updateJSONURL="${updateURL}"
+	issueTrackerURL="${issuesURL}"
+	displayURL="${homepageURL}"
+	authors="${author}"
+	description='''${modDescription}'''
+[[dependencies.${modId}]]
     modId="forge"
     mandatory=true
-    versionRange="[32,)"
+    versionRange="[${forgeMajor},)"
     ordering="NONE"
-    side="CLIENT"
-[[dependencies.biomeborderviewer]]
+    side="BOTH"
+[[dependencies.${modId}]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.16.1]"
+    versionRange="[${mcVersion}]"
     ordering="NONE"
-    side="CLIENT"
+    side="BOTH"
