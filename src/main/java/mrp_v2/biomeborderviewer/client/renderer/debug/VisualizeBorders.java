@@ -4,7 +4,6 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import mrp_v2.biomeborderviewer.client.renderer.BiomeBorderRenderType;
 import mrp_v2.biomeborderviewer.client.renderer.debug.util.BiomeBorderDataCollection;
-import mrp_v2.biomeborderviewer.client.renderer.debug.util.Color;
 import mrp_v2.biomeborderviewer.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;
@@ -16,12 +15,13 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.IWorld;
 import org.apache.logging.log4j.LogManager;
 
+import java.awt.*;
 import java.util.UUID;
 
 public class VisualizeBorders
 {
-    private static final Color COLOR_A = new Color();
-    private static final Color COLOR_B = new Color();
+    private static Color COLOR_A;
+    private static Color COLOR_B;
     private static boolean showingBorders;
     private static int horizontalViewRange;
     private static int verticalViewRange;
@@ -77,8 +77,8 @@ public class VisualizeBorders
     {
         horizontalViewRange = mrp_v2.biomeborderviewer.config.ClientConfig.CLIENT.horizontalViewRange.get();
         verticalViewRange = mrp_v2.biomeborderviewer.config.ClientConfig.CLIENT.verticalViewRange.get();
-        COLOR_A.set(mrp_v2.biomeborderviewer.config.ClientConfig.getColorA());
-        COLOR_B.set(mrp_v2.biomeborderviewer.config.ClientConfig.getColorB());
+        COLOR_A = mrp_v2.biomeborderviewer.config.ClientConfig.getColorA();
+        COLOR_B = mrp_v2.biomeborderviewer.config.ClientConfig.getColorB();
     }
 
     public static void renderEvent(float partialTicks, MatrixStack matrixStack)

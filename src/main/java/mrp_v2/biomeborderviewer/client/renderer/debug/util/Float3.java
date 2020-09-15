@@ -39,4 +39,34 @@ public class Float3 extends Vector3f
                 throw new IllegalArgumentException("Can not get the value of axis '" + axis + "'");
         }
     }
+
+    public Float3 addOnOtherAxes(float f, Direction.Axis axis)
+    {
+        switch (axis)
+        {
+            case X:
+                return new Float3(this.getX(), this.getY() + f, this.getZ() + f);
+            case Y:
+                return new Float3(this.getX() + f, this.getY(), this.getZ() + f);
+            case Z:
+                return new Float3(this.getX() + f, this.getY() + f, this.getZ());
+            default:
+                throw new IllegalArgumentException("Can not get the value of axis '" + axis + "'");
+        }
+    }
+
+    public Float3 addOnAxis(float f, Direction.Axis axis)
+    {
+        switch (axis)
+        {
+            case X:
+                return new Float3(this.getX() + f, this.getY(), this.getZ());
+            case Y:
+                return new Float3(this.getX(), this.getY() + f, this.getZ());
+            case Z:
+                return new Float3(this.getX(), this.getY(), this.getZ() + f);
+            default:
+                throw new IllegalArgumentException("Can not get the value of axis '" + axis + "'");
+        }
+    }
 }

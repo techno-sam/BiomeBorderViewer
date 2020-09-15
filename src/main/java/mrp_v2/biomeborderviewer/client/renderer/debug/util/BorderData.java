@@ -5,6 +5,7 @@ import mrp_v2.biomeborderviewer.client.renderer.debug.VisualizeBorders;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Matrix4f;
 
+import java.awt.*;
 import java.util.Objects;
 
 public class BorderData
@@ -14,6 +15,7 @@ public class BorderData
     private final boolean similarBiome;
     private final Direction.Axis axis;
     private final Direction.Axis[] otherAxes;
+
     private BorderData(Float3 min, Float3 max, boolean similarBiome, Direction.Axis axis, Direction.Axis[] otherAxes)
     {
         this.min = min;
@@ -22,41 +24,39 @@ public class BorderData
         this.axis = axis;
         this.otherAxes = otherAxes;
     }
+
     public BorderData(boolean similarBiome, Int3 a, Int3 b)
     {
         Int3 min = Int3.min(a, b);
         Int3 max = Int3.max(a, b);
         this.similarBiome = similarBiome;
-        if (min.getX() == max.getX())
+        if (min.getX() != max.getX())
         {
-            if (min.getY() == max.getY() || min.getZ() == max.getZ())
+            if (min.getY() != max.getY() || min.getZ() != max.getZ())
             {
-                throw new IllegalArgumentException("Cannot make a border that is not a plane!");
+                throw new IllegalArgumentException("Incorrect arguments for border data!");
             }
             this.axis = Direction.Axis.X;
             this.otherAxes = new Direction.Axis[]{Direction.Axis.Y, Direction.Axis.Z};
-            this.min = new Float3(min.getX() - offset, min.getY(), min.getZ());
-            this.max = new Float3(max.getX() + offset, max.getY(), max.getZ());
-        } else if (min.getY() == max.getY())
+        } else if (min.getY() != max.getY())
         {
-            if (min.getZ() == max.getZ())
+            if (min.getZ() != max.getZ())
             {
-                throw new IllegalArgumentException("Cannot make a border that is not a plane!");
+                throw new IllegalArgumentException("Incorrect arguments for border data!");
             }
             this.axis = Direction.Axis.Y;
             this.otherAxes = new Direction.Axis[]{Direction.Axis.Z, Direction.Axis.X};
-            this.min = new Float3(min.getX(), min.getY() - offset, min.getZ());
-            this.max = new Float3(max.getX(), max.getY() + offset, max.getZ());
-        } else if (min.getZ() == max.getZ())
+        } else if (min.getZ() != max.getZ())
         {
             this.axis = Direction.Axis.Z;
             this.otherAxes = new Direction.Axis[]{Direction.Axis.X, Direction.Axis.Y};
-            this.min = new Float3(min.getX(), min.getY(), min.getZ() - offset);
-            this.max = new Float3(max.getX(), max.getY(), max.getZ() + offset);
         } else
         {
-            throw new IllegalArgumentException("Cannot make a border that is not a plane!");
+            throw new IllegalArgumentException("Incorrect arguments for border data!");
         }
+        Float3 float3 = new Float3(max.getX(), max.getY(), max.getZ());
+        this.min = float3.addOnAxis(-offset, this.axis);
+        this.max = float3.addOnAxis(offset, this.axis).addOnOtherAxes(1.0F, this.axis);
     }
 
     /**
@@ -182,7 +182,7 @@ public class BorderData
 
         public void drawSegment(float x, float y, float z)
         {
-            builder.pos(matrix, x, y, z).color(color.r, color.g, color.b, color.a).endVertex();
+            builder.pos(matrix, x, y, z).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
         }
     }
 }

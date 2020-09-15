@@ -2,7 +2,6 @@ package mrp_v2.biomeborderviewer.config;
 
 import mrp_v2.biomeborderviewer.BiomeBorderViewer;
 import mrp_v2.biomeborderviewer.client.renderer.debug.VisualizeBorders;
-import mrp_v2.biomeborderviewer.client.renderer.debug.util.Color;
 import mrp_v2.biomeborderviewer.util.Util;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -12,6 +11,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
+
+import java.awt.*;
 
 @Mod.EventBusSubscriber(modid = BiomeBorderViewer.ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ClientConfig
