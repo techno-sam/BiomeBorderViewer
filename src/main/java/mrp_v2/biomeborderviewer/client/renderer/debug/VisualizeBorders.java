@@ -2,13 +2,11 @@ package mrp_v2.biomeborderviewer.client.renderer.debug;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+import mrp_v2.biomeborderviewer.client.renderer.BiomeBorderRenderType;
 import mrp_v2.biomeborderviewer.client.renderer.debug.util.BiomeBorderDataCollection;
 import mrp_v2.biomeborderviewer.client.renderer.debug.util.Color;
 import mrp_v2.biomeborderviewer.util.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.ChunkPos;
@@ -122,31 +120,5 @@ public class VisualizeBorders
         }
         biomeBorderData.worldUnloaded();
         biomeBorderData = new BiomeBorderDataCollection();
-    }
-
-    public abstract static class BiomeBorderRenderType extends RenderType
-    {
-        private static RenderType BIOME_BORDER = null;
-
-        private BiomeBorderRenderType(String nameIn, VertexFormat formatIn, int drawModeIn, int bufferSizeIn,
-                boolean useDelegateIn, boolean needsSortingIn, Runnable setupTaskIn, Runnable clearTaskIn)
-        {
-            super(nameIn, formatIn, drawModeIn, bufferSizeIn, useDelegateIn, needsSortingIn, setupTaskIn, clearTaskIn);
-        }
-
-        public static void initBiomeBorderRenderType()
-        {
-            BIOME_BORDER =
-                    RenderType.makeType("biome_border", DefaultVertexFormats.POSITION_COLOR, 7, 262144, false, true,
-                            RenderType.State.getBuilder()
-                                    .transparency(TRANSLUCENT_TRANSPARENCY)
-                                    .writeMask(COLOR_DEPTH_WRITE)
-                                    .build(false));
-        }
-
-        public static RenderType getBiomeBorder()
-        {
-            return BIOME_BORDER;
-        }
     }
 }

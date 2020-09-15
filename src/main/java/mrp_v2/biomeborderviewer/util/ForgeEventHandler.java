@@ -9,18 +9,10 @@ import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = BiomeBorderViewer.ID) public class EventHandler
+@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = BiomeBorderViewer.ID) public class ForgeEventHandler
 {
-    @SubscribeEvent public static void clientSetup(FMLClientSetupEvent event)
-    {
-        ClientRegistry.registerKeyBinding(ObjectHolder.SHOW_BORDERS);
-        VisualizeBorders.BiomeBorderRenderType.initBiomeBorderRenderType();
-    }
-
     @SubscribeEvent(priority = EventPriority.LOW) public static void chunkLoad(ChunkEvent.Load event)
     {
         VisualizeBorders.chunkLoad(event.getWorld(), event.getChunk().getPos());

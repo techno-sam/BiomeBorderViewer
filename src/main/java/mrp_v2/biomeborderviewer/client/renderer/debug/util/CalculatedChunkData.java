@@ -25,8 +25,7 @@ public class CalculatedChunkData
         Int3 mainPos;
         Biome mainBiome, neighborBiome;
         Int3[] neighbors = new Int3[6];
-        BorderDataBase borderData;
-        HashSet<BorderDataBase> subBorders = new HashSet<>();
+        HashSet<BorderData> subBorders = new HashSet<>();
         boolean similar;
         for (y = 0; y < 256; y++)
         {
@@ -56,17 +55,7 @@ public class CalculatedChunkData
                         if (!neighborBiome.equals(mainBiome))
                         {
                             similar = Math.abs(mainBiome.func_242445_k() - neighborBiome.func_242445_k()) < 0.1f;
-                            if (mainPos.getX() != neighborPos.getX())
-                            {
-                                borderData = BorderDataX.newBorder(mainPos, neighborPos, similar);
-                            } else if (mainPos.getZ() != neighborPos.getZ())
-                            {
-                                borderData = BorderDataZ.newBorder(mainPos, neighborPos, similar);
-                            } else
-                            {
-                                borderData = BorderDataY.newBorder(mainPos, neighborPos, similar);
-                            }
-                            subBorders.add(borderData);
+                            subBorders.add(new BorderData(similar, mainPos, neighborPos));
                         }
                     }
                 }
@@ -94,31 +83,32 @@ public class CalculatedChunkData
     private static class CalculatedSubChunkData
     {
         public final int subChunkHeight;
-        public final BorderDataBase[] borders;
+        public final BorderData[] borders;
 
-        public CalculatedSubChunkData(Set<BorderDataBase> borders, int subChunkHeight)
+        public CalculatedSubChunkData(Set<BorderData> borders, int subChunkHeight)
         {
             this.subChunkHeight = subChunkHeight;
-            ArrayList<BorderDataBase> temp = simplifyBorders(borders);
-            this.borders = temp.toArray(new BorderDataBase[0]);
+            ArrayList<BorderData> temp = simplifyBorders(borders);
+            this.borders = temp.toArray(new BorderData[0]);
         }
 
         public void draw(Matrix4f matrix, IVertexBuilder builder, int playerY)
         {
             if (Math.abs(subChunkHeight - playerY) <= VisualizeBorders.getVerticalViewRange())
             {
-                for (BorderDataBase lineData : borders)
+                for (BorderData lineData : borders)
                 {
                     lineData.draw(matrix, builder);
                 }
             }
         }
 
-        private ArrayList<BorderDataBase> simplifyBorders(Collection<BorderDataBase> datas)
+        private ArrayList<BorderData> simplifyBorders(Collection<BorderData> datas)
         {
             boolean didSomething = false;
-            ArrayList<BorderDataBase> borders = new ArrayList<>(datas);
-            BorderDataBase borderA, borderB, merged;
+            ArrayList<BorderData> borders = new ArrayList<>(datas);
+            BorderData borderA, borderB;
+            Loop1:
             for (int i1 = 0; i1 < borders.size() - 1; i1++)
             {
                 borderA = borders.get(i1);
@@ -131,20 +121,9 @@ public class CalculatedChunkData
                     }
                     borders.remove(i2);
                     borders.remove(i1);
-                    if (borderA instanceof BorderDataX)
-                    {
-                        merged = BorderDataX.merge((BorderDataX) borderA, (BorderDataX) borderB);
-                    } else if (borderA instanceof BorderDataY)
-                    {
-                        merged = BorderDataY.merge((BorderDataY) borderA, (BorderDataY) borderB);
-                    } else
-                    {
-                        merged = BorderDataZ.merge((BorderDataZ) borderA, (BorderDataZ) borderB);
-                    }
-                    borders.add(i1, merged);
+                    borders.add(i1, BorderData.merge(borderA, borderB));
                     didSomething = true;
-                    i2--;
-                    borderA = borders.get(i1);
+                    continue Loop1;
                 }
             }
             if (didSomething)

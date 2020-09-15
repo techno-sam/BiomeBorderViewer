@@ -1,65 +1,38 @@
 package mrp_v2.biomeborderviewer.client.renderer.debug.util;
 
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3i;
 
-public class Int3 {
+public class Int3 extends Vector3i
+{
+    public Int3(int xIn, int yIn, int zIn)
+    {
+        super(xIn, yIn, zIn);
+    }
 
-	private final int x, y, z;
+    public static Int3 min(Int3 a, Int3 b)
+    {
+        return new Int3(Math.min(a.getX(), b.getX()), Math.min(a.getY(), b.getY()), Math.min(a.getZ(), b.getZ()));
+    }
 
-	public Int3(BlockPos pos) {
-		this(pos.getX(), pos.getY(), pos.getZ());
-	}
+    public static Int3 max(Int3 a, Int3 b)
+    {
+        return new Int3(Math.max(a.getX(), b.getX()), Math.max(a.getY(), b.getY()), Math.max(a.getZ(), b.getZ()));
+    }
 
-	public Int3(double x, double y, double z) {
-		this((float) x, (float) y, (float) z);
-	}
+    public Int3 add(int xIn, int yIn, int zIn)
+    {
+        if (xIn == 0 && yIn == 0 && zIn == 0)
+        {
+            return this;
+        } else
+        {
+            return new Int3(this.getX() + xIn, this.getY() + yIn, this.getZ() + zIn);
+        }
+    }
 
-	public Int3(float x, float y, float z) {
-		this(Math.round(x), Math.round(y), Math.round(z));
-	}
-
-	public Int3(int x, int y, int z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
-	}
-
-	public Int3(Int3 source) {
-		x = source.x;
-		y = source.y;
-		z = source.z;
-	}
-
-	public Int3(Vector3d pos) {
-		this(pos.x, pos.y, pos.z);
-	}
-
-	public Int3 add(int xIn, int yIn, int zIn) {
-		if (xIn == 0 && yIn == 0 && zIn == 0) {
-			return this;
-		} else {
-			return new Int3(x + xIn, y + yIn, z + zIn);
-		}
-	}
-
-	public int axisDistance(Int3 other) {
-		return Math.max(Math.max(Math.abs(x - other.x), Math.abs(y - other.y)), Math.abs(z - other.z));
-	}
-
-	public int getX() {
-		return x;
-	}
-
-	public int getY() {
-		return y;
-	}
-
-	public int getZ() {
-		return z;
-	}
-
-	public BlockPos toBlockPos() {
-		return new BlockPos(x, y, z);
-	}
+    public BlockPos toBlockPos()
+    {
+        return new BlockPos(this);
+    }
 }
