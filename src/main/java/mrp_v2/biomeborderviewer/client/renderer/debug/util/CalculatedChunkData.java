@@ -54,7 +54,7 @@ public class CalculatedChunkData
                         neighborBiome = world.getBiome(neighborPos.toBlockPos());
                         if (!neighborBiome.equals(mainBiome))
                         {
-                            similar = Math.abs(mainBiome.func_242445_k() - neighborBiome.func_242445_k()) < 0.1f;
+                            similar = Math.abs(mainBiome.getTemperature() - neighborBiome.getTemperature()) < 0.1f;
                             subBorders.add(new BorderData(similar, mainPos, neighborPos));
                         }
                     }
