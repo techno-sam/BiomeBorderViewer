@@ -1,0 +1,9 @@
+{
+    "homepage": "https://minecraft.curseforge.com/projects/biome-border-viewer",
+    "promos": {
+        "1.16.4-latest": "1.16.4-7.0.0.0",
+        "1.16.4-recommended": "1.16.4-7.0.0.0",
+        "latest": "1.16.4-7.0.0.0",
+        "recommended": "1.16.4-7.0.0.0"
+    }
+}
