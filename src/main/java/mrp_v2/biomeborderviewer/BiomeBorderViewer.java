@@ -1,6 +1,6 @@
 package mrp_v2.biomeborderviewer;
 
-import mrp_v2.biomeborderviewer.config.ClientConfig;
+import mrp_v2.biomeborderviewer.client.Config;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -12,6 +12,6 @@ import net.minecraftforge.fml.config.ModConfig;
 
     public BiomeBorderViewer()
     {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ClientConfig.clientSpec);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.clientSpec);
     }
 }

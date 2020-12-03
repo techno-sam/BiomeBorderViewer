@@ -1,7 +1,7 @@
 package mrp_v2.biomeborderviewer.client.renderer.debug.util;
 
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-import mrp_v2.biomeborderviewer.config.ClientConfig;
+import mrp_v2.biomeborderviewer.client.Config;
 import mrp_v2.biomeborderviewer.util.Util;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.vector.Matrix4f;
@@ -10,7 +10,6 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -25,14 +24,13 @@ public class BiomeBorderDataCollection
      */
     private final HashSet<ChunkPos> loadedChunks;
     /**
-     * Needs synchronization
+     * Needs synchronization, use this as a lock
      */
     private final HashMap<ChunkPos, CalculatedChunkData> calculatedChunksToAdd;
     /**
-     * Needs synchronization
+     * Needs synchronization, use {@link BiomeBorderDataCollection#calculatedChunksToAdd} as a lock
      */
     private final HashSet<ChunkPos> chunksQueuedForCalculation;
-    private final Object threadLock;
     @Nullable private ExecutorService threadPool;
 
     public BiomeBorderDataCollection()
@@ -41,7 +39,6 @@ public class BiomeBorderDataCollection
         this.calculatedChunksToAdd = new HashMap<>();
         this.chunksQueuedForCalculation = new HashSet<>();
         this.loadedChunks = new HashSet<>();
-        this.threadLock = new Object();
         this.threadPool = null;
     }
 
@@ -58,7 +55,7 @@ public class BiomeBorderDataCollection
 
     public void chunkCalculated(ChunkPos pos, CalculatedChunkData data)
     {
-        synchronized (threadLock)
+        synchronized (calculatedChunksToAdd)
         {
             calculatedChunksToAdd.put(pos, data);
             chunksQueuedForCalculation.remove(pos);
@@ -85,7 +82,7 @@ public class BiomeBorderDataCollection
                 chunksToQueue.add(pos);
             }
         }
-        updateCalculatedChunks(chunksToQueue, world);
+        updateChunkCalculations(chunksToQueue, world);
     }
 
     private boolean chunkReadyForCalculations(ChunkPos pos)
@@ -105,15 +102,11 @@ public class BiomeBorderDataCollection
     }
 
     /**
-     * Updates loaded chunks, and returns a list of chunks waiting for calculations.
+     * Updates the calculations of chunks.
      */
-    private void updateCalculatedChunks(Set<ChunkPos> chunksToQueueForCalculation, World world)
+    private void updateChunkCalculations(HashSet<ChunkPos> chunksToQueueForCalculation, World world)
     {
-        if (threadPool == null)
-        {
-            threadPool = Executors.newFixedThreadPool(ClientConfig.CLIENT.borderCalculationThreads.get());
-        }
-        synchronized (threadLock)
+        synchronized (calculatedChunksToAdd)
         {
             if (calculatedChunksToAdd.size() > 0)
             {
@@ -121,6 +114,13 @@ public class BiomeBorderDataCollection
                 calculatedChunksToAdd.clear();
             }
             chunksToQueueForCalculation.removeAll(chunksQueuedForCalculation);
+            if (chunksToQueueForCalculation.size() > 0)
+            {
+                if (threadPool == null)
+                {
+                    threadPool = Executors.newFixedThreadPool(Config.CLIENT.borderCalculationThreads.get());
+                }
+            }
             for (ChunkPos pos : chunksToQueueForCalculation)
             {
                 chunksQueuedForCalculation.add(pos);
@@ -131,10 +131,9 @@ public class BiomeBorderDataCollection
 
     public void worldUnloaded()
     {
-        if (threadPool == null)
+        if (threadPool != null)
         {
-            return;
+            threadPool.shutdownNow();
         }
-        threadPool.shutdownNow();
     }
 }

@@ -2,6 +2,7 @@ package mrp_v2.biomeborderviewer.client.renderer.debug;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+import mrp_v2.biomeborderviewer.client.Config;
 import mrp_v2.biomeborderviewer.client.renderer.BiomeBorderRenderType;
 import mrp_v2.biomeborderviewer.client.renderer.debug.util.BiomeBorderDataCollection;
 import mrp_v2.biomeborderviewer.util.Util;
@@ -75,10 +76,10 @@ public class VisualizeBorders
 
     public static void loadConfigSettings()
     {
-        horizontalViewRange = mrp_v2.biomeborderviewer.config.ClientConfig.CLIENT.horizontalViewRange.get();
-        verticalViewRange = mrp_v2.biomeborderviewer.config.ClientConfig.CLIENT.verticalViewRange.get();
-        COLOR_A = mrp_v2.biomeborderviewer.config.ClientConfig.getColorA();
-        COLOR_B = mrp_v2.biomeborderviewer.config.ClientConfig.getColorB();
+        horizontalViewRange = Config.CLIENT.horizontalViewRange.get();
+        verticalViewRange = Config.CLIENT.verticalViewRange.get();
+        COLOR_A = Config.getColorA();
+        COLOR_B = Config.getColorB();
     }
 
     public static void renderEvent(float partialTicks, MatrixStack matrixStack)

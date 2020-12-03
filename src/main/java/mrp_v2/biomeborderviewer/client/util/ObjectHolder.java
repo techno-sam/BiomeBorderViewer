@@ -1,4 +1,4 @@
-package mrp_v2.biomeborderviewer.util;
+package mrp_v2.biomeborderviewer.client.util;
 
 import mrp_v2.biomeborderviewer.BiomeBorderViewer;
 import net.minecraft.client.settings.KeyBinding;
