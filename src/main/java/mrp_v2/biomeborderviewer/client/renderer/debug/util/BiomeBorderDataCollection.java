@@ -42,6 +42,14 @@ public class BiomeBorderDataCollection
         this.threadPool = null;
     }
 
+    public void updateColors()
+    {
+        for (CalculatedChunkData chunkData : calculatedChunks.values())
+        {
+            chunkData.updateColors();
+        }
+    }
+
     public void chunkLoaded(ChunkPos pos)
     {
         loadedChunks.add(pos);

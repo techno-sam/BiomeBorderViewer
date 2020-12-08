@@ -70,8 +70,8 @@ public class VisualizeBorders
         }
         showingBorders = !showingBorders;
         LogManager.getLogger().debug("Show Borders hotkey pressed, showingBorders is now " + showingBorders);
-        Minecraft.getInstance().player.sendMessage(new StringTextComponent("Showing borders is now " + showingBorders),
-                UUID.randomUUID());
+        Minecraft.getInstance().player
+                .sendMessage(new StringTextComponent("Showing borders is now " + showingBorders), UUID.randomUUID());
     }
 
     public static void loadConfigSettings()
@@ -80,6 +80,7 @@ public class VisualizeBorders
         verticalViewRange = Config.CLIENT.verticalViewRange.get();
         COLOR_A = Config.getColorA();
         COLOR_B = Config.getColorB();
+        biomeBorderData.updateColors();
     }
 
     public static void renderEvent(float partialTicks, MatrixStack matrixStack)
@@ -94,14 +95,11 @@ public class VisualizeBorders
     {
         Entity player = Minecraft.getInstance().getRenderViewEntity();
         double cameraX = player.lastTickPosX + (player.getPosX() - player.lastTickPosX) * (double) partialTicks;
-        double cameraY = player.lastTickPosY +
-                (player.getPosY() - player.lastTickPosY) * (double) partialTicks +
+        double cameraY = player.lastTickPosY + (player.getPosY() - player.lastTickPosY) * (double) partialTicks +
                 player.getEyeHeight(player.getPose());
         double cameraZ = player.lastTickPosZ + (player.getPosZ() - player.lastTickPosZ) * (double) partialTicks;
         Vector3d playerPos = new Vector3d(cameraX, cameraY, cameraZ);
-        IVertexBuilder builder = Minecraft.getInstance()
-                .getRenderTypeBuffers()
-                .getBufferSource()
+        IVertexBuilder builder = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource()
                 .getBuffer(BiomeBorderRenderType.getBiomeBorder());
         stack.push();
         stack.translate(-playerPos.x, -playerPos.y, -playerPos.z);

@@ -72,6 +72,17 @@ public class CalculatedChunkData
         borders = tempBorders.toArray(new CalculatedSubChunkData[0]);
     }
 
+    public void updateColors()
+    {
+        for (CalculatedSubChunkData data : this.borders)
+        {
+            for (BorderData borderData : data.borders)
+            {
+                borderData.updateColor();
+            }
+        }
+    }
+
     public void draw(Matrix4f matrix, IVertexBuilder builder, int playerY)
     {
         for (CalculatedSubChunkData subChunkData : borders)

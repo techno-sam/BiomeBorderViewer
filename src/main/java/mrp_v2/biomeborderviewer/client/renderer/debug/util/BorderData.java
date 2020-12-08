@@ -15,6 +15,7 @@ public class BorderData
     private final boolean similarBiome;
     private final Direction.Axis axis;
     private final Direction.Axis[] otherAxes;
+    private Color color;
 
     private BorderData(Float3 min, Float3 max, boolean similarBiome, Direction.Axis axis, Direction.Axis[] otherAxes)
     {
@@ -23,6 +24,12 @@ public class BorderData
         this.similarBiome = similarBiome;
         this.axis = axis;
         this.otherAxes = otherAxes;
+        updateColor();
+    }
+
+    public void updateColor()
+    {
+        this.color = VisualizeBorders.borderColor(this.similarBiome);
     }
 
     public BorderData(boolean similarBiome, Int3 a, Int3 b)
@@ -57,6 +64,7 @@ public class BorderData
         Float3 float3 = new Float3(max.getX(), max.getY(), max.getZ());
         this.min = float3.addOnAxis(-offset, this.axis);
         this.max = float3.addOnAxis(offset, this.axis).addOnOtherAxes(1.0F, this.axis);
+        updateColor();
     }
 
     /**
@@ -167,22 +175,21 @@ public class BorderData
         return new Drawer(matrix, builder, VisualizeBorders.borderColor(this.similarBiome));
     }
 
-    private static class Drawer
+    private class Drawer
     {
         private final Matrix4f matrix;
         private final IVertexBuilder builder;
-        private final Color color;
 
         public Drawer(Matrix4f matrix, IVertexBuilder builder, Color color)
         {
             this.matrix = matrix;
             this.builder = builder;
-            this.color = color;
         }
 
         public void drawSegment(float x, float y, float z)
         {
-            builder.pos(matrix, x, y, z).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+            builder.pos(matrix, x, y, z).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha())
+                    .endVertex();
         }
     }
 }
