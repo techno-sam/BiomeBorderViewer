@@ -3,7 +3,6 @@ package mrp_v2.biomeborderviewer.client.renderer.debug.util;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import mrp_v2.biomeborderviewer.client.Config;
 import mrp_v2.biomeborderviewer.util.Util;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.world.World;
 
@@ -18,19 +17,19 @@ public class BiomeBorderDataCollection
     /**
      * Does not need synchronization
      */
-    private final HashMap<ChunkPos, CalculatedChunkData> calculatedChunks;
+    private final HashMap<Int3, CalculatedChunkData> calculatedChunks;
     /**
      * Does not need synchronization
      */
-    private final HashSet<ChunkPos> loadedChunks;
+    private final HashSet<Int3> loadedChunks;
     /**
      * Needs synchronization, use this as a lock
      */
-    private final HashMap<ChunkPos, CalculatedChunkData> calculatedChunksToAdd;
+    private final HashMap<Int3, CalculatedChunkData> calculatedChunksToAdd;
     /**
      * Needs synchronization, use {@link BiomeBorderDataCollection#calculatedChunksToAdd} as a lock
      */
-    private final HashSet<ChunkPos> chunksQueuedForCalculation;
+    private final HashSet<Int3> chunksQueuedForCalculation;
     @Nullable private ExecutorService threadPool;
 
     public BiomeBorderDataCollection()
@@ -50,18 +49,18 @@ public class BiomeBorderDataCollection
         }
     }
 
-    public void chunkLoaded(ChunkPos pos)
+    public void chunkLoaded(Int3 pos)
     {
         loadedChunks.add(pos);
     }
 
-    public void chunkUnloaded(ChunkPos pos)
+    public void chunkUnloaded(Int3 pos)
     {
         loadedChunks.remove(pos);
         calculatedChunks.remove(pos);
     }
 
-    public void chunkCalculated(ChunkPos pos, CalculatedChunkData data)
+    public void chunkCalculated(Int3 pos, CalculatedChunkData data)
     {
         synchronized (calculatedChunksToAdd)
         {
@@ -75,16 +74,15 @@ public class BiomeBorderDataCollection
         return loadedChunks.isEmpty();
     }
 
-    public void renderBorders(ChunkPos[] chunksToRender, Matrix4f matrix, IVertexBuilder bufferBuilder, int playerY,
-            World world)
+    public void renderBorders(Int3[] chunksToRender, Matrix4f matrix, IVertexBuilder bufferBuilder, World world)
     {
-        HashSet<ChunkPos> chunksToQueue = new HashSet<>();
-        for (ChunkPos pos : chunksToRender)
+        HashSet<Int3> chunksToQueue = new HashSet<>();
+        for (Int3 pos : chunksToRender)
         {
             CalculatedChunkData data = calculatedChunks.get(pos);
             if (data != null)
             {
-                data.draw(matrix, bufferBuilder, playerY);
+                data.draw(matrix, bufferBuilder);
             } else if (chunkReadyForCalculations(pos))
             {
                 chunksToQueue.add(pos);
@@ -93,16 +91,20 @@ public class BiomeBorderDataCollection
         updateChunkCalculations(chunksToQueue, world);
     }
 
-    private boolean chunkReadyForCalculations(ChunkPos pos)
+    private boolean chunkReadyForCalculations(Int3 pos)
     {
         if (!loadedChunks.contains(pos))
         {
             return false;
         }
-        for (ChunkPos neighbor : Util.getNeighborChunks(pos))
+        for (Int3 neighbor : Util.getNeighborChunks(pos))
         {
             if (!loadedChunks.contains(neighbor))
             {
+                if (neighbor.getY() < 0 || neighbor.getY() > 15)
+                {
+                    continue;
+                }
                 return false;
             }
         }
@@ -112,7 +114,7 @@ public class BiomeBorderDataCollection
     /**
      * Updates the calculations of chunks.
      */
-    private void updateChunkCalculations(HashSet<ChunkPos> chunksToQueueForCalculation, World world)
+    private void updateChunkCalculations(HashSet<Int3> chunksToQueueForCalculation, World world)
     {
         synchronized (calculatedChunksToAdd)
         {
@@ -129,7 +131,7 @@ public class BiomeBorderDataCollection
                     threadPool = Executors.newFixedThreadPool(Config.CLIENT.borderCalculationThreads.get());
                 }
             }
-            for (ChunkPos pos : chunksToQueueForCalculation)
+            for (Int3 pos : chunksToQueueForCalculation)
             {
                 chunksQueuedForCalculation.add(pos);
                 threadPool.execute(new ChunkBiomeBorderCalculator(pos, world, this));
