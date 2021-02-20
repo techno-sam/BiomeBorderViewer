@@ -5,11 +5,6 @@ import net.minecraft.util.math.vector.Vector3i;
 
 public class Int3 extends Vector3i
 {
-    public Int3(Vector3i vec)
-    {
-        this(vec.getX(), vec.getY(), vec.getZ());
-    }
-
     public Int3(int xIn, int yIn, int zIn)
     {
         super(xIn, yIn, zIn);

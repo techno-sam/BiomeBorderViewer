@@ -20,12 +20,12 @@ public class Float3 extends Vector3f
         return new Float3(Math.max(a.getX(), b.getX()), Math.max(a.getY(), b.getY()), Math.max(a.getZ(), b.getZ()));
     }
 
-    public boolean axisEquals(Float3 other, Direction.Axis axis)
+    public boolean areValuesOnAxisEqual(Float3 other, Direction.Axis axis)
     {
-        return this.getAxis(axis) == other.getAxis(axis);
+        return this.getValueOnAxis(axis) == other.getValueOnAxis(axis);
     }
 
-    public float getAxis(Direction.Axis axis)
+    public float getValueOnAxis(Direction.Axis axis)
     {
         switch (axis)
         {

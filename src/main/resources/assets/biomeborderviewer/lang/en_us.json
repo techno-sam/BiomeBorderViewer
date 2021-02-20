@@ -1,14 +1,14 @@
 {
-	"biomeborderviewer.configgui.border.a.red": "Border A Red",
-	"biomeborderviewer.configgui.border.a.green": "Border A Green",
-	"biomeborderviewer.configgui.border.a.blue": "Border A Blue",
-	"biomeborderviewer.configgui.border.a.alpha": "Border A Alpha",
-	"biomeborderviewer.configgui.border.b.red": "Border B Red",
-	"biomeborderviewer.configgui.border.b.green": "Border B Green",
-	"biomeborderviewer.configgui.border.b.blue": "Border B Blue",
-	"biomeborderviewer.configgui.border.b.alpha": "Border B Alpha",
-	"biomeborderviewer.configgui.horizontalViewRange": "Horizontal View Range",
-	"biomeborderviewer.configgui.verticalViewRange": "Vertical View Range",
-	"biomeborderviewer.key.showBorders": "Toggle Border",
-	"biomeborderviewer.key.categories": "Biome Border Viewer"
+  "biomeborderviewer.config.gui.border.a.red": "Border A Red",
+  "biomeborderviewer.config.gui.border.a.green": "Border A Green",
+  "biomeborderviewer.config.gui.border.a.blue": "Border A Blue",
+  "biomeborderviewer.config.gui.border.a.alpha": "Border A Alpha",
+  "biomeborderviewer.config.gui.border.b.red": "Border B Red",
+  "biomeborderviewer.config.gui.border.b.green": "Border B Green",
+  "biomeborderviewer.config.gui.border.b.blue": "Border B Blue",
+  "biomeborderviewer.config.gui.border.b.alpha": "Border B Alpha",
+  "biomeborderviewer.config.gui.horizontalViewRange": "Horizontal View Range",
+  "biomeborderviewer.config.gui.verticalViewRange": "Vertical View Range",
+  "biomeborderviewer.key.showBorders": "Toggle Border",
+  "biomeborderviewer.key.categories": "Biome Border Viewer"
 }

@@ -25,7 +25,7 @@ public class VisualizeBorders
     private static Color COLOR_A;
     private static Color COLOR_B;
     private static boolean showingBorders;
-    private static int horizontalViewRange;
+    private static int horizontalViewRange, verticalViewRange;
     private static BiomeBorderDataCollection biomeBorderData = new BiomeBorderDataCollection();
 
     public static Color borderColor(boolean isSimilar)
@@ -63,7 +63,7 @@ public class VisualizeBorders
         }
     }
 
-    @SuppressWarnings("resource") public static void bordersKeyPressed()
+    public static void bordersKeyPressed()
     {
         if (biomeBorderData.areNoChunksLoaded())
         {
@@ -78,6 +78,7 @@ public class VisualizeBorders
     public static void loadConfigSettings()
     {
         horizontalViewRange = Config.CLIENT.horizontalViewRange.get();
+        verticalViewRange = Config.CLIENT.verticalViewRange.get();
         COLOR_A = Config.getColorA();
         COLOR_B = Config.getColorB();
         biomeBorderData.updateColors();
@@ -104,7 +105,7 @@ public class VisualizeBorders
         stack.push();
         stack.translate(-playerPos.x, -playerPos.y, -playerPos.z);
         Matrix4f matrix = stack.getLast().getMatrix();
-        biomeBorderData.renderBorders(Util.getChunkSquare(horizontalViewRange,
+        biomeBorderData.renderBorders(Util.getChunkColumn(horizontalViewRange, verticalViewRange,
                 new Int3((int) (playerPos.x / 16), (int) (playerPos.y / 16), (int) (playerPos.z / 16))), matrix,
                 builder, player.world);
         stack.pop();

@@ -19,7 +19,7 @@ public class Config
 {
     public static final ForgeConfigSpec clientSpec;
     public static final Config CLIENT;
-    private static final String TRANSLATION_KEY = BiomeBorderViewer.ID + ".configgui.";
+    private static final String TRANSLATION_KEY = BiomeBorderViewer.ID + ".config.gui.";
     private static final String BORDER_A_KEY = "border.a";
     private static final String BORDER_B_KEY = "border.b";
     private static final String RED_KEY = "red";
@@ -63,27 +63,28 @@ public class Config
                 " The alpha (transparency) value of the line's color when the 2 biomes have similar temperatures.")
                 .translation(TRANSLATION_KEY + bAA).defineInRange(bAA, 64, 0, 255);
         final String bBR = Util.join(BORDER_B_KEY, RED_KEY);
-        borderB_R = builder.comment(" The red value of the line's color when the 2 biomes have unsimilar temperatures.")
-                .translation(TRANSLATION_KEY + bBR).defineInRange(bBR, 255, 0, 255);
+        borderB_R =
+                builder.comment(" The red value of the line's color when the 2 biomes have non-similar temperatures.")
+                        .translation(TRANSLATION_KEY + bBR).defineInRange(bBR, 255, 0, 255);
         final String bBG = Util.join(BORDER_B_KEY, GREEN_KEY);
         borderB_G =
-                builder.comment(" The green value of the line's color when the 2 biomes have unsimilar temperatures.")
+                builder.comment(" The green value of the line's color when the 2 biomes have non-similar temperatures.")
                         .translation(TRANSLATION_KEY + bBG).defineInRange(bBG, 0, 0, 255);
         final String bBB = Util.join(BORDER_B_KEY, BLUE_KEY);
         borderB_B =
-                builder.comment(" The blue value of the line's color when the 2 biomes have unsimilar temperatures.")
+                builder.comment(" The blue value of the line's color when the 2 biomes have non-similar temperatures.")
                         .translation(TRANSLATION_KEY + bBB).defineInRange(bBB, 0, 0, 255);
         final String bBA = Util.join(BORDER_B_KEY, ALPHA_KEY);
         borderB_A = builder.comment(
-                " The alpha (transparency) value of the line's color when the 2 biomes have unsimilar temperatures.")
+                " The alpha (transparency) value of the line's color when the 2 biomes have non-similar temperatures.")
                 .translation(TRANSLATION_KEY + bBA).defineInRange(bBA, 64, 0, 255);
         final String hVR = "horizontalViewRange";
         horizontalViewRange = builder.comment(" The horizontal distance to show biome borders around the player.",
                 " Like render distance, but for the biome border.", " High values may impact performance.")
-                .translation(TRANSLATION_KEY + hVR).defineInRange(hVR, 3, 1, 32);
+                .translation(TRANSLATION_KEY + hVR).defineInRange(hVR, 3, 0, 32);
         final String vVR = "verticalViewRange";
         verticalViewRange = builder.comment(" The vertical distance to show biome borders above and below the player.",
-                " High values may impact performance.").translation(TRANSLATION_KEY + vVR).defineInRange(vVR, 2, 1, 16);
+                " High values may impact performance.").translation(TRANSLATION_KEY + vVR).defineInRange(vVR, 1, 0, 16);
         final String bCT = "borderCalculationThreads";
         borderCalculationThreads = builder.comment(" How many threads to use to calculate the biome borders.",
                 " Only change this if you know what you are doing!").translation(TRANSLATION_KEY + bCT)

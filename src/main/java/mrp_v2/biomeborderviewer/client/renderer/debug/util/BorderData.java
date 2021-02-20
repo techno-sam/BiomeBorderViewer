@@ -68,7 +68,7 @@ public class BorderData
     }
 
     /**
-     * Assumes borders can be merged, ensure {@link BorderData#canNotMerge(BorderData)} is false before calling.
+     * Assumes borders can be merged, ensure {@link BorderData#canMerge(BorderData)} is true before calling.
      */
     public static BorderData merge(BorderData a, BorderData b)
     {
@@ -94,34 +94,54 @@ public class BorderData
         return similarBiome == that.similarBiome && min.equals(that.min) && max.equals(that.max) && axis == that.axis;
     }
 
-    public boolean canNotMerge(BorderData other)
+    public boolean canMergeOnAxis(BorderData other, Direction.Axis mergeAxis)
+    {
+        if (this.axis == mergeAxis)
+        {
+            return false;
+        }
+        if (other.axis == mergeAxis)
+        {
+            return false;
+        }
+        if (this.min.getValueOnAxis(mergeAxis) == other.min.getValueOnAxis(mergeAxis))
+        {
+            return false;
+        }
+        return canMerge(other);
+    }
+
+    public boolean canMerge(BorderData other)
     {
         if (this.similarBiome != other.similarBiome)
         {
-            return true;
+            return false;
         }
         if (!this.axis.equals(other.axis))
         {
-            return true;
+            return false;
         }
-        if (this.min.getAxis(this.axis) != other.min.getAxis(this.axis))
+        if (this.min.getValueOnAxis(this.axis) != other.min.getValueOnAxis(this.axis))
         {
-            return true;
+            return false;
         }
-        if (this.max.getAxis(this.axis) != other.max.getAxis(this.axis))
+        if (this.max.getValueOnAxis(this.axis) != other.max.getValueOnAxis(this.axis))
         {
-            return true;
+            return false;
         }
         Direction.Axis otherAx1 = this.otherAxes[0];
         Direction.Axis otherAx2 = this.otherAxes[1];
-        if (this.min.axisEquals(other.min, otherAx1) && this.max.axisEquals(other.max, otherAx1))
+        if (this.min.areValuesOnAxisEqual(other.min, otherAx1) && this.max.areValuesOnAxisEqual(other.max, otherAx1))
         {
-            return !this.min.axisEquals(other.max, otherAx2) && !this.max.axisEquals(other.min, otherAx2);
-        } else if (this.min.axisEquals(other.min, otherAx2) && this.max.axisEquals(other.max, otherAx2))
+            return this.min.areValuesOnAxisEqual(other.max, otherAx2) ||
+                    this.max.areValuesOnAxisEqual(other.min, otherAx2);
+        } else if (this.min.areValuesOnAxisEqual(other.min, otherAx2) &&
+                this.max.areValuesOnAxisEqual(other.max, otherAx2))
         {
-            return !this.min.axisEquals(other.max, otherAx1) && !this.max.axisEquals(other.min, otherAx1);
+            return this.min.areValuesOnAxisEqual(other.max, otherAx1) ||
+                    this.max.areValuesOnAxisEqual(other.min, otherAx1);
         }
-        return true;
+        return false;
     }
 
     public void draw(Matrix4f matrix, IVertexBuilder builder)
@@ -172,7 +192,7 @@ public class BorderData
 
     private Drawer getDrawer(Matrix4f matrix, IVertexBuilder builder)
     {
-        return new Drawer(matrix, builder, VisualizeBorders.borderColor(this.similarBiome));
+        return new Drawer(matrix, builder);
     }
 
     private class Drawer
@@ -180,7 +200,7 @@ public class BorderData
         private final Matrix4f matrix;
         private final IVertexBuilder builder;
 
-        public Drawer(Matrix4f matrix, IVertexBuilder builder, Color color)
+        public Drawer(Matrix4f matrix, IVertexBuilder builder)
         {
             this.matrix = matrix;
             this.builder = builder;

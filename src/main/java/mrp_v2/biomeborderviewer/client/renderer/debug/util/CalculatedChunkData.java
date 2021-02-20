@@ -1,6 +1,7 @@
 package mrp_v2.biomeborderviewer.client.renderer.debug.util;
 
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -58,7 +59,7 @@ public class CalculatedChunkData
         this.borders = borderList.toArray(new BorderData[0]);
     }
 
-    private static void simplifyBorders(ArrayList<BorderData> borders)
+    private static void combineVerticalBorders(ArrayList<BorderData> borders)
     {
         boolean didSomething = false;
         BorderData borderA, borderB;
@@ -69,15 +70,42 @@ public class CalculatedChunkData
             for (int i2 = i1 + 1; i2 < borders.size(); i2++)
             {
                 borderB = borders.get(i2);
-                if (borderA.canNotMerge(borderB))
+                if (borderA.canMergeOnAxis(borderB, Direction.Axis.Y))
                 {
-                    continue;
+                    borders.remove(i2);
+                    borders.remove(i1);
+                    borders.add(i1, BorderData.merge(borderA, borderB));
+                    didSomething = true;
+                    continue Loop1;
                 }
-                borders.remove(i2);
-                borders.remove(i1);
-                borders.add(i1, BorderData.merge(borderA, borderB));
-                didSomething = true;
-                continue Loop1;
+            }
+        }
+        if (didSomething)
+        {
+            combineVerticalBorders(borders);
+        }
+    }
+
+    private static void simplifyBorders(ArrayList<BorderData> borders)
+    {
+        combineVerticalBorders(borders);
+        boolean didSomething = false;
+        BorderData borderA, borderB;
+        Loop1:
+        for (int i1 = 0; i1 < borders.size() - 1; i1++)
+        {
+            borderA = borders.get(i1);
+            for (int i2 = i1 + 1; i2 < borders.size(); i2++)
+            {
+                borderB = borders.get(i2);
+                if (borderA.canMerge(borderB))
+                {
+                    borders.remove(i2);
+                    borders.remove(i1);
+                    borders.add(i1, BorderData.merge(borderA, borderB));
+                    didSomething = true;
+                    continue Loop1;
+                }
             }
         }
         if (didSomething)
