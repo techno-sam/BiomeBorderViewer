@@ -1,33 +1,33 @@
 package mrp_v2.biomeborderviewer.util;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.vector.Vector3d;
+import mrp_v2.biomeborderviewer.client.renderer.debug.util.Int3;
 
 public class Util
 {
-    public static ChunkPos[] getNeighborChunks(ChunkPos chunk)
+    public static Int3[] getNeighborChunks(Int3 chunk)
     {
-        return new ChunkPos[]{new ChunkPos(chunk.x + 1, chunk.z), new ChunkPos(chunk.x - 1, chunk.z),
-                new ChunkPos(chunk.x, chunk.z + 1), new ChunkPos(chunk.x, chunk.z - 1),
-                new ChunkPos(chunk.x + 1, chunk.z + 1), new ChunkPos(chunk.x - 1, chunk.z - 1),
-                new ChunkPos(chunk.x - 1, chunk.z + 1), new ChunkPos(chunk.x + 1, chunk.z - 1)};
+        return new Int3[]{new Int3(chunk.getX() + 1, chunk.getY(), chunk.getZ()),
+                new Int3(chunk.getX() - 1, chunk.getY(), chunk.getZ()),
+                new Int3(chunk.getX(), chunk.getY() + 1, chunk.getZ()),
+                new Int3(chunk.getX(), chunk.getY() - 1, chunk.getZ()),
+                new Int3(chunk.getX(), chunk.getY(), chunk.getZ() + 1),
+                new Int3(chunk.getX(), chunk.getY(), chunk.getZ() - 1)};
     }
 
-    public static ChunkPos[] getChunkSquare(int radius, Vector3d playerPos)
-    {
-        return getChunkSquare(radius, new ChunkPos(new BlockPos(playerPos)));
-    }
-
-    public static ChunkPos[] getChunkSquare(int radius, ChunkPos center)
+    public static Int3[] getChunkSquare(int radius, Int3 center)
     {
         int squareSideLength = radius * 2 + 1;
-        ChunkPos[] result = new ChunkPos[squareSideLength * squareSideLength];
-        for (int x = 0; x < squareSideLength; x++)
+        Int3[] result = new Int3[squareSideLength * squareSideLength * squareSideLength];
+        for (int y = 0; y < squareSideLength; y++)
         {
-            for (int z = 0; z < squareSideLength; z++)
+            for (int x = 0; x < squareSideLength; x++)
             {
-                result[z + x * squareSideLength] = new ChunkPos(center.x - radius + x, center.z - radius + z);
+                for (int z = 0; z < squareSideLength; z++)
+                {
+                    result[z + x * squareSideLength + y * squareSideLength * squareSideLength] =
+                            new Int3(center.getX() - radius + x, center.getY() - radius + y,
+                                    center.getZ() - radius + z);
+                }
             }
         }
         return result;

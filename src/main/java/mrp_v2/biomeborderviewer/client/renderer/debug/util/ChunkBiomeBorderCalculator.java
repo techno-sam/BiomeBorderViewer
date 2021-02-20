@@ -1,15 +1,14 @@
 package mrp_v2.biomeborderviewer.client.renderer.debug.util;
 
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
 public class ChunkBiomeBorderCalculator implements Runnable
 {
-    private final ChunkPos pos;
+    private final Int3 pos;
     private final World world;
     private final BiomeBorderDataCollection resultRecipient;
 
-    public ChunkBiomeBorderCalculator(ChunkPos pos, World world, BiomeBorderDataCollection resultRecipient)
+    public ChunkBiomeBorderCalculator(Int3 pos, World world, BiomeBorderDataCollection resultRecipient)
     {
         this.pos = pos;
         this.world = world;

@@ -80,14 +80,14 @@ public class Config
         final String hVR = "horizontalViewRange";
         horizontalViewRange = builder.comment(" The horizontal distance to show biome borders around the player.",
                 " Like render distance, but for the biome border.", " High values may impact performance.")
-                .translation(TRANSLATION_KEY + hVR).defineInRange(hVR, 2, 1, 32);
+                .translation(TRANSLATION_KEY + hVR).defineInRange(hVR, 3, 1, 32);
         final String vVR = "verticalViewRange";
         verticalViewRange = builder.comment(" The vertical distance to show biome borders above and below the player.",
                 " High values may impact performance.").translation(TRANSLATION_KEY + vVR).defineInRange(vVR, 2, 1, 16);
         final String bCT = "borderCalculationThreads";
         borderCalculationThreads = builder.comment(" How many threads to use to calculate the biome borders.",
                 " Only change this if you know what you are doing!").translation(TRANSLATION_KEY + bCT)
-                .defineInRange(bCT, 4, 1, 16);
+                .defineInRange(bCT, 1, 1, 16);
         builder.pop();
     }
 

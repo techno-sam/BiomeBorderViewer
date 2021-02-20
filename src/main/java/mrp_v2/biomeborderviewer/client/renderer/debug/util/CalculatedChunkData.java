@@ -1,33 +1,26 @@
 package mrp_v2.biomeborderviewer.client.renderer.debug.util;
 
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-import mrp_v2.biomeborderviewer.client.renderer.debug.VisualizeBorders;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 public class CalculatedChunkData
 {
-    private final CalculatedSubChunkData[] borders;
+    private final BorderData[] borders;
 
-    public CalculatedChunkData(ChunkPos pos, World world)
+    public CalculatedChunkData(Int3 pos, World world)
     {
-        ArrayList<CalculatedSubChunkData> tempBorders = new ArrayList<>();
-        int xOrigin = pos.getXStart();
-        int zOrigin = pos.getZStart();
+        int xOrigin = pos.getX() * 16, yOrigin = pos.getY() * 16, zOrigin = pos.getZ() * 16;
         int x, z, y;
         Int3 mainPos;
         Biome mainBiome, neighborBiome;
         Int3[] neighbors = new Int3[6];
-        HashSet<BorderData> subBorders = new HashSet<>();
+        ArrayList<BorderData> borderList = new ArrayList<>();
         boolean similar;
-        for (y = 0; y < 256; y++)
+        for (y = yOrigin; y < yOrigin + 16; y++)
         {
             for (x = xOrigin; x < xOrigin + 16; x++)
             {
@@ -55,93 +48,57 @@ public class CalculatedChunkData
                         if (!neighborBiome.equals(mainBiome))
                         {
                             similar = Math.abs(mainBiome.getTemperature() - neighborBiome.getTemperature()) < 0.1f;
-                            subBorders.add(new BorderData(similar, mainPos, neighborPos));
+                            borderList.add(new BorderData(similar, mainPos, neighborPos));
                         }
                     }
                 }
             }
-            if ((y + 1) % 16 == 0)
+        }
+        simplifyBorders(borderList);
+        this.borders = borderList.toArray(new BorderData[0]);
+    }
+
+    private static void simplifyBorders(ArrayList<BorderData> borders)
+    {
+        boolean didSomething = false;
+        BorderData borderA, borderB;
+        Loop1:
+        for (int i1 = 0; i1 < borders.size() - 1; i1++)
+        {
+            borderA = borders.get(i1);
+            for (int i2 = i1 + 1; i2 < borders.size(); i2++)
             {
-                if (subBorders.size() > 0)
+                borderB = borders.get(i2);
+                if (borderA.canNotMerge(borderB))
                 {
-                    tempBorders.add(new CalculatedSubChunkData(subBorders, (y - 15) / 16));
-                    subBorders.clear();
+                    continue;
                 }
+                borders.remove(i2);
+                borders.remove(i1);
+                borders.add(i1, BorderData.merge(borderA, borderB));
+                didSomething = true;
+                continue Loop1;
             }
         }
-        borders = tempBorders.toArray(new CalculatedSubChunkData[0]);
+        if (didSomething)
+        {
+            simplifyBorders(borders);
+        }
     }
 
     public void updateColors()
     {
-        for (CalculatedSubChunkData data : this.borders)
+        for (BorderData borderData : this.borders)
         {
-            for (BorderData borderData : data.borders)
-            {
-                borderData.updateColor();
-            }
+            borderData.updateColor();
         }
     }
 
-    public void draw(Matrix4f matrix, IVertexBuilder builder, int playerY)
+    public void draw(Matrix4f matrix, IVertexBuilder builder)
     {
-        for (CalculatedSubChunkData subChunkData : borders)
+        for (BorderData lineData : borders)
         {
-            subChunkData.draw(matrix, builder, playerY);
-        }
-    }
-
-    private static class CalculatedSubChunkData
-    {
-        public final int subChunkHeight;
-        public final BorderData[] borders;
-
-        public CalculatedSubChunkData(Set<BorderData> borders, int subChunkHeight)
-        {
-            this.subChunkHeight = subChunkHeight;
-            ArrayList<BorderData> temp = simplifyBorders(borders);
-            this.borders = temp.toArray(new BorderData[0]);
-        }
-
-        public void draw(Matrix4f matrix, IVertexBuilder builder, int playerY)
-        {
-            if (Math.abs(subChunkHeight - playerY) <= VisualizeBorders.getVerticalViewRange())
-            {
-                for (BorderData lineData : borders)
-                {
-                    lineData.draw(matrix, builder);
-                }
-            }
-        }
-
-        private ArrayList<BorderData> simplifyBorders(Collection<BorderData> datas)
-        {
-            boolean didSomething = false;
-            ArrayList<BorderData> borders = new ArrayList<>(datas);
-            BorderData borderA, borderB;
-            Loop1:
-            for (int i1 = 0; i1 < borders.size() - 1; i1++)
-            {
-                borderA = borders.get(i1);
-                for (int i2 = i1 + 1; i2 < borders.size(); i2++)
-                {
-                    borderB = borders.get(i2);
-                    if (borderA.canNotMerge(borderB))
-                    {
-                        continue;
-                    }
-                    borders.remove(i2);
-                    borders.remove(i1);
-                    borders.add(i1, BorderData.merge(borderA, borderB));
-                    didSomething = true;
-                    continue Loop1;
-                }
-            }
-            if (didSomething)
-            {
-                return simplifyBorders(new HashSet<>(borders));
-            }
-            return borders;
+            lineData.draw(matrix, builder);
         }
     }
 }

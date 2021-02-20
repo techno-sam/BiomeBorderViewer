@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.IVertexBuilder;
 import mrp_v2.biomeborderviewer.client.Config;
 import mrp_v2.biomeborderviewer.client.renderer.BiomeBorderRenderType;
 import mrp_v2.biomeborderviewer.client.renderer.debug.util.BiomeBorderDataCollection;
+import mrp_v2.biomeborderviewer.client.renderer.debug.util.Int3;
 import mrp_v2.biomeborderviewer.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;
@@ -25,7 +26,6 @@ public class VisualizeBorders
     private static Color COLOR_B;
     private static boolean showingBorders;
     private static int horizontalViewRange;
-    private static int verticalViewRange;
     private static BiomeBorderDataCollection biomeBorderData = new BiomeBorderDataCollection();
 
     public static Color borderColor(boolean isSimilar)
@@ -45,7 +45,10 @@ public class VisualizeBorders
         {
             return;
         }
-        biomeBorderData.chunkLoaded(chunkPos);
+        for (int y = 0; y < 16; y++)
+        {
+            biomeBorderData.chunkLoaded(new Int3(chunkPos.x, y, chunkPos.z));
+        }
     }
 
     public static void chunkUnload(IWorld world, ChunkPos chunkPos)
@@ -54,12 +57,10 @@ public class VisualizeBorders
         {
             return;
         }
-        biomeBorderData.chunkUnloaded(chunkPos);
-    }
-
-    public static int getVerticalViewRange()
-    {
-        return verticalViewRange;
+        for (int y = 0; y < 16; y++)
+        {
+            biomeBorderData.chunkUnloaded(new Int3(chunkPos.x, y, chunkPos.z));
+        }
     }
 
     @SuppressWarnings("resource") public static void bordersKeyPressed()
@@ -77,7 +78,6 @@ public class VisualizeBorders
     public static void loadConfigSettings()
     {
         horizontalViewRange = Config.CLIENT.horizontalViewRange.get();
-        verticalViewRange = Config.CLIENT.verticalViewRange.get();
         COLOR_A = Config.getColorA();
         COLOR_B = Config.getColorB();
         biomeBorderData.updateColors();
@@ -104,9 +104,9 @@ public class VisualizeBorders
         stack.push();
         stack.translate(-playerPos.x, -playerPos.y, -playerPos.z);
         Matrix4f matrix = stack.getLast().getMatrix();
-        int playerY = ((int) playerPos.getY()) >> 4;
-        biomeBorderData.renderBorders(Util.getChunkSquare(horizontalViewRange, playerPos), matrix, builder, playerY,
-                player.world);
+        biomeBorderData.renderBorders(Util.getChunkSquare(horizontalViewRange,
+                new Int3((int) (playerPos.x / 16), (int) (playerPos.y / 16), (int) (playerPos.z / 16))), matrix,
+                builder, player.world);
         stack.pop();
         Minecraft.getInstance().getRenderTypeBuffers().getBufferSource().finish(BiomeBorderRenderType.getBiomeBorder());
     }
