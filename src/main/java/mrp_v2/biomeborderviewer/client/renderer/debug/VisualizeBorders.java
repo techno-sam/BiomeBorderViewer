@@ -15,6 +15,7 @@ import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.IWorld;
+import net.minecraft.world.chunk.ChunkStatus;
 import org.apache.logging.log4j.LogManager;
 
 import java.awt.*;
@@ -42,6 +43,10 @@ public class VisualizeBorders
     public static void chunkLoad(IWorld world, ChunkPos chunkPos)
     {
         if (!(world instanceof ClientWorld))
+        {
+            return;
+        }
+        if (world.getChunk(chunkPos.x, chunkPos.z).getStatus() != ChunkStatus.FULL)
         {
             return;
         }
@@ -81,7 +86,6 @@ public class VisualizeBorders
         verticalViewRange = Config.CLIENT.verticalViewRange.get();
         COLOR_A = Config.getColorA();
         COLOR_B = Config.getColorB();
-        biomeBorderData.updateColors();
     }
 
     public static void renderEvent(float partialTicks, MatrixStack matrixStack)
@@ -94,22 +98,22 @@ public class VisualizeBorders
 
     private static void renderBorders(float partialTicks, MatrixStack stack)
     {
-        Entity player = Minecraft.getInstance().getRenderViewEntity();
-        double cameraX = player.lastTickPosX + (player.getPosX() - player.lastTickPosX) * (double) partialTicks;
-        double cameraY = player.lastTickPosY + (player.getPosY() - player.lastTickPosY) * (double) partialTicks +
+        Entity player = Minecraft.getInstance().getCameraEntity();
+        double cameraX = player.xOld + (player.getX() - player.xOld) * (double) partialTicks;
+        double cameraY = player.yOld + (player.getY() - player.yOld) * (double) partialTicks +
                 player.getEyeHeight(player.getPose());
-        double cameraZ = player.lastTickPosZ + (player.getPosZ() - player.lastTickPosZ) * (double) partialTicks;
+        double cameraZ = player.zOld + (player.getZ() - player.zOld) * (double) partialTicks;
         Vector3d playerPos = new Vector3d(cameraX, cameraY, cameraZ);
-        IVertexBuilder builder = Minecraft.getInstance().getRenderTypeBuffers().getBufferSource()
+        IVertexBuilder builder = Minecraft.getInstance().renderBuffers().bufferSource()
                 .getBuffer(BiomeBorderRenderType.getBiomeBorder());
-        stack.push();
+        stack.pushPose();
         stack.translate(-playerPos.x, -playerPos.y, -playerPos.z);
-        Matrix4f matrix = stack.getLast().getMatrix();
+        Matrix4f matrix = stack.last().pose();
         biomeBorderData.renderBorders(Util.getChunkColumn(horizontalViewRange, verticalViewRange,
                 new Int3((int) (playerPos.x / 16), (int) (playerPos.y / 16), (int) (playerPos.z / 16))), matrix,
-                builder, player.world);
-        stack.pop();
-        Minecraft.getInstance().getRenderTypeBuffers().getBufferSource().finish(BiomeBorderRenderType.getBiomeBorder());
+                builder, player.level);
+        stack.popPose();
+        Minecraft.getInstance().renderBuffers().bufferSource().endBatch(BiomeBorderRenderType.getBiomeBorder());
     }
 
     public static void worldUnload(IWorld world)

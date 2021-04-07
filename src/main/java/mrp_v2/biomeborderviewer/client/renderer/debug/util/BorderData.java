@@ -1,70 +1,45 @@
 package mrp_v2.biomeborderviewer.client.renderer.debug.util;
 
-import com.mojang.blaze3d.vertex.IVertexBuilder;
-import mrp_v2.biomeborderviewer.client.renderer.debug.VisualizeBorders;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.vector.Matrix4f;
 
-import java.awt.*;
 import java.util.Objects;
 
-public class BorderData
+public abstract class BorderData
 {
     private static final float offset = 1f / 0b11111111;
-    private final Float3 min, max;
-    private final boolean similarBiome;
-    private final Direction.Axis axis;
-    private final Direction.Axis[] otherAxes;
-    private Color color;
+    protected final Float3 min, max;
 
-    private BorderData(Float3 min, Float3 max, boolean similarBiome, Direction.Axis axis, Direction.Axis[] otherAxes)
+    protected BorderData(Float3 min, Float3 max)
     {
         this.min = min;
         this.max = max;
-        this.similarBiome = similarBiome;
-        this.axis = axis;
-        this.otherAxes = otherAxes;
-        updateColor();
     }
 
-    public void updateColor()
-    {
-        this.color = VisualizeBorders.borderColor(this.similarBiome);
-    }
-
-    public BorderData(boolean similarBiome, Int3 a, Int3 b)
+    public static BorderData from(Int3 a, Int3 b)
     {
         Int3 min = Int3.min(a, b);
         Int3 max = Int3.max(a, b);
-        this.similarBiome = similarBiome;
         if (min.getX() != max.getX())
         {
             if (min.getY() != max.getY() || min.getZ() != max.getZ())
             {
                 throw new IllegalArgumentException("Incorrect arguments for border data!");
             }
-            this.axis = Direction.Axis.X;
-            this.otherAxes = new Direction.Axis[]{Direction.Axis.Y, Direction.Axis.Z};
+            return new X(new Float3(max.getX(), max.getY(), max.getZ()));
         } else if (min.getY() != max.getY())
         {
             if (min.getZ() != max.getZ())
             {
                 throw new IllegalArgumentException("Incorrect arguments for border data!");
             }
-            this.axis = Direction.Axis.Y;
-            this.otherAxes = new Direction.Axis[]{Direction.Axis.Z, Direction.Axis.X};
+            return new Y(new Float3(max.getX(), max.getY(), max.getZ()));
         } else if (min.getZ() != max.getZ())
         {
-            this.axis = Direction.Axis.Z;
-            this.otherAxes = new Direction.Axis[]{Direction.Axis.X, Direction.Axis.Y};
+            return new Z(new Float3(max.getX(), max.getY(), max.getZ()));
         } else
         {
             throw new IllegalArgumentException("Incorrect arguments for border data!");
         }
-        Float3 float3 = new Float3(max.getX(), max.getY(), max.getZ());
-        this.min = float3.addOnAxis(-offset, this.axis);
-        this.max = float3.addOnAxis(offset, this.axis).addOnOtherAxes(1.0F, this.axis);
-        updateColor();
     }
 
     /**
@@ -72,35 +47,40 @@ public class BorderData
      */
     public static BorderData merge(BorderData a, BorderData b)
     {
-        return new BorderData(Float3.min(a.min, b.min), Float3.max(a.max, b.max), a.similarBiome, a.axis, a.otherAxes);
+        switch (a.getAxis())
+        {
+            case X:
+                return new X(Float3.min(a.min, b.min), Float3.max(a.max, b.max));
+            case Y:
+                return new Y(Float3.min(a.min, b.min), Float3.max(a.max, b.max));
+            case Z:
+                return new Z(Float3.min(a.min, b.min), Float3.max(a.max, b.max));
+            default:
+                throw new IllegalArgumentException("Unknown axis '" + a.getAxis() + "'");
+        }
     }
+
+    public abstract Direction.Axis getAxis();
 
     @Override public int hashCode()
     {
-        return Objects.hash(min, max, similarBiome, axis);
+        return Objects.hash(min, max);
     }
 
-    @Override public boolean equals(Object o)
+    @Override public abstract boolean equals(Object o);
+
+    public boolean equals(BorderData o)
     {
-        if (this == o)
-        {
-            return true;
-        }
-        if (!(o instanceof BorderData))
-        {
-            return false;
-        }
-        BorderData that = (BorderData) o;
-        return similarBiome == that.similarBiome && min.equals(that.min) && max.equals(that.max) && axis == that.axis;
+        return this.min.equals(o.min) && this.max.equals(o.max);
     }
 
     public boolean canMergeOnAxis(BorderData other, Direction.Axis mergeAxis)
     {
-        if (this.axis == mergeAxis)
+        if (this.getAxis() == mergeAxis)
         {
             return false;
         }
-        if (other.axis == mergeAxis)
+        if (other.getAxis() == mergeAxis)
         {
             return false;
         }
@@ -113,24 +93,20 @@ public class BorderData
 
     public boolean canMerge(BorderData other)
     {
-        if (this.similarBiome != other.similarBiome)
+        if (!this.getAxis().equals(other.getAxis()))
         {
             return false;
         }
-        if (!this.axis.equals(other.axis))
+        if (this.min.getValueOnAxis(this.getAxis()) != other.min.getValueOnAxis(this.getAxis()))
         {
             return false;
         }
-        if (this.min.getValueOnAxis(this.axis) != other.min.getValueOnAxis(this.axis))
+        if (this.max.getValueOnAxis(this.getAxis()) != other.max.getValueOnAxis(this.getAxis()))
         {
             return false;
         }
-        if (this.max.getValueOnAxis(this.axis) != other.max.getValueOnAxis(this.axis))
-        {
-            return false;
-        }
-        Direction.Axis otherAx1 = this.otherAxes[0];
-        Direction.Axis otherAx2 = this.otherAxes[1];
+        Direction.Axis otherAx1 = this.getOtherAxes()[0];
+        Direction.Axis otherAx2 = this.getOtherAxes()[1];
         if (this.min.areValuesOnAxisEqual(other.min, otherAx1) && this.max.areValuesOnAxisEqual(other.max, otherAx1))
         {
             return this.min.areValuesOnAxisEqual(other.max, otherAx2) ||
@@ -144,72 +120,125 @@ public class BorderData
         return false;
     }
 
-    public void draw(Matrix4f matrix, IVertexBuilder builder)
+    public abstract Direction.Axis[] getOtherAxes();
+
+    public static class X extends BorderData
     {
-        Drawer drawer = getDrawer(matrix, builder);
-        switch (this.axis)
+        private static final Direction.Axis[] otherAxes = new Direction.Axis[]{Direction.Axis.Y, Direction.Axis.Z};
+
+        protected X(Float3 float3)
         {
-            case X:
-                // -x side
-                drawer.drawSegment(this.min.getX(), this.min.getY(), this.min.getZ());
-                drawer.drawSegment(this.min.getX(), this.min.getY(), this.max.getZ());
-                drawer.drawSegment(this.min.getX(), this.max.getY(), this.max.getZ());
-                drawer.drawSegment(this.min.getX(), this.max.getY(), this.min.getZ());
-                // +x side
-                drawer.drawSegment(this.max.getX(), this.min.getY(), this.min.getZ());
-                drawer.drawSegment(this.max.getX(), this.max.getY(), this.min.getZ());
-                drawer.drawSegment(this.max.getX(), this.max.getY(), this.max.getZ());
-                drawer.drawSegment(this.max.getX(), this.min.getY(), this.max.getZ());
-                break;
-            case Y:
-                // -y side
-                drawer.drawSegment(this.min.getX(), this.min.getY(), this.min.getZ());
-                drawer.drawSegment(this.max.getX(), this.min.getY(), this.min.getZ());
-                drawer.drawSegment(this.max.getX(), this.min.getY(), this.max.getZ());
-                drawer.drawSegment(this.min.getX(), this.min.getY(), this.max.getZ());
-                // +y side
-                drawer.drawSegment(this.min.getX(), this.max.getY(), this.min.getZ());
-                drawer.drawSegment(this.min.getX(), this.max.getY(), this.max.getZ());
-                drawer.drawSegment(this.max.getX(), this.max.getY(), this.max.getZ());
-                drawer.drawSegment(this.max.getX(), this.max.getY(), this.min.getZ());
-                break;
-            case Z:
-                // -z side
-                drawer.drawSegment(this.min.getX(), this.min.getY(), this.min.getZ());
-                drawer.drawSegment(this.min.getX(), this.max.getY(), this.min.getZ());
-                drawer.drawSegment(this.max.getX(), this.max.getY(), this.min.getZ());
-                drawer.drawSegment(this.max.getX(), this.min.getY(), this.min.getZ());
-                // +z side
-                drawer.drawSegment(this.min.getX(), this.min.getY(), this.max.getZ());
-                drawer.drawSegment(this.max.getX(), this.min.getY(), this.max.getZ());
-                drawer.drawSegment(this.max.getX(), this.max.getY(), this.max.getZ());
-                drawer.drawSegment(this.min.getX(), this.max.getY(), this.max.getZ());
-                break;
-            default:
-                throw new IllegalStateException("Cannot have axis '" + this.axis + "'");
+            super(float3.addOnAxis(-offset, Direction.Axis.X),
+                    float3.addOnAxis(offset, Direction.Axis.X).addOnOtherAxes(1.0F, Direction.Axis.X));
+        }
+
+        public X(Float3 min, Float3 max)
+        {
+            super(min, max);
+        }
+
+        @Override public Direction.Axis getAxis()
+        {
+            return Direction.Axis.X;
+        }
+
+        @Override public boolean equals(Object o)
+        {
+            if (o == this)
+            {
+                return true;
+            }
+            if (!(o instanceof X))
+            {
+                return false;
+            }
+            X other = (X) o;
+            return super.equals(other);
+        }
+
+        @Override public Direction.Axis[] getOtherAxes()
+        {
+            return otherAxes;
         }
     }
 
-    private Drawer getDrawer(Matrix4f matrix, IVertexBuilder builder)
+    public static class Y extends BorderData
     {
-        return new Drawer(matrix, builder);
-    }
+        private static final Direction.Axis[] otherAxes = new Direction.Axis[]{Direction.Axis.X, Direction.Axis.Z};
 
-    private class Drawer
-    {
-        private final Matrix4f matrix;
-        private final IVertexBuilder builder;
-
-        public Drawer(Matrix4f matrix, IVertexBuilder builder)
+        protected Y(Float3 float3)
         {
-            this.matrix = matrix;
-            this.builder = builder;
+            super(float3.addOnAxis(-offset, Direction.Axis.Y),
+                    float3.addOnAxis(offset, Direction.Axis.Y).addOnOtherAxes(1.0F, Direction.Axis.Y));
         }
 
-        public void drawSegment(float x, float y, float z)
+        public Y(Float3 min, Float3 max)
         {
-            builder.pos(matrix, x, y, z).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha())
-                    .endVertex();
+            super(min, max);
+        }
+
+        @Override public Direction.Axis getAxis()
+        {
+            return Direction.Axis.Y;
+        }
+
+        @Override public boolean equals(Object o)
+        {
+            if (o == this)
+            {
+                return true;
+            }
+            if (!(o instanceof Y))
+            {
+                return false;
+            }
+            Y other = (Y) o;
+            return super.equals(other);
+        }
+
+        @Override public Direction.Axis[] getOtherAxes()
+        {
+            return otherAxes;
+        }
+    }
+
+    public static class Z extends BorderData
+    {
+        private static final Direction.Axis[] otherAxes = new Direction.Axis[]{Direction.Axis.X, Direction.Axis.Y};
+
+        protected Z(Float3 float3)
+        {
+            super(float3.addOnAxis(-offset, Direction.Axis.Z),
+                    float3.addOnAxis(offset, Direction.Axis.Z).addOnOtherAxes(1.0F, Direction.Axis.Z));
+        }
+
+        public Z(Float3 min, Float3 max)
+        {
+            super(min, max);
+        }
+
+        @Override public Direction.Axis getAxis()
+        {
+            return Direction.Axis.Z;
+        }
+
+        @Override public boolean equals(Object o)
+        {
+            if (o == this)
+            {
+                return true;
+            }
+            if (!(o instanceof Z))
+            {
+                return false;
+            }
+            Z other = (Z) o;
+            return super.equals(other);
+        }
+
+        @Override public Direction.Axis[] getOtherAxes()
+        {
+            return otherAxes;
         }
     }
 }

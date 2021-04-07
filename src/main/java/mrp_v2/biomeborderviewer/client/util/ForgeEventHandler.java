@@ -25,7 +25,7 @@ import net.minecraftforge.fml.common.Mod;
 
     @SubscribeEvent public static void keyPressed(InputEvent.KeyInputEvent event)
     {
-        if (ObjectHolder.SHOW_BORDERS.isPressed())
+        if (ObjectHolder.SHOW_BORDERS.consumeClick())
         {
             VisualizeBorders.bordersKeyPressed();
         }

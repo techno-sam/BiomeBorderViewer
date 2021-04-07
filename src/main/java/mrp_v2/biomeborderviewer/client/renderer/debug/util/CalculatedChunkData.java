@@ -1,8 +1,6 @@
 package mrp_v2.biomeborderviewer.client.renderer.debug.util;
 
-import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 
@@ -10,7 +8,8 @@ import java.util.ArrayList;
 
 public class CalculatedChunkData
 {
-    private final BorderData[] borders;
+    private final Float3[] similarXMins, similarYMins, similarZMins, similarXMaxs, similarYMaxs, similarZMaxs,
+            dissimilarXMins, dissimilarYMins, dissimilarZMins, dissimilarXMaxs, dissimilarYMaxs, dissimilarZMaxs;
 
     public CalculatedChunkData(Int3 pos, World world)
     {
@@ -19,7 +18,8 @@ public class CalculatedChunkData
         Int3 mainPos;
         Biome mainBiome, neighborBiome;
         Int3[] neighbors = new Int3[6];
-        ArrayList<BorderData> borderList = new ArrayList<>();
+        ArrayList<BorderData> dissimilarBorders = new ArrayList<>();
+        ArrayList<BorderData> similarBorders = new ArrayList<>();
         boolean similar;
         for (y = yOrigin; y < yOrigin + 16; y++)
         {
@@ -48,15 +48,75 @@ public class CalculatedChunkData
                         neighborBiome = world.getBiome(neighborPos.toBlockPos());
                         if (!neighborBiome.equals(mainBiome))
                         {
-                            similar = Math.abs(mainBiome.getTemperature() - neighborBiome.getTemperature()) < 0.1f;
-                            borderList.add(new BorderData(similar, mainPos, neighborPos));
+                            similar = Math.abs(mainBiome.getBaseTemperature() - neighborBiome.getBaseTemperature()) <
+                                    0.1f;
+                            if (similar)
+                            {
+                                similarBorders.add(BorderData.from(mainPos, neighborPos));
+                            } else
+                            {
+                                dissimilarBorders.add(BorderData.from(mainPos, neighborPos));
+                            }
                         }
                     }
                 }
             }
         }
-        simplifyBorders(borderList);
-        this.borders = borderList.toArray(new BorderData[0]);
+        simplifyBorders(similarBorders);
+        simplifyBorders(dissimilarBorders);
+        ArrayList<Float3> similarXMins = new ArrayList<>(), similarYMins = new ArrayList<>(), similarZMins =
+                new ArrayList<>(), similarXMaxs = new ArrayList<>(), similarYMaxs = new ArrayList<>(), similarZMaxs =
+                new ArrayList<>(), dissimilarXMins = new ArrayList<>(), dissimilarYMins = new ArrayList<>(),
+                dissimilarZMins = new ArrayList<>(), dissimilarXMaxs = new ArrayList<>(), dissimilarYMaxs =
+                new ArrayList<>(), dissimilarZMaxs = new ArrayList<>();
+        for (BorderData border : similarBorders)
+        {
+            switch (border.getAxis())
+            {
+                case X:
+                    similarXMins.add(border.min);
+                    similarXMaxs.add(border.max);
+                    break;
+                case Y:
+                    similarYMins.add(border.min);
+                    similarYMaxs.add(border.max);
+                    break;
+                case Z:
+                    similarZMins.add(border.min);
+                    similarZMaxs.add(border.max);
+                    break;
+            }
+        }
+        for (BorderData border : dissimilarBorders)
+        {
+            switch (border.getAxis())
+            {
+                case X:
+                    dissimilarXMins.add(border.min);
+                    dissimilarXMaxs.add(border.max);
+                    break;
+                case Y:
+                    dissimilarYMins.add(border.min);
+                    dissimilarYMaxs.add(border.max);
+                    break;
+                case Z:
+                    dissimilarZMins.add(border.min);
+                    dissimilarZMaxs.add(border.max);
+                    break;
+            }
+        }
+        this.similarXMins = similarXMins.toArray(new Float3[0]);
+        this.similarXMaxs = similarXMaxs.toArray(new Float3[0]);
+        this.similarYMins = similarYMins.toArray(new Float3[0]);
+        this.similarYMaxs = similarYMaxs.toArray(new Float3[0]);
+        this.similarZMins = similarZMins.toArray(new Float3[0]);
+        this.similarZMaxs = similarZMaxs.toArray(new Float3[0]);
+        this.dissimilarXMins = dissimilarXMins.toArray(new Float3[0]);
+        this.dissimilarXMaxs = dissimilarXMaxs.toArray(new Float3[0]);
+        this.dissimilarYMins = dissimilarYMins.toArray(new Float3[0]);
+        this.dissimilarYMaxs = dissimilarYMaxs.toArray(new Float3[0]);
+        this.dissimilarZMins = dissimilarZMins.toArray(new Float3[0]);
+        this.dissimilarZMaxs = dissimilarZMaxs.toArray(new Float3[0]);
     }
 
     private static void combineVerticalBorders(ArrayList<BorderData> borders)
@@ -114,19 +174,77 @@ public class CalculatedChunkData
         }
     }
 
-    public void updateColors()
+    public void drawSimilarBorder(BiomeBorderDataCollection.Drawer drawer)
     {
-        for (BorderData borderData : this.borders)
+        for (int i = 0; i < similarXMins.length; i++)
         {
-            borderData.updateColor();
+            drawX(drawer, similarXMins[i], similarXMaxs[i]);
+        }
+        for (int i = 0; i < similarYMins.length; i++)
+        {
+            drawY(drawer, similarYMins[i], similarYMaxs[i]);
+        }
+        for (int i = 0; i < similarZMins.length; i++)
+        {
+            drawZ(drawer, similarZMins[i], similarZMaxs[i]);
         }
     }
 
-    public void draw(Matrix4f matrix, IVertexBuilder builder)
+    public static void drawX(BiomeBorderDataCollection.Drawer drawer, Float3 min, Float3 max)
     {
-        for (BorderData lineData : borders)
+        // -x side
+        drawer.drawSegment(min.x(), min.y(), min.z());
+        drawer.drawSegment(min.x(), min.y(), max.z());
+        drawer.drawSegment(min.x(), max.y(), max.z());
+        drawer.drawSegment(min.x(), max.y(), min.z());
+        // +x side
+        drawer.drawSegment(max.x(), min.y(), min.z());
+        drawer.drawSegment(max.x(), max.y(), min.z());
+        drawer.drawSegment(max.x(), max.y(), max.z());
+        drawer.drawSegment(max.x(), min.y(), max.z());
+    }
+
+    public static void drawY(BiomeBorderDataCollection.Drawer drawer, Float3 min, Float3 max)
+    {
+        // -y side
+        drawer.drawSegment(min.x(), min.y(), min.z());
+        drawer.drawSegment(max.x(), min.y(), min.z());
+        drawer.drawSegment(max.x(), min.y(), max.z());
+        drawer.drawSegment(min.x(), min.y(), max.z());
+        // +y side
+        drawer.drawSegment(min.x(), max.y(), min.z());
+        drawer.drawSegment(min.x(), max.y(), max.z());
+        drawer.drawSegment(max.x(), max.y(), max.z());
+        drawer.drawSegment(max.x(), max.y(), min.z());
+    }
+
+    public static void drawZ(BiomeBorderDataCollection.Drawer drawer, Float3 min, Float3 max)
+    {
+        // -z side
+        drawer.drawSegment(min.x(), min.y(), min.z());
+        drawer.drawSegment(min.x(), max.y(), min.z());
+        drawer.drawSegment(max.x(), max.y(), min.z());
+        drawer.drawSegment(max.x(), min.y(), min.z());
+        // +z side
+        drawer.drawSegment(min.x(), min.y(), max.z());
+        drawer.drawSegment(max.x(), min.y(), max.z());
+        drawer.drawSegment(max.x(), max.y(), max.z());
+        drawer.drawSegment(min.x(), max.y(), max.z());
+    }
+
+    public void drawDissimilarBorders(BiomeBorderDataCollection.Drawer drawer)
+    {
+        for (int i = 0; i < dissimilarXMins.length; i++)
         {
-            lineData.draw(matrix, builder);
+            drawX(drawer, dissimilarXMins[i], dissimilarXMaxs[i]);
+        }
+        for (int i = 0; i < dissimilarYMins.length; i++)
+        {
+            drawY(drawer, dissimilarYMins[i], dissimilarYMaxs[i]);
+        }
+        for (int i = 0; i < dissimilarZMins.length; i++)
+        {
+            drawZ(drawer, dissimilarZMins[i], dissimilarZMaxs[i]);
         }
     }
 }

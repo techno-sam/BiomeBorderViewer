@@ -2,11 +2,14 @@ package mrp_v2.biomeborderviewer.client.renderer.debug.util;
 
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import mrp_v2.biomeborderviewer.client.Config;
+import mrp_v2.biomeborderviewer.client.renderer.debug.VisualizeBorders;
 import mrp_v2.biomeborderviewer.util.Util;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.ChunkStatus;
 
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
@@ -41,14 +44,6 @@ public class BiomeBorderDataCollection
         this.threadPool = null;
     }
 
-    public void updateColors()
-    {
-        for (CalculatedChunkData chunkData : calculatedChunks.values())
-        {
-            chunkData.updateColors();
-        }
-    }
-
     public void chunkLoaded(Int3 pos)
     {
         loadedChunks.add(pos);
@@ -77,23 +72,41 @@ public class BiomeBorderDataCollection
     public void renderBorders(Int3[] chunksToRender, Matrix4f matrix, IVertexBuilder bufferBuilder, World world)
     {
         HashSet<Int3> chunksToQueue = new HashSet<>();
+        Drawer drawer = new Drawer(matrix, bufferBuilder);
+        drawer.setColor(VisualizeBorders.borderColor(true));
         for (Int3 pos : chunksToRender)
         {
             CalculatedChunkData data = calculatedChunks.get(pos);
             if (data != null)
             {
-                data.draw(matrix, bufferBuilder);
-            } else if (chunkReadyForCalculations(pos))
+                data.drawSimilarBorder(drawer);
+            }
+        }
+        drawer.setColor(VisualizeBorders.borderColor(false));
+        for (Int3 pos : chunksToRender)
+        {
+            CalculatedChunkData data = calculatedChunks.get(pos);
+            if (data != null)
             {
-                chunksToQueue.add(pos);
+                data.drawDissimilarBorders(drawer);
+            } else
+            {
+                if (chunkReadyForCalculations(pos, world))
+                {
+                    chunksToQueue.add(pos);
+                }
             }
         }
         updateChunkCalculations(chunksToQueue, world);
     }
 
-    private boolean chunkReadyForCalculations(Int3 pos)
+    private boolean chunkReadyForCalculations(Int3 pos, World world)
     {
         if (!loadedChunks.contains(pos))
+        {
+            return false;
+        }
+        if (world.getChunk(pos.getX(), pos.getZ()).getStatus() != ChunkStatus.FULL)
         {
             return false;
         }
@@ -105,6 +118,10 @@ public class BiomeBorderDataCollection
                 {
                     continue;
                 }
+                return false;
+            }
+            if (world.getChunk(neighbor.getX(), neighbor.getZ()).getStatus() != ChunkStatus.FULL)
+            {
                 return false;
             }
         }
@@ -144,6 +161,34 @@ public class BiomeBorderDataCollection
         if (threadPool != null)
         {
             threadPool.shutdownNow();
+        }
+    }
+
+    public static class Drawer
+    {
+        private final Matrix4f matrix;
+        private final IVertexBuilder builder;
+        private int r, g, b, a;
+
+        public Drawer(Matrix4f matrix, IVertexBuilder builder)
+        {
+            this.matrix = matrix;
+            this.builder = builder;
+        }
+
+        public void setColor(Color color)
+        {
+            r = color.getRed();
+            g = color.getGreen();
+            b = color.getBlue();
+            a = color.getAlpha();
+        }
+
+        public void drawSegment(float x, float y, float z)
+        {
+            builder.vertex(matrix, x, y, z);
+            builder.color(r, g, b, a);
+            builder.endVertex();
         }
     }
 }

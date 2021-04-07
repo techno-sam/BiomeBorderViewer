@@ -16,8 +16,9 @@ public abstract class BiomeBorderRenderType extends RenderType
 
     public static void initBiomeBorderRenderType()
     {
-        BIOME_BORDER = RenderType.makeType("biome_border", DefaultVertexFormats.POSITION_COLOR, 7, 256, false, true,
-                State.getBuilder().transparency(TRANSLUCENT_TRANSPARENCY).writeMask(COLOR_DEPTH_WRITE).build(false));
+        BIOME_BORDER = RenderType.create("biome_border", DefaultVertexFormats.POSITION_COLOR, 7, 256, false, true,
+                State.builder().setTransparencyState(TRANSLUCENT_TRANSPARENCY).setWriteMaskState(COLOR_DEPTH_WRITE)
+                        .createCompositeState(false));
     }
 
     public static RenderType getBiomeBorder()
