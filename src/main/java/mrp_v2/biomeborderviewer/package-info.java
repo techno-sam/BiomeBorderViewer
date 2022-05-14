@@ -1,6 +1,0 @@
-@ParametersAreNonnullByDefault @MethodsReturnNonnullByDefault
-package mrp_v2.biomeborderviewer;
-
-import mcp.MethodsReturnNonnullByDefault;
-
-import javax.annotation.ParametersAreNonnullByDefault;

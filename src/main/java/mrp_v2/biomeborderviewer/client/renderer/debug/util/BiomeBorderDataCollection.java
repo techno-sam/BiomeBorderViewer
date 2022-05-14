@@ -1,14 +1,15 @@
 package mrp_v2.biomeborderviewer.client.renderer.debug.util;
 
-import com.mojang.blaze3d.vertex.IVertexBuilder;
-import mrp_v2.biomeborderviewer.client.Config;
+import mrp_v2.biomeborderviewer.BiomeBorderViewer;
 import mrp_v2.biomeborderviewer.client.renderer.debug.VisualizeBorders;
 import mrp_v2.biomeborderviewer.util.Util;
-import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.client.render.BufferVertexConsumer;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.util.math.Matrix4f;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkStatus;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,7 +34,8 @@ public class BiomeBorderDataCollection
      * Needs synchronization, use {@link BiomeBorderDataCollection#calculatedChunksToAdd} as a lock
      */
     private final HashSet<Int3> chunksQueuedForCalculation;
-    @Nullable private ExecutorService threadPool;
+    @Nullable
+    private ExecutorService threadPool;
 
     public BiomeBorderDataCollection()
     {
@@ -69,7 +71,7 @@ public class BiomeBorderDataCollection
         return loadedChunks.isEmpty();
     }
 
-    public void renderBorders(Int3[] chunksToRender, Matrix4f matrix, IVertexBuilder bufferBuilder, World world)
+    public void renderBorders(Int3[] chunksToRender, Matrix4f matrix, VertexConsumer bufferBuilder, World world)
     {
         HashSet<Int3> chunksToQueue = new HashSet<>();
         Drawer drawer = new Drawer(matrix, bufferBuilder);
@@ -145,7 +147,7 @@ public class BiomeBorderDataCollection
             {
                 if (threadPool == null)
                 {
-                    threadPool = Executors.newFixedThreadPool(Config.CLIENT.borderCalculationThreads.get());
+                    threadPool = Executors.newFixedThreadPool(BiomeBorderViewer.config.borderCalculationThreads);
                 }
             }
             for (Int3 pos : chunksToQueueForCalculation)
@@ -167,10 +169,10 @@ public class BiomeBorderDataCollection
     public static class Drawer
     {
         private final Matrix4f matrix;
-        private final IVertexBuilder builder;
+        private final VertexConsumer builder;
         private int r, g, b, a;
 
-        public Drawer(Matrix4f matrix, IVertexBuilder builder)
+        public Drawer(Matrix4f matrix, VertexConsumer builder)
         {
             this.matrix = matrix;
             this.builder = builder;
@@ -188,7 +190,7 @@ public class BiomeBorderDataCollection
         {
             builder.vertex(matrix, x, y, z);
             builder.color(r, g, b, a);
-            builder.endVertex();
+            builder.next();
         }
     }
 }

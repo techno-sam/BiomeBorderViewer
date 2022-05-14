@@ -1,14 +1,12 @@
 {
-  "biomeborderviewer.config.gui.border.a.red": "Border A Red",
-  "biomeborderviewer.config.gui.border.a.green": "Border A Green",
-  "biomeborderviewer.config.gui.border.a.blue": "Border A Blue",
-  "biomeborderviewer.config.gui.border.a.alpha": "Border A Alpha",
-  "biomeborderviewer.config.gui.border.b.red": "Border B Red",
-  "biomeborderviewer.config.gui.border.b.green": "Border B Green",
-  "biomeborderviewer.config.gui.border.b.blue": "Border B Blue",
-  "biomeborderviewer.config.gui.border.b.alpha": "Border B Alpha",
+  "biomeborderviewer.title.config": "Biome Border Settings",
+  "biomeborderviewer.config.gui.border_a": "Border A",
+  "biomeborderviewer.config.gui.border_b": "Border B",
   "biomeborderviewer.config.gui.horizontalViewRange": "Horizontal View Range",
   "biomeborderviewer.config.gui.verticalViewRange": "Vertical View Range",
+  "biomeborderviewer.config.gui.borderCalculationThreads": "Border Calculation Threads",
+  "biomeborderviewer.config.gui.force2dOverworld": "Force 2d Overworld Biomes",
   "biomeborderviewer.key.showBorders": "Toggle Border",
-  "biomeborderviewer.key.categories": "Biome Border Viewer"
+  "biomeborderviewer.key.config": "Open Config",
+  "biomeborderviewer.title.keys": "Biome Border Viewer"
 }

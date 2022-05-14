@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "biomerborderviewer",
+  "version": "${version}",
+
+  "name": "Biome Border Viewer",
+  "description": "Visualizes the borders of biomes. Ported to fabric 1.17 by Slimeist",
+  "authors": [
+    "mrp_v2",
+    "Slimeist"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+
+  "license": "All rights reserved",
+  "icon": "logo.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "mrp_v2.biomeborderviewer.BiomeBorderViewer"
+    ]
+  },
+
+  "mixins": [
+    "biomeborderviewer.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.11.3",
+    "fabric": "*",
+    "minecraft": "1.17.x",
+    "java": ">=16"
+  },
+  "suggests": {
+  },
+  "accessWidener": "biomeborderviewer.accesswidener"
+}

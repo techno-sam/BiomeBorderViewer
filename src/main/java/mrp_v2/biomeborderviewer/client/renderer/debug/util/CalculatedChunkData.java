@@ -1,8 +1,13 @@
 package mrp_v2.biomeborderviewer.client.renderer.debug.util;
 
-import net.minecraft.util.Direction;
+import mrp_v2.biomeborderviewer.BiomeBorderViewer;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.DimensionEffects;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.dimension.DimensionType;
 
 import java.util.ArrayList;
 
@@ -45,10 +50,14 @@ public class CalculatedChunkData
                         {
                             continue;
                         }
-                        neighborBiome = world.getBiome(neighborPos.toBlockPos());
+                        if (world.getDimension().getEffects().equals(DimensionType.OVERWORLD_ID) && BiomeBorderViewer.config.force2dOverworld) {
+                            neighborBiome = world.getBiome(neighborPos.toBlockPos().withY(0)); // overworld should have non-3d biomes
+                        } else {
+                            neighborBiome = world.getBiome(neighborPos.toBlockPos());
+                        }
                         if (!neighborBiome.equals(mainBiome))
                         {
-                            similar = Math.abs(mainBiome.getBaseTemperature() - neighborBiome.getBaseTemperature()) <
+                            similar = Math.abs(mainBiome.getTemperature() - neighborBiome.getTemperature()) <
                                     0.1f;
                             if (similar)
                             {
@@ -193,43 +202,43 @@ public class CalculatedChunkData
     public static void drawX(BiomeBorderDataCollection.Drawer drawer, Float3 min, Float3 max)
     {
         // -x side
-        drawer.drawSegment(min.x(), min.y(), min.z());
-        drawer.drawSegment(min.x(), min.y(), max.z());
-        drawer.drawSegment(min.x(), max.y(), max.z());
-        drawer.drawSegment(min.x(), max.y(), min.z());
+        drawer.drawSegment(min.getX(), min.getY(), min.getZ());
+        drawer.drawSegment(min.getX(), min.getY(), max.getZ());
+        drawer.drawSegment(min.getX(), max.getY(), max.getZ());
+        drawer.drawSegment(min.getX(), max.getY(), min.getZ());
         // +x side
-        drawer.drawSegment(max.x(), min.y(), min.z());
-        drawer.drawSegment(max.x(), max.y(), min.z());
-        drawer.drawSegment(max.x(), max.y(), max.z());
-        drawer.drawSegment(max.x(), min.y(), max.z());
+        drawer.drawSegment(max.getX(), min.getY(), min.getZ());
+        drawer.drawSegment(max.getX(), max.getY(), min.getZ());
+        drawer.drawSegment(max.getX(), max.getY(), max.getZ());
+        drawer.drawSegment(max.getX(), min.getY(), max.getZ());
     }
 
     public static void drawY(BiomeBorderDataCollection.Drawer drawer, Float3 min, Float3 max)
     {
         // -y side
-        drawer.drawSegment(min.x(), min.y(), min.z());
-        drawer.drawSegment(max.x(), min.y(), min.z());
-        drawer.drawSegment(max.x(), min.y(), max.z());
-        drawer.drawSegment(min.x(), min.y(), max.z());
+        drawer.drawSegment(min.getX(), min.getY(), min.getZ());
+        drawer.drawSegment(max.getX(), min.getY(), min.getZ());
+        drawer.drawSegment(max.getX(), min.getY(), max.getZ());
+        drawer.drawSegment(min.getX(), min.getY(), max.getZ());
         // +y side
-        drawer.drawSegment(min.x(), max.y(), min.z());
-        drawer.drawSegment(min.x(), max.y(), max.z());
-        drawer.drawSegment(max.x(), max.y(), max.z());
-        drawer.drawSegment(max.x(), max.y(), min.z());
+        drawer.drawSegment(min.getX(), max.getY(), min.getZ());
+        drawer.drawSegment(min.getX(), max.getY(), max.getZ());
+        drawer.drawSegment(max.getX(), max.getY(), max.getZ());
+        drawer.drawSegment(max.getX(), max.getY(), min.getZ());
     }
 
     public static void drawZ(BiomeBorderDataCollection.Drawer drawer, Float3 min, Float3 max)
     {
         // -z side
-        drawer.drawSegment(min.x(), min.y(), min.z());
-        drawer.drawSegment(min.x(), max.y(), min.z());
-        drawer.drawSegment(max.x(), max.y(), min.z());
-        drawer.drawSegment(max.x(), min.y(), min.z());
+        drawer.drawSegment(min.getX(), min.getY(), min.getZ());
+        drawer.drawSegment(min.getX(), max.getY(), min.getZ());
+        drawer.drawSegment(max.getX(), max.getY(), min.getZ());
+        drawer.drawSegment(max.getX(), min.getY(), min.getZ());
         // +z side
-        drawer.drawSegment(min.x(), min.y(), max.z());
-        drawer.drawSegment(max.x(), min.y(), max.z());
-        drawer.drawSegment(max.x(), max.y(), max.z());
-        drawer.drawSegment(min.x(), max.y(), max.z());
+        drawer.drawSegment(min.getX(), min.getY(), max.getZ());
+        drawer.drawSegment(max.getX(), min.getY(), max.getZ());
+        drawer.drawSegment(max.getX(), max.getY(), max.getZ());
+        drawer.drawSegment(min.getX(), max.getY(), max.getZ());
     }
 
     public void drawDissimilarBorders(BiomeBorderDataCollection.Drawer drawer)

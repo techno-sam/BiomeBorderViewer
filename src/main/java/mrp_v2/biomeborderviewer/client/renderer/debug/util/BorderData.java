@@ -1,6 +1,6 @@
 package mrp_v2.biomeborderviewer.client.renderer.debug.util;
 
-import net.minecraft.util.Direction;
+import net.minecraft.util.math.Direction;
 
 import java.util.Objects;
 

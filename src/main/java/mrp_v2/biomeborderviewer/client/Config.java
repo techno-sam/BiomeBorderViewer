@@ -1,3 +1,4 @@
+/*
 package mrp_v2.biomeborderviewer.client;
 
 import mrp_v2.biomeborderviewer.BiomeBorderViewer;
@@ -117,3 +118,4 @@ public class Config
         VisualizeBorders.loadConfigSettings();
     }
 }
+//*/
