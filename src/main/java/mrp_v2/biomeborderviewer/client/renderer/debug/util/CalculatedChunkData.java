@@ -37,7 +37,11 @@ public class CalculatedChunkData
                         z++;
                     }
                     mainPos = new Int3(x, y, z);
-                    mainBiome = world.getBiome(mainPos.toBlockPos());
+                    if (world.getDimension().getEffects().equals(DimensionType.OVERWORLD_ID) && BiomeBorderViewer.config.force2dOverworld) {
+                        mainBiome = world.getBiome(mainPos.toBlockPos().withY(0)); // overworld should have non-3d biomes
+                    } else {
+                        mainBiome = world.getBiome(mainPos.toBlockPos());
+                    }
                     neighbors[0] = mainPos.add(0, 1, 0);
                     neighbors[1] = mainPos.add(0, -1, 0);
                     neighbors[2] = mainPos.add(1, 0, 0);
